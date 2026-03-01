@@ -1,10 +1,10 @@
 <?php
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -26,7 +26,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            'password.changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
+            'profile.complete' => \App\Http\Middleware\EnsureProfileComplete::class,
+            'admin' => \App\Http\Middleware\EnsureAdminRole::class,
+            'user.portal' => \App\Http\Middleware\EnsureUserPortalAccess::class,
+            'verify.webhook'    => \App\Http\Middleware\VerifyWebhookSignature::class,
+            'check.book.access' => \App\Http\Middleware\CheckBookAccess::class,
+            'check.book.ownership' => \App\Http\Middleware\CheckBookOwnership::class,
+        ]);
+
+        $middleware->api(prepend: [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->web(append: [

@@ -38,9 +38,9 @@ const statusInfo = (val: string) => {
     if (found) return found;
     const allMap: Record<string, { label: string; color: string }> = {
         draft: { label: 'Draft', color: '#8c8c8c' },
-        incoming: { label: 'Naskah Masuk', color: '#1890ff' },
+        incoming: { label: 'Naskah Masuk', color: '#008B94' },
         review: { label: 'Review', color: '#fa8c16' },
-        editorial: { label: 'Editing & Layout', color: '#1677ff' },
+        editorial: { label: 'Editing & Layout', color: '#008B94' },
         covering: { label: 'Desain Cover', color: '#722ed1' },
         approving: { label: 'Approval', color: '#eb2f96' },
         surat_pernyataan: { label: 'Surat Pernyataan', color: '#13c2c2' },
@@ -120,7 +120,7 @@ const ProsesISBNPage: React.FC = () => {
         {
             title: 'Progress', key: 'progress', width: 110,
             render: (_: unknown, r: BookRecord) => (
-                <Progress percent={r.progress || 0} size="small" strokeColor={r.progress === 100 ? '#52c41a' : '#1677ff'} />
+                <Progress percent={r.progress || 0} size="small" strokeColor={r.progress === 100 ? '#52c41a' : '#008B94'} />
             ),
         },
         {
@@ -184,7 +184,7 @@ const ProsesISBNPage: React.FC = () => {
                                 </Tag>
                                 <Text type="secondary">{detailData.tracking_code}</Text>
                             </div>
-                            <Progress percent={detailData.progress || 0} strokeColor={detailData.progress === 100 ? '#52c41a' : '#1677ff'} />
+                            <Progress percent={detailData.progress || 0} strokeColor={detailData.progress === 100 ? '#52c41a' : '#008B94'} />
                         </Card>
 
                         <Descriptions column={1} bordered size="small" style={{ marginBottom: 16 }}>

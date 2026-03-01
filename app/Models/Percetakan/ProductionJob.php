@@ -2,14 +2,16 @@
 
 namespace App\Models\Percetakan;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductionJob extends Model
 {
     use HasFactory;
+
+    protected $table = 'percetakan_production_jobs';
 
     protected $fillable = [
         'job_number',
@@ -57,11 +59,6 @@ class ProductionJob extends Model
         return $this->belongsTo(User::class, 'supervisor_id');
     }
 
-    public function jobCards(): HasMany
-    {
-        return $this->hasMany(JobCard::class);
-    }
-
     public function isPending(): bool
     {
         return $this->status === 'pending';
@@ -79,11 +76,12 @@ class ProductionJob extends Model
 
     public function getEfficiencyAttribute(): ?float
     {
-        if (!$this->quantity_good || !$this->quantity_waste) {
+        if ($this->quantity_good === null && $this->quantity_waste === null) {
             return null;
         }
 
         $total = $this->quantity_good + $this->quantity_waste;
+
         return ($this->quantity_good / $total) * 100;
     }
 }

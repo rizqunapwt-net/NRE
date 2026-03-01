@@ -19,7 +19,7 @@ class RoyaltyCalculationExport implements FromCollection, WithHeadings, WithMapp
         return [
             'ID',
             'Period',
-            'Author',
+            'Penulis',
             'Total Amount',
             'Status',
             'Calculated At',

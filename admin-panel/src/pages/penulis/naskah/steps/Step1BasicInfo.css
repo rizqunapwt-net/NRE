@@ -1,0 +1,135 @@
+/* Step 1 Basic Info Styles */
+
+.step-1-basic-info {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-section {
+  margin-bottom: 40px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.section-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #1F2937;
+  margin-bottom: 20px;
+}
+
+.section-description {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 16px;
+}
+
+.required-label {
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.required {
+  color: #EF4444;
+  margin-left: 4px;
+}
+
+.word-count-hint {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.warning-text {
+  color: #F59E0B;
+}
+
+.success-text {
+  color: #10B981;
+}
+
+.co-author-item {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #E5E7EB;
+}
+
+.co-author-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.remove-btn {
+  background: #FEE2E2;
+  color: #DC2626;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  background: #FECACA;
+}
+
+.add-co-author-btn {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 2px dashed #D1D5DB;
+  border-radius: 8px;
+  color: #6B7280;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-co-author-btn:hover {
+  border-color: #008B95;
+  color: #008B95;
+  background: #EFF6FF;
+}
+
+/* Ant Design overrides */
+.ant-upload-dragger {
+  padding: 40px 20px !important;
+}
+
+.ant-upload-drag-icon .anticon {
+  font-size: 48px !important;
+  color: #008B95 !important;
+}
+
+.ant-upload-text {
+  font-size: 16px !important;
+  color: #1F2937 !important;
+  font-weight: 600 !important;
+}
+
+.ant-upload-hint {
+  font-size: 14px !important;
+  color: #6B7280 !important;
+}
+
+@media (max-width: 768px) {
+  .form-section {
+    padding: 16px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+}

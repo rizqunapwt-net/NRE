@@ -12,6 +12,7 @@ class AuthorRoyaltyPaidNotification extends Notification implements ShouldQueue
     use Queueable;
 
     protected $amount;
+
     protected $period;
 
     /**
@@ -40,10 +41,10 @@ class AuthorRoyaltyPaidNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject('Royalti Telah Dibayar!')
-            ->greeting('Halo ' . $notifiable->name . '!')
+            ->greeting('Halo '.$notifiable->name.'!')
             ->line('Kabar baik! Royalti Anda telah dibayar.')
             ->line("Periode: {$this->period}")
-            ->line("Jumlah: Rp " . number_format($this->amount, 0, ',', '.'))
+            ->line('Jumlah: Rp '.number_format($this->amount, 0, ',', '.'))
             ->line('Pembayaran akan ditransfer ke rekening Anda dalam 1-3 hari kerja.')
             ->action('Lihat Detail', url('/admin/royalties'))
             ->line('Terima kasih telah menulis bersama kami!')
@@ -59,7 +60,7 @@ class AuthorRoyaltyPaidNotification extends Notification implements ShouldQueue
     {
         return [
             'type' => 'royalty_paid',
-            'message' => "Royalti periode {$this->period} sebesar Rp " . number_format($this->amount, 0, ',', '.') . ' telah dibayar',
+            'message' => "Royalti periode {$this->period} sebesar Rp ".number_format($this->amount, 0, ',', '.').' telah dibayar',
             'amount' => $this->amount,
             'period' => $this->period,
             'url' => url('/admin/royalties'),

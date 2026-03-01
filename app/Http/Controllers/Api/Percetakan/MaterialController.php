@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\Percetakan;
 
 use App\Http\Controllers\Controller;
-use App\Models\Percetakan\Material;
 use App\Http\Resources\Percetakan\MaterialResource;
-use Illuminate\Http\Request;
+use App\Models\Percetakan\Material;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class MaterialController extends Controller
 {
@@ -34,15 +34,16 @@ class MaterialController extends Controller
 
         // Search by name or code
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('code', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('code', 'like', '%'.$request->search.'%');
             });
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'name');
-        $sortOrder = $request->get('sort_order', 'asc');
+        $allowedSorts = ['name', 'code', 'unit', 'stock', 'unit_price', 'created_at', 'updated_at'];
+        $sortBy = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'name';
+        $sortOrder = in_array($request->get('sort_order'), ['asc', 'desc']) ? $request->get('sort_order') : 'asc';
         $query->orderBy($sortBy, $sortOrder);
 
         $perPage = $request->get('per_page', 15);
@@ -98,7 +99,7 @@ class MaterialController extends Controller
     public function update(Request $request, Material $material): JsonResponse
     {
         $validated = $request->validate([
-            'code' => ['sometimes', 'string', 'max:50', 'unique:percetakan_materials,code,' . $material->id],
+            'code' => ['sometimes', 'string', 'max:50', 'unique:percetakan_materials,code,'.$material->id],
             'name' => ['sometimes', 'string', 'max:255'],
             'category' => ['sometimes', 'in:paper,ink,plate,consumable,packaging'],
             'type' => ['nullable', 'string', 'max:100'],

@@ -9,8 +9,6 @@ use App\Models\Marketplace;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class SalesImportApiTest extends TestCase
@@ -20,12 +18,9 @@ class SalesImportApiTest extends TestCase
     public function test_finance_can_import_sales_csv(): void
     {
         $this->seed(RolePermissionSeeder::class);
-        $this->seed(\Database\Seeders\AccountingAccountSeeder::class);
 
         $finance = User::factory()->create();
-        $finance->assignRole('Finance');
-
-        Sanctum::actingAs($finance);
+        $this->actingAsWithRole($finance, 'Admin');
 
         $marketplace = Marketplace::factory()->create([
             'code' => 'shopee',
@@ -52,7 +47,7 @@ class SalesImportApiTest extends TestCase
             '2026-02,shopee,9786021234567,TRX-002,2,50000,refunded',
         ]);
 
-        $tmpPath = storage_path('app/sales_test_' . uniqid() . '.csv');
+        $tmpPath = storage_path('app/sales_test_'.uniqid().'.csv');
         file_put_contents($tmpPath, $csv);
         $file = new \Illuminate\Http\UploadedFile($tmpPath, 'sales.csv', 'text/csv', null, true);
 

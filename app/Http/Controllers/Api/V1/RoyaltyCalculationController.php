@@ -10,6 +10,7 @@ use App\Http\Requests\FinalizeRoyaltyRequest;
 use App\Models\RoyaltyCalculation;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class RoyaltyCalculationController extends Controller
@@ -19,7 +20,21 @@ class RoyaltyCalculationController extends Controller
     public function __construct(
         private readonly RoyaltyCalculationService $royaltyCalculationService,
         private readonly PaymentService $paymentService,
-    ) {
+    ) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        $calculations = RoyaltyCalculation::with(['author', 'items.book'])
+            ->when($request->period_month, fn($q) => $q->where('period_month', $request->period_month))
+            ->latest()
+            ->paginate($request->per_page ?? 15);
+
+        return $this->success($calculations);
+    }
+
+    public function show(RoyaltyCalculation $royaltyCalculation): JsonResponse
+    {
+        return $this->success($royaltyCalculation->load(['author', 'items.book', 'items.sale']));
     }
 
     public function calculate(CalculateRoyaltyRequest $request): JsonResponse

@@ -13,9 +13,7 @@ class SalesImportController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly SalesImportService $salesImportService)
-    {
-    }
+    public function __construct(private readonly SalesImportService $salesImportService) {}
 
     public function __invoke(ImportSalesRequest $request): JsonResponse
     {

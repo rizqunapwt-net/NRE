@@ -1,0 +1,142 @@
+/* Progress Stepper Styles */
+
+.progress-stepper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.step-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-size: 20px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.step.current .step-circle {
+  background: #008B95;
+  color: white;
+  box-shadow: 0 0 0 4px #DBEAFE, 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: scale(1.1);
+}
+
+.step.completed .step-circle {
+  background: #10B981;
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.check-icon {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.step-label {
+  max-width: 120px;
+  margin: 0 auto;
+}
+
+.step-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B7280;
+  transition: all 0.3s ease;
+  line-height: 1.4;
+}
+
+.step.current .step-title {
+  color: #1F2937;
+  font-weight: 700;
+}
+
+.step.completed .step-title {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.connector {
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: #E5E7EB;
+  z-index: -1;
+  transform: translateX(-50%);
+}
+
+.connector.completed {
+  background: #10B981;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .progress-stepper {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 20px;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+
+  .step:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-circle {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .step-label {
+    margin: 0;
+    max-width: none;
+  }
+
+  .connector {
+    display: none;
+  }
+
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 44px;
+    top: 50px;
+    width: 2px;
+    height: calc(100% - 26px);
+    background: #E5E7EB;
+  }
+
+  .step.completed::before {
+    background: #10B981;
+  }
+
+  .step:last-child::before {
+    display: none;
+  }
+}

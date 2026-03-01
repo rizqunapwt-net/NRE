@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -10,6 +11,14 @@ use Tests\TestCase;
 class AuthTokenApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Seed roles for permission checks
+        $this->seed(RolePermissionSeeder::class);
+    }
 
     public function test_it_issues_token_for_active_user_with_valid_credentials(): void
     {
@@ -19,11 +28,26 @@ class AuthTokenApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->postJson('/api/v1/auth/token', [
-            'login' => $user->email,
+        // UnifiedLoginController expects 'username' field, not 'login'
+        $payload = [
+            'username' => $user->username,
             'password' => 'secret123',
             'device_name' => 'postman',
-        ]);
+        ];
+
+        $response = $this->postJson('/api/v1/auth/login', $payload);
+
+        // If 422, print full response for debugging
+        if ($response->status() === 422) {
+            $content = $response->getContent();
+            $this->fail('422 Response: '.$content);
+        }
+
+        // If 500, print full response for debugging
+        if ($response->status() === 500) {
+            $content = $response->getContent();
+            $this->fail('500 Response: '.$content);
+        }
 
         $response->assertOk()
             ->assertJsonPath('success', true)
@@ -43,7 +67,7 @@ class AuthTokenApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->postJson('/api/v1/auth/token', [
+        $response = $this->postJson('/api/v1/auth/login', [
             'username' => 'finance',
             'password' => 'secret123',
         ]);
@@ -57,12 +81,13 @@ class AuthTokenApiTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'finance@rizquna.id',
+            'username' => 'financeuser',
             'password' => Hash::make('secret123'),
             'is_active' => true,
         ]);
 
-        $response = $this->postJson('/api/v1/auth/token', [
-            'login' => $user->email,
+        $response = $this->postJson('/api/v1/auth/login', [
+            'username' => $user->username,
             'password' => 'secret123',
         ]);
 
@@ -74,11 +99,12 @@ class AuthTokenApiTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'finance@rizquna.id',
+            'username' => 'financeuser',
             'password' => Hash::make('secret123'),
         ]);
 
-        $response = $this->postJson('/api/v1/auth/token', [
-            'login' => $user->email,
+        $response = $this->postJson('/api/v1/auth/login', [
+            'username' => $user->username,
             'password' => 'wrong-password',
         ]);
 
@@ -88,9 +114,14 @@ class AuthTokenApiTest extends TestCase
 
     public function test_it_rejects_missing_login_field(): void
     {
-        $response = $this->postJson('/api/v1/auth/token', [
+        $response = $this->postJson('/api/v1/auth/login', [
             'password' => 'secret123',
         ]);
+
+        // Debug missing field test
+        if ($response->status() === 500) {
+            $this->fail('Missing field test - 500 Response: '.$response->getContent());
+        }
 
         $response->assertStatus(422)
             ->assertJsonPath('success', false);
@@ -100,14 +131,24 @@ class AuthTokenApiTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'inactive@rizquna.id',
+            'username' => 'inactiveuser',
             'password' => Hash::make('secret123'),
             'is_active' => false,
         ]);
 
-        $response = $this->postJson('/api/v1/auth/token', [
-            'login' => $user->email,
+        $response = $this->postJson('/api/v1/auth/login', [
+            'username' => $user->username,
             'password' => 'secret123',
         ]);
+
+        // Debug inactive user test
+        if ($response->status() === 422) {
+            $this->fail('Inactive user test - 422 Response: '.$response->getContent());
+        }
+
+        if ($response->status() === 500) {
+            $this->fail('Inactive user test - 500 Response: '.$response->getContent());
+        }
 
         $response->assertStatus(403)
             ->assertJsonPath('success', false);

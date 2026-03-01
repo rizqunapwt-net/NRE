@@ -1,0 +1,347 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   PENULIS DASHBOARD V2 - MODERN DESIGN
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.penulis-dashboard {
+  padding: 2rem 0;
+  animation: slideIn 0.4s ease-out;
+}
+
+/* Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.author-avatar {
+  border: 3px solid #008B94;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-title {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  color: #111827 !important;
+  margin: 0 !important;
+}
+
+.dashboard-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.btn-submit-manuscript {
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #008B94 0%, #8B5CF6 100%);
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(14, 165, 233, 0.3);
+  transition: all 0.3s;
+}
+
+.btn-submit-manuscript:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(14, 165, 233, 0.4);
+}
+
+/* Stats Cards */
+.stats-row {
+  margin: 0 -12px;
+}
+
+.stat-card {
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card-blue {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+}
+
+.stat-card-orange {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.stat-card-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.stat-card-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.stat-icon {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  opacity: 0.3;
+  color: #ffffff;
+}
+
+.stat-content {
+  padding: 1.5rem;
+  color: #ffffff;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-content .ant-statistic-title {
+  margin-bottom: 0.5rem;
+}
+
+.stat-content .ant-statistic-content {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.stat-detail {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.detail-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.detail-value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.trend-up {
+  color: #86efac !important;
+}
+
+/* Quick Actions */
+.quick-actions-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.quick-actions-card .ant-card-head {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1.25rem 1.5rem;
+  background: #f9fafb;
+  border-radius: 1rem 1rem 0 0 !important;
+}
+
+.quick-actions-card .ant-card-head-title {
+  font-weight: 700;
+  color: #111827;
+  font-size: 1.125rem;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+}
+
+.quick-actions .ant-btn {
+  height: 48px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.quick-actions .ant-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Tables & Cards */
+.table-card,
+.progress-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.table-card:hover,
+.progress-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.table-card .ant-card-head,
+.progress-card .ant-card-head {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1.25rem 1.5rem;
+  background: #f9fafb;
+  border-radius: 1rem 1rem 0 0 !important;
+}
+
+.table-card .ant-card-head-title,
+.progress-card .ant-card-head-title {
+  font-weight: 700;
+  color: #111827;
+  font-size: 1.125rem;
+}
+
+.table-card .ant-card-body,
+.progress-card .ant-card-body {
+  padding: 1.5rem;
+}
+
+/* Progress */
+.progress-item {
+  margin-bottom: 2rem;
+}
+
+.progress-item:last-child {
+  margin-bottom: 0;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.progress-note {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-left {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .dashboard-title {
+    font-size: 1.5rem !important;
+  }
+
+  .btn-submit-manuscript {
+    width: 100%;
+  }
+
+  .stats-row {
+    margin: 0;
+  }
+
+  .stat-content .ant-statistic-content {
+    font-size: 1.5rem !important;
+  }
+
+  .quick-actions {
+    flex-direction: column;
+  }
+
+  .quick-actions .ant-btn {
+    width: 100%;
+  }
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.penulis-dashboard {
+  animation: slideIn 0.4s ease-out;
+}
+
+.stat-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .dashboard-title {
+    color: #f9fafb !important;
+  }
+
+  .dashboard-subtitle {
+    color: #9ca3af;
+  }
+
+  .table-card .ant-card-head,
+  .progress-card .ant-card-head,
+  .quick-actions-card .ant-card-head {
+    background: #1f2937;
+    border-bottom-color: #374151;
+  }
+
+  .table-card .ant-card-head-title,
+  .progress-card .ant-card-head-title,
+  .quick-actions-card .ant-card-head-title {
+    color: #f9fafb;
+  }
+
+  .table-card .ant-table-thead > tr > th {
+    background: #1f2937;
+    color: #9ca3af;
+    border-bottom-color: #374151;
+  }
+
+  .table-card .ant-table-tbody > tr > td {
+    color: #f9fafb;
+    border-bottom-color: #374151;
+  }
+
+  .table-card .ant-table-tbody > tr:hover > td {
+    background: #1f2937;
+  }
+}

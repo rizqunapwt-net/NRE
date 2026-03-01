@@ -186,7 +186,7 @@ const OrderEntryPage: React.FC = () => {
                     </Col>
 
                     <Col xs={24} lg={12}>
-                        <Card title="📦 Produk" className="mb-4">
+                        <Card title="Produk" className="mb-4">
                             <Form.Item
                                 name="product_id"
                                 label="Produk"
@@ -213,7 +213,7 @@ const OrderEntryPage: React.FC = () => {
                 </Row>
 
                 {/* Specifications */}
-                <Card title="⚙️ Spesifikasi Cetak" className="mb-4">
+                <Card title="Spesifikasi Cetak" className="mb-4">
                     <Row gutter={[16, 16]}>
                         <Col xs={24} sm={12} md={8}>
                             <Form.Item
@@ -429,7 +429,7 @@ const OrderEntryPage: React.FC = () => {
                                 value={pricing.deposit}
                                 prefix="Rp"
                                 precision={0}
-                                valueStyle={{ color: '#1890ff' }}
+                                valueStyle={{ color: '#008B94' }}
                             />
                         </Col>
                         <Col xs={12} sm={6}>

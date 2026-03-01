@@ -20,7 +20,7 @@ class SecurityHeaders
         $response->headers->set('Permissions-Policy', 'geolocation=(self), microphone=(), camera=(self)');
 
         // CSP Report-Only for gradual rollout (set ERP_CSP_REPORT_ONLY=true in .env to enable)
-        if (filter_var((string)env('ERP_CSP_REPORT_ONLY', false), FILTER_VALIDATE_BOOLEAN)) {
+        if (filter_var((string) config('app.csp_report_only', false), FILTER_VALIDATE_BOOLEAN)) {
             $cspDirectives = [
                 "default-src 'self'",
                 "base-uri 'self'",
@@ -33,14 +33,14 @@ class SecurityHeaders
                 "connect-src 'self' https: wss:",
                 "frame-src 'self' https:",
                 "object-src 'none'",
-                "upgrade-insecure-requests",
+                'upgrade-insecure-requests',
             ];
-            
+
             // Add report-uri if configured
-            $reportUri = env('CSP_REPORT_URI');
+            $reportUri = config('app.csp_report_uri');
             if ($reportUri) {
                 $cspDirectives[] = "report-uri {$reportUri}";
-                $cspDirectives[] = "report-to csp-endpoint";
+                $cspDirectives[] = 'report-to csp-endpoint';
             }
 
             $response->headers->set('Content-Security-Policy-Report-Only', implode('; ', $cspDirectives));
@@ -49,7 +49,7 @@ class SecurityHeaders
         if (app()->environment('production')) {
             // Enable HSTS only when served over HTTPS.
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-            
+
             // Additional production security headers
             $response->headers->set('X-XSS-Protection', '1; mode=block');
             $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');

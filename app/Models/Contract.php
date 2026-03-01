@@ -13,6 +13,7 @@ class Contract extends Model
 {
     /** @use HasFactory<\Database\Factories\ContractFactory> */
     use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

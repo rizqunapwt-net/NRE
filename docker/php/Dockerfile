@@ -1,5 +1,6 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
+# Install system dependencies
 RUN apk add --no-cache \
     bash \
     curl \
@@ -12,8 +13,15 @@ RUN apk add --no-cache \
     oniguruma-dev \
     postgresql-dev \
     unzip \
-    zip
+    zip \
+    nodejs \
+    npm \
+    supervisor \
+    autoconf \
+    gcc \
+    make
 
+# Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" \
         gd \
@@ -24,8 +32,26 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         pdo_pgsql \
         zip
 
+# Install Redis extension
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Install Laravel Horizon
+RUN composer global require laravel/horizon
 
 WORKDIR /var/www/html
 
-CMD ["php-fpm"]
+# Create supervisor log directory
+RUN mkdir -p /var/log/supervisor
+
+# Copy supervisor configuration
+COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Expose port for debugging (optional)
+EXPOSE 9000
+
+# Start supervisor (which will manage php-fpm and horizon)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]

@@ -9,7 +9,6 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ContractApiTest extends TestCase
@@ -21,15 +20,15 @@ class ContractApiTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $legal = User::factory()->create();
-        $legal->assignRole('Legal');
+        $legal->assignRole('Admin');
 
-        Sanctum::actingAs($legal);
+        $this->actingAs($legal);
 
         $author = Author::factory()->create();
         $book = Book::factory()->create(['author_id' => $author->id]);
 
         // Write a real file to storage to avoid macOS tmpfile() permission issue
-        $path = storage_path('app/test_contract_' . uniqid() . '.pdf');
+        $path = storage_path('app/test_contract_'.uniqid().'.pdf');
         file_put_contents($path, '%PDF-1.4 test contract file content');
         $file = new UploadedFile($path, 'contract.pdf', 'application/pdf', null, true);
 
@@ -57,9 +56,9 @@ class ContractApiTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $legal = User::factory()->create();
-        $legal->assignRole('Legal');
+        $legal->assignRole('Admin');
 
-        Sanctum::actingAs($legal);
+        $this->actingAs($legal);
 
         $author = Author::factory()->create();
         $book = Book::factory()->create(['author_id' => $author->id]);

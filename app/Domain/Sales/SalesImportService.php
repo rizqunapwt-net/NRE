@@ -3,8 +3,8 @@
 namespace App\Domain\Sales;
 
 use App\Enums\ContractStatus;
-use App\Enums\SaleStatus;
 use App\Enums\SalesImportStatus;
+use App\Enums\SaleStatus;
 use App\Models\Book;
 use App\Models\Contract;
 use App\Models\Marketplace;

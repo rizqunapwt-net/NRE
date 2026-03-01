@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Book;
+use App\Jobs\ParsePdfJob;
 use App\Models\Author;
+use App\Models\Book;
 use App\Models\BookFile;
 use App\Models\BookStatusLog;
 use App\Models\Contract;
@@ -30,16 +31,16 @@ class PublishingController extends Controller
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('isbn', 'like', "%{$search}%")
-                  ->orWhere('tracking_code', 'like', "%{$search}%");
+                    ->orWhere('isbn', 'like', "%{$search}%")
+                    ->orWhere('tracking_code', 'like', "%{$search}%");
             });
         }
 
         if ($status = $request->query('status')) {
-            $query->where('status', $status);
+            $query->where('status', '=', $status);
         }
 
-        $books = $query->orderByDesc('created_at')->get()->map(fn(Book $book) => $this->formatBook($book));
+        $books = $query->withCount(['files', 'printOrders'])->orderByDesc('created_at')->get()->map(fn (Book $book) => $this->formatBook($book));
 
         return $this->success($books);
     }
@@ -56,16 +57,16 @@ class PublishingController extends Controller
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('isbn', 'like', "%{$search}%")
-                  ->orWhere('tracking_code', 'like', "%{$search}%");
+                    ->orWhere('isbn', 'like', "%{$search}%")
+                    ->orWhere('tracking_code', 'like', "%{$search}%");
             });
         }
 
         if ($status = $request->query('status')) {
-            $query->where('status', $status);
+            $query->where('status', '=', $status);
         }
 
-        $books = $query->orderByDesc('created_at')->get()->map(fn(Book $book) => $this->formatBook($book));
+        $books = $query->withCount(['files', 'printOrders'])->orderByDesc('created_at')->get()->map(fn (Book $book) => $this->formatBook($book));
 
         return $this->success($books);
     }
@@ -84,11 +85,12 @@ class PublishingController extends Controller
             'price' => $book->price,
             'stock' => $book->stock,
             'status' => $book->status?->value ?? $book->status,
-            'status_label' => $book->status?->getLabel() ?? $book->status,
+            'status_label' => $book->getStatusLabel(),
             'cover_path' => $book->cover_path,
             'progress' => $book->getProgressPercentage(),
-            'files_count' => $book->files()->count(),
-            'print_orders_count' => $book->printOrders()->count(),
+            'files_count' => $book->files_count ?? 0,
+            'print_orders_count' => $book->print_orders_count ?? 0,
+            'allowed_transitions' => $book->getAllowedTransitions(),
             'created_at' => $book->created_at,
             'updated_at' => $book->updated_at,
         ];
@@ -109,7 +111,7 @@ class PublishingController extends Controller
             'price' => $book->price,
             'stock' => $book->stock,
             'status' => $book->status?->value ?? $book->status,
-            'status_label' => $book->status?->getLabel() ?? $book->status,
+            'status_label' => $book->getStatusLabel(),
             'progress' => $book->getProgressPercentage(),
             'cover_path' => $book->cover_path,
             'cover_file_path' => $book->cover_file_path,
@@ -121,7 +123,7 @@ class PublishingController extends Controller
             'size' => $book->size,
             'published_year' => $book->published_year,
             'allowed_transitions' => $book->getAllowedTransitions(),
-            'files' => $book->files->map(fn(BookFile $f) => [
+            'files' => $book->files->map(fn (BookFile $f) => [
                 'id' => $f->id,
                 'file_type' => $f->file_type,
                 'file_type_label' => $f->getFileTypeLabel(),
@@ -132,7 +134,7 @@ class PublishingController extends Controller
                 'notes' => $f->notes,
                 'created_at' => $f->created_at,
             ]),
-            'status_logs' => $book->statusLogs->map(fn(BookStatusLog $l) => [
+            'status_logs' => $book->statusLogs->map(fn (BookStatusLog $l) => [
                 'id' => $l->id,
                 'from_status' => $l->from_status,
                 'to_status' => $l->to_status,
@@ -140,7 +142,7 @@ class PublishingController extends Controller
                 'notes' => $l->notes,
                 'created_at' => $l->created_at,
             ]),
-            'print_orders' => $book->printOrders->map(fn(PrintOrder $po) => [
+            'print_orders' => $book->printOrders->map(fn (PrintOrder $po) => [
                 'id' => $po->id,
                 'order_number' => $po->order_number,
                 'vendor_name' => $po->vendor_name,
@@ -194,7 +196,7 @@ class PublishingController extends Controller
             'notes' => $type === 'printing' ? 'Naskah cetak baru' : 'Buku baru dibuat',
         ]);
 
-        return $this->success($book->load('author'), 'Buku berhasil ditambahkan', 201);
+        return $this->success($book->load('author'), 201, ['message' => 'Buku berhasil ditambahkan']);
     }
 
     public function updateBook(Request $request, int $id): JsonResponse
@@ -207,11 +209,16 @@ class PublishingController extends Controller
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'stock' => 'sometimes|integer|min:0',
+            'publisher' => 'nullable|string|max:255',
+            'publisher_city' => 'nullable|string|max:255',
+            'published_year' => 'nullable|integer',
+            'cover_path' => 'nullable|string|max:255',
+            'pdf_full_path' => 'nullable|string|max:255',
         ]);
 
         $book->update($data);
 
-        return $this->success($book->load('author'), 'Buku berhasil diperbarui');
+        return $this->success($book->load('author'), 200, ['message' => 'Buku berhasil diperbarui']);
     }
 
     public function updateBookStatus(Request $request, int $id): JsonResponse
@@ -229,13 +236,13 @@ class PublishingController extends Controller
         $updateData = ['status' => $data['status']];
 
         // Save gdrive_link when moving to surat_pernyataan
-        if ($data['status'] === 'surat_pernyataan' && !empty($data['gdrive_link'])) {
+        if ($data['status'] === 'surat_pernyataan' && ! empty($data['gdrive_link'])) {
             $updateData['gdrive_link'] = $data['gdrive_link'];
             $updateData['surat_status'] = 'link_terkirim';
         }
 
         // Save revision notes when sending back to author
-        if ($data['status'] === 'revision' && !empty($data['revision_notes'])) {
+        if ($data['status'] === 'revision' && ! empty($data['revision_notes'])) {
             $updateData['revision_notes'] = $data['revision_notes'];
         }
 
@@ -250,14 +257,15 @@ class PublishingController extends Controller
         ]);
 
         $fresh = $book->fresh();
+
         return $this->success([
             'id' => $fresh->id,
             'type' => $fresh->type ?? 'publishing',
             'status' => $data['status'],
-            'status_label' => $fresh->status?->getLabel(),
+            'status_label' => $fresh->getStatusLabel(),
             'progress' => $fresh->getProgressPercentage(),
             'allowed_transitions' => $fresh->getAllowedTransitions(),
-        ], 'Status buku berhasil diperbarui');
+        ]);
     }
 
     // ── Book Files ──
@@ -267,7 +275,7 @@ class PublishingController extends Controller
         $book = Book::findOrFail($id);
         $files = $book->files()->with('uploader')->orderByDesc('created_at')->get();
 
-        return $this->success($files->map(fn(BookFile $f) => [
+        return $this->success($files->map(fn (BookFile $f) => [
             'id' => $f->id,
             'file_type' => $f->file_type,
             'file_type_label' => $f->getFileTypeLabel(),
@@ -302,7 +310,38 @@ class PublishingController extends Controller
             'notes' => $request->input('notes'),
         ]);
 
-        return $this->success($bookFile, 'File berhasil diupload', 201);
+        return $this->success($bookFile, 201, ['message' => 'File berhasil diupload']);
+    }
+
+    /**
+     * Trigger parse metadata akademik untuk buku tertentu.
+     * Endpoint admin: POST /api/v1/admin/books/{id}/parse
+     */
+    public function triggerParse(Request $request, int $id): JsonResponse
+    {
+        $book = Book::findOrFail($id);
+        $force = (bool) $request->boolean('force', false);
+
+        if (! $book->pdf_full_path) {
+            return $this->error('PDF penuh belum tersedia untuk buku ini.', 422);
+        }
+
+        if (config('queue.default') === 'sync') {
+            ParsePdfJob::dispatchSync($book->id, $force);
+
+            return $this->success([
+                'book_id' => $book->id,
+                'queued' => false,
+            ], 200, ['message' => 'Parse selesai dijalankan secara sinkron.']);
+        }
+
+        ParsePdfJob::dispatch($book->id, $force)->onQueue('parsing');
+
+        return $this->success([
+            'book_id' => $book->id,
+            'queued' => true,
+            'queue' => 'parsing',
+        ], 202, ['message' => 'Parse PDF dimasukkan ke antrian parsing.']);
     }
 
     // ── Book Status Logs ──
@@ -312,7 +351,7 @@ class PublishingController extends Controller
         $book = Book::findOrFail($id);
         $logs = $book->statusLogs()->with('changer')->orderByDesc('created_at')->get();
 
-        return $this->success($logs->map(fn(BookStatusLog $l) => [
+        return $this->success($logs->map(fn (BookStatusLog $l) => [
             'id' => $l->id,
             'from_status' => $l->from_status,
             'to_status' => $l->to_status,
@@ -329,14 +368,14 @@ class PublishingController extends Controller
         $query = PrintOrder::with(['book:id,title,tracking_code', 'orderer:id,name']);
 
         if ($status = $request->query('status')) {
-            $query->where('status', $status);
+            $query->where('status', '=', $status);
         }
 
         if ($bookId = $request->query('book_id')) {
             $query->where('book_id', $bookId);
         }
 
-        $orders = $query->orderByDesc('created_at')->get()->map(fn(PrintOrder $po) => [
+        $orders = $query->orderByDesc('created_at')->get()->map(fn (PrintOrder $po) => [
             'id' => $po->id,
             'order_number' => $po->order_number,
             'book' => $po->book ? ['id' => $po->book->id, 'title' => $po->book->title, 'tracking_code' => $po->book->tracking_code] : null,
@@ -387,7 +426,7 @@ class PublishingController extends Controller
 
         $order = PrintOrder::create($data);
 
-        return $this->success($order->load('book:id,title'), 'Order cetak berhasil dibuat', 201);
+        return $this->success($order->load('book:id,title'), 201, ['message' => 'Order cetak berhasil dibuat']);
     }
 
     public function updatePrintOrder(Request $request, int $id): JsonResponse
@@ -405,13 +444,13 @@ class PublishingController extends Controller
         ]);
 
         // Auto-set delivered_at when status changes to delivered
-        if (isset($data['status']) && $data['status'] === 'delivered' && !$order->delivered_at) {
+        if (isset($data['status']) && $data['status'] === 'delivered' && ! $order->delivered_at) {
             $data['delivered_at'] = now()->toDateString();
         }
 
         $order->update($data);
 
-        return $this->success($order->fresh()->load('book:id,title'), 'Order cetak berhasil diperbarui');
+        return $this->success($order->fresh()->load('book:id,title'), 200, ['message' => 'Order cetak berhasil diperbarui']);
     }
 
     // ── Authors ──
@@ -424,7 +463,7 @@ class PublishingController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $authors = $query->orderBy('name')->get()->map(fn(Author $author) => [
+        $authors = $query->orderBy('name')->get()->map(fn (Author $author) => [
             'id' => $author->id,
             'name' => $author->name,
             'email' => $author->email,
@@ -447,7 +486,7 @@ class PublishingController extends Controller
 
         $author = Author::create($data);
 
-        return $this->success($author, 'Penulis berhasil ditambahkan', 201);
+        return $this->success($author, 201, ['message' => 'Penulis berhasil ditambahkan']);
     }
 
     // ── Contracts ──
@@ -457,10 +496,10 @@ class PublishingController extends Controller
         $query = Contract::with(['book:id,title,author_id', 'book.author:id,name']);
 
         if ($status = $request->query('status')) {
-            $query->where('status', $status);
+            $query->where('status', '=', $status);
         }
 
-        $contracts = $query->orderByDesc('created_at')->get()->map(fn(Contract $c) => [
+        $contracts = $query->orderByDesc('created_at')->get()->map(fn (Contract $c) => [
             'id' => $c->id,
             'contract_number' => $c->contract_file_path ?? null,
             'book' => $c->book ? ['id' => $c->book->id, 'title' => $c->book->title] : null,
@@ -518,7 +557,7 @@ class PublishingController extends Controller
 
         $contract->update($data);
 
-        return $this->success($contract->fresh()->load(['book:id,title', 'book.author:id,name']), 'Kontrak berhasil diperbarui');
+        return $this->success($contract->fresh()->load(['book:id,title', 'book.author:id,name']), 200, ['message' => 'Kontrak berhasil diperbarui']);
     }
 
     public function approveContract(Request $request, int $id): JsonResponse
@@ -529,13 +568,25 @@ class PublishingController extends Controller
             return $this->error('Hanya kontrak berstatus pending yang bisa di-approve', 409);
         }
 
+        // Check for overlapping approved contracts on the same book
+        $overlap = Contract::where('book_id', $contract->book_id)
+            ->where('id', '!=', $contract->id)
+            ->where('status', 'approved')
+            ->where('start_date', '<=', $contract->end_date)
+            ->where('end_date', '>=', $contract->start_date)
+            ->exists();
+
+        if ($overlap) {
+            return $this->error('Sudah ada kontrak approved yang tumpang tindih untuk buku ini', 409);
+        }
+
         $contract->update([
             'status' => 'approved',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
 
-        return $this->success($contract->fresh()->load(['book:id,title', 'approver:id,name']), 'Kontrak berhasil disetujui');
+        return $this->success($contract->fresh()->load(['book:id,title', 'approver:id,name']), 200, ['message' => 'Kontrak berhasil disetujui']);
     }
 
     public function rejectContract(Request $request, int $id): JsonResponse
@@ -557,7 +608,7 @@ class PublishingController extends Controller
             'rejected_reason' => $data['rejected_reason'],
         ]);
 
-        return $this->success($contract->fresh(), 'Kontrak berhasil ditolak');
+        return $this->success($contract->fresh(), 200, ['message' => 'Kontrak berhasil ditolak']);
     }
 
     // ── Status Reference ──
@@ -567,14 +618,14 @@ class PublishingController extends Controller
         $type = $request->query('type', 'publishing');
 
         if ($type === 'printing') {
-            $statuses = collect(\App\Enums\PrintingBookStatus::cases())->map(fn($s) => [
+            $statuses = collect(\App\Enums\PrintingBookStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => $s->getLabel(),
                 'color' => $s->getColor(),
                 'icon' => $s->getIcon(),
             ]);
         } else {
-            $statuses = collect(\App\Enums\BookStatus::cases())->map(fn($s) => [
+            $statuses = collect(\App\Enums\BookStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => $s->getLabel(),
                 'color' => $s->getColor(),
@@ -583,5 +634,32 @@ class PublishingController extends Controller
         }
 
         return $this->success($statuses);
+    }
+
+    // ── Legal Deposit ──
+
+    public function legalDeposits(Request $request): JsonResponse
+    {
+        $query = \App\Models\LegalDeposit::with(['book:id,title,tracking_code', 'submitter:id,name']);
+
+        if ($status = $request->query('status')) {
+            $query->where('status', '=', $status);
+        }
+
+        $deposits = $query->orderByDesc('created_at')->get()->map(fn ($ld) => [
+            'id' => $ld->id,
+            'book' => $ld->book ? ['id' => $ld->book->id, 'title' => $ld->book->title, 'tracking_code' => $ld->book->tracking_code] : null,
+            'tracking_number' => $ld->tracking_number,
+            'status' => $ld->status,
+            'status_label' => $ld->status_label,
+            'submission_date' => $ld->submission_date,
+            'received_at' => $ld->received_at,
+            'institution' => $ld->institution,
+            'copies_submitted' => $ld->copies_submitted,
+            'submitter_name' => $ld->submitter?->name,
+            'created_at' => $ld->created_at,
+        ]);
+
+        return $this->success($deposits);
     }
 }

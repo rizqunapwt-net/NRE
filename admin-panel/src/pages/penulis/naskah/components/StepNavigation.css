@@ -1,0 +1,29 @@
+/* Step Navigation Styles */
+
+.step-navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.spacer {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .step-navigation {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+
+  .spacer {
+    display: none;
+  }
+
+  .step-navigation button {
+    width: 100%;
+  }
+}

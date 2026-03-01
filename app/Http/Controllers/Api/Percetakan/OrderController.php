@@ -8,29 +8,26 @@ use App\Http\Requests\Percetakan\UpdateOrderRequest;
 use App\Http\Resources\Percetakan\OrderResource;
 use App\Models\Percetakan\Order;
 use App\Models\Percetakan\OrderSpecification;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of orders.
-     */
+    use ApiResponse;
+
     public function index(Request $request)
     {
         $query = Order::with(['customer', 'product', 'specification', 'sales']);
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($status = $request->query('status')) {
+            $query->where('status', '=', $status);
         }
 
-        // Filter by customer
-        if ($request->filled('customer_id')) {
-            $query->where('customer_id', $request->customer_id);
+        if ($customerId = $request->query('customer_id')) {
+            $query->where('customer_id', '=', $customerId);
         }
 
-        // Filter by date range
         if ($request->filled('from_date')) {
             $query->whereDate('order_date', '>=', $request->from_date);
         }
@@ -38,43 +35,39 @@ class OrderController extends Controller
             $query->whereDate('order_date', '<=', $request->to_date);
         }
 
-        // Search by order number
         if ($request->filled('search')) {
-            $query->where('order_number', 'like', '%' . $request->search . '%');
+            $query->where('order_number', 'like', '%'.$request->search.'%');
         }
 
-        // Sort
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $allowedSorts = ['created_at', 'updated_at', 'order_date', 'total_amount', 'status', 'order_number', 'deadline'];
+        $sortBy = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'created_at';
+        $sortOrder = in_array($request->get('sort_order'), ['asc', 'desc']) ? $request->get('sort_order') : 'asc';
         $query->orderBy($sortBy, $sortOrder);
 
         $perPage = $request->get('per_page', 15);
         $orders = $query->paginate($perPage);
 
-        return OrderResource::collection($orders);
+        return $this->success(OrderResource::collection($orders), 200, [
+            'current_page' => $orders->currentPage(),
+            'total' => $orders->total(),
+            'per_page' => $orders->perPage(),
+            'last_page' => $orders->lastPage(),
+        ]);
     }
 
-    /**
-     * Store a newly created order.
-     */
     public function store(StoreOrderRequest $request): JsonResponse
     {
-        // Generate order number
-        $orderNumber = 'ORD-' . date('Ymd') . '-' . str_pad(Order::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        $orderNumber = 'ORD-'.date('Ymd').'-'.str_pad(Order::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
 
-        // Calculate pricing
         $quantity = $request->quantity;
         $unitPrice = $request->unit_price;
         $subtotal = $quantity * $unitPrice;
         $discountAmount = $request->discount_amount ?? 0;
-        $taxAmount = ($subtotal - $discountAmount) * 0.11; // PPN 11%
+        $taxAmount = ($subtotal - $discountAmount) * 0.11;
         $totalAmount = $subtotal - $discountAmount + $taxAmount;
-        
-        // Calculate deposit
-        $depositPercentage = $request->deposit_percentage ?? 50;
-        $depositAmount = $totalAmount * ($depositPercentage / 100);
+        $depositPct = $request->deposit_percentage ?? 50;
+        $depositAmount = $totalAmount * ($depositPct / 100);
 
-        // Create order
         $order = Order::create([
             'order_number' => $orderNumber,
             'customer_id' => $request->customer_id,
@@ -88,7 +81,7 @@ class OrderController extends Controller
             'discount_amount' => $discountAmount,
             'tax_amount' => $taxAmount,
             'total_amount' => $totalAmount,
-            'deposit_percentage' => $depositPercentage,
+            'deposit_percentage' => $depositPct,
             'deposit_amount' => $depositAmount,
             'deposit_paid' => 0,
             'balance_due' => $totalAmount,
@@ -100,7 +93,6 @@ class OrderController extends Controller
             'customer_notes' => $request->customer_notes,
         ]);
 
-        // Create order specifications
         OrderSpecification::create([
             'order_id' => $order->id,
             'size' => $request->specifications['size'],
@@ -116,34 +108,20 @@ class OrderController extends Controller
             'custom_fields' => $request->specifications['custom_fields'] ?? null,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order berhasil dibuat',
-            'data' => new OrderResource($order->load(['customer', 'product', 'specification'])),
-        ], 201);
+        return $this->success(new OrderResource($order->load(['customer', 'product', 'specification'])), 201, ['message' => 'Order berhasil dibuat']);
     }
 
-    /**
-     * Display the specified order.
-     */
     public function show(Order $order): JsonResponse
     {
         $order->load(['customer', 'product', 'specification', 'productionJobs', 'invoices']);
 
-        return response()->json([
-            'success' => true,
-            'data' => new OrderResource($order),
-        ]);
+        return $this->success(new OrderResource($order));
     }
 
-    /**
-     * Update the specified order.
-     */
     public function update(UpdateOrderRequest $request, Order $order): JsonResponse
     {
         $updateData = $request->validated();
 
-        // Recalculate pricing if unit_price or quantity changed
         if (isset($updateData['unit_price']) || isset($updateData['quantity'])) {
             $quantity = $updateData['quantity'] ?? $order->quantity;
             $unitPrice = $updateData['unit_price'] ?? $order->unit_price;
@@ -151,14 +129,13 @@ class OrderController extends Controller
             $discountAmount = $updateData['discount_amount'] ?? $order->discount_amount;
             $taxAmount = ($subtotal - $discountAmount) * 0.11;
             $totalAmount = $subtotal - $discountAmount + $taxAmount;
-            
+
             $updateData['subtotal'] = $subtotal;
             $updateData['tax_amount'] = $taxAmount;
             $updateData['total_amount'] = $totalAmount;
             $updateData['balance_due'] = $totalAmount - ($order->deposit_paid ?? 0);
         }
 
-        // Update specifications if provided
         if (isset($updateData['specifications'])) {
             $order->specification?->update([
                 'size' => $updateData['specifications']['size'] ?? $order->specification->size,
@@ -177,37 +154,20 @@ class OrderController extends Controller
 
         $order->update($updateData);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order berhasil diupdate',
-            'data' => new OrderResource($order->fresh(['customer', 'product', 'specification'])),
-        ]);
+        return $this->success(new OrderResource($order->fresh(['customer', 'product', 'specification'])), 200, ['message' => 'Order berhasil diupdate']);
     }
 
-    /**
-     * Remove the specified order.
-     */
     public function destroy(Order $order): JsonResponse
     {
-        // Only cancel if not yet in production
         if (in_array($order->status, ['in_production', 'completed', 'delivered'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order tidak dapat dibatalkan karena sudah dalam produksi',
-            ], 422);
+            return $this->error('Order tidak dapat dibatalkan karena sudah dalam produksi', 422);
         }
 
         $order->update(['status' => 'cancelled']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order berhasil dibatalkan',
-        ]);
+        return $this->success(null, 200, ['message' => 'Order berhasil dibatalkan']);
     }
 
-    /**
-     * Get order statistics.
-     */
     public function statistics(): JsonResponse
     {
         $stats = [
@@ -228,9 +188,6 @@ class OrderController extends Controller
             'urgent_orders' => Order::where('is_rush_order', true)->orWhere('priority', 'urgent')->count(),
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $stats,
-        ]);
+        return $this->success($stats);
     }
 }

@@ -13,49 +13,68 @@ class AuthenticationTest extends TestCase
 
     public function test_login_screen_can_be_rendered(): void
     {
-        // GET /login now redirects to React SPA login
+        // GET /login now serves React SPA (returns 200 in testing)
         $response = $this->get('/login');
 
-        $response->assertRedirect('/admin/login');
+        $response->assertOk();
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
+    public function test_users_can_authenticate_via_api(): void
     {
         $this->seed(RolePermissionSeeder::class);
 
-        // Create an Admin user — Karyawan users redirect to frontend URL, not dashboard
-        $user = User::factory()->create(['is_active' => true, 'role' => 'ADMIN']);
+        $user = User::factory()->create([
+            'is_active' => true,
+            'username' => 'testadmin',
+        ]);
         $user->assignRole('Admin');
 
-        $response = $this->post('/login', [
-            'login' => $user->email,
+        $response = $this->postJson('/api/v1/auth/login', [
+            'username' => $user->username,
             'password' => 'password',
         ]);
 
-        $this->assertAuthenticated();
-        // After session login, admin users redirect to React SPA dashboard
-        $response->assertRedirect('/admin/dashboard');
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['data' => ['access_token', 'user']]);
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'username' => 'testuser',
+        ]);
 
+        // Use correct field name (username) for UnifiedLoginController
         $this->post('/login', [
-            'login' => $user->email,
+            'username' => $user->username,
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
     }
 
-    public function test_users_can_logout(): void
+    public function test_users_can_logout_via_api(): void
     {
-        $user = User::factory()->create();
+        $this->seed(RolePermissionSeeder::class);
 
-        $response = $this->actingAs($user)->post('/logout');
+        $user = User::factory()->create([
+            'username' => 'logoutuser',
+            'is_active' => true,
+        ]);
+        $user->assignRole('Admin');
 
-        $this->assertGuest();
-        $response->assertRedirect('/admin/login');
+        // Login via API to get token
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'username' => $user->username,
+            'password' => 'password',
+        ]);
+        $token = $loginResponse->json('data.access_token');
+
+        // Logout via API
+        $response = $this->withToken($token)->postJson('/api/v1/auth/logout');
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
     }
 }

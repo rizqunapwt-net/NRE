@@ -2,9 +2,6 @@
 
 namespace Tests\Feature;
 
-// https://laravel.com/docs/11.x/starter-kits
-// This is a default Breeze test. Since our app has Filament as admin panel
-// the root URL (/) redirects to /admin or /login, not 200 OK.
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,9 +11,10 @@ class ExampleTest extends TestCase
 
     public function test_the_application_returns_a_successful_response(): void
     {
-        // Root URL redirects to login or admin panel
+        // Root URL serves the React SPA or returns SPA fallback message
         $response = $this->get('/');
 
-        $response->assertRedirect();
+        // Either successful SPA response (200) or build required message (500)
+        $response->assertStatus(200);
     }
 }

@@ -88,10 +88,11 @@ class BookOrderController extends Controller
             'status' => 'required|in:pending,approved,in_production,qc,delivered,cancelled',
         ]);
 
+        $previousStatus = $order->status;
         $order->update(['status' => $request->status]);
 
-        // Auto update delivered_at when status is delivered
-        if ($request->status === 'delivered') {
+        // Auto update delivered_at when status changes to delivered
+        if ($request->status === 'delivered' && $previousStatus !== 'delivered') {
             $order->delivered_at = now();
             $order->book->increment('stock', $order->quantity);
             $order->save();

@@ -14,6 +14,7 @@ class SalesImport extends Model
 {
     /** @use HasFactory<\Database\Factories\SalesImportFactory> */
     use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

@@ -2,11 +2,7 @@
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasColor;
-use Filament\Support\Contracts\HasIcon;
-use Filament\Support\Contracts\HasLabel;
-
-enum PrintingBookStatus: string implements HasLabel, HasColor, HasIcon
+enum PrintingBookStatus: string
 {
     case DRAFT = 'draft';
     case INCOMING = 'incoming';

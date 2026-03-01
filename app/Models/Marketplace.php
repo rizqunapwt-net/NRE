@@ -12,6 +12,7 @@ class Marketplace extends Model
 {
     /** @use HasFactory<\Database\Factories\MarketplaceFactory> */
     use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

@@ -1,0 +1,350 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   EBOOK CATALOG PAGE V2 - MODERN DESIGN
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.catalog-page {
+  padding: 2rem 0;
+  animation: slideIn 0.4s ease-out;
+}
+
+/* Header */
+.catalog-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.catalog-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.catalog-icon {
+  font-size: 3rem;
+  color: #008B94;
+}
+
+.catalog-title {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  color: #111827 !important;
+  margin: 0 !important;
+}
+
+.catalog-subtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Filters */
+.catalog-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.catalog-search {
+  flex: 1;
+}
+
+.catalog-search .ant-input {
+  height: 48px;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  font-size: 1rem;
+}
+
+.catalog-search .ant-input:hover {
+  border-color: #008B94;
+}
+
+.catalog-search .ant-input:focus {
+  border-color: #008B94;
+  box-shadow: 0 0 0 3px rgba(0, 139, 148, 0.1);
+}
+
+.catalog-filter-select {
+  min-width: 200px;
+}
+
+.catalog-filter-select .ant-select-selector {
+  height: 48px !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #e5e7eb !important;
+  font-size: 1rem;
+}
+
+.catalog-filter-select .ant-select-selector:hover {
+  border-color: #008B94 !important;
+}
+
+/* Grid */
+.catalog-grid {
+  margin-bottom: 3rem;
+}
+
+/* Book Card */
+.book-card {
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.book-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.book-cover-wrapper {
+  position: relative;
+  height: 320px;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.book-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.book-card:hover .book-cover {
+  transform: scale(1.05);
+}
+
+.book-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #9ca3af;
+  font-size: 4rem;
+}
+
+.bestseller-tag {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.book-info {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.book-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.book-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.book-author {
+  font-size: 0.875rem;
+  color: #008B94;
+  font-weight: 600;
+  margin: 0;
+}
+
+.author-label {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.book-meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.book-year {
+  font-weight: 500;
+}
+
+.book-divider {
+  margin: 0 0.5rem;
+}
+
+.book-isbn {
+  font-weight: 500;
+}
+
+.book-category {
+  margin-top: auto;
+  align-self: flex-start;
+  font-weight: 600;
+}
+
+/* Loading */
+.catalog-loading {
+  display: flex;
+  justify-content: center;
+  padding: 5rem 0;
+}
+
+/* Empty */
+.catalog-empty {
+  text-align: center;
+  padding: 5rem 0;
+}
+
+/* Pagination */
+.catalog-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.catalog-pagination .ant-pagination .ant-pagination-item {
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.catalog-pagination .ant-pagination .ant-pagination-item:hover {
+  border-color: #008B94;
+  transform: scale(1.05);
+}
+
+.catalog-pagination .ant-pagination .ant-pagination-item-active {
+  background: #008B94;
+  border-color: #008B94;
+}
+
+.catalog-pagination .ant-pagination .ant-pagination-item-active a {
+  color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .catalog-title {
+    font-size: 2rem !important;
+  }
+
+  .catalog-icon {
+    font-size: 2rem;
+  }
+
+  .catalog-filters {
+    flex-direction: column;
+  }
+
+  .catalog-filter-select {
+    width: 100%;
+  }
+
+  .book-cover-wrapper {
+    height: 240px;
+  }
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.catalog-page {
+  animation: slideIn 0.4s ease-out;
+}
+
+.book-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.book-card:nth-child(1) { animation-delay: 0.1s; }
+.book-card:nth-child(2) { animation-delay: 0.2s; }
+.book-card:nth-child(3) { animation-delay: 0.3s; }
+.book-card:nth-child(4) { animation-delay: 0.4s; }
+.book-card:nth-child(5) { animation-delay: 0.5s; }
+.book-card:nth-child(6) { animation-delay: 0.6s; }
+.book-card:nth-child(7) { animation-delay: 0.7s; }
+.book-card:nth-child(8) { animation-delay: 0.8s; }
+.book-card:nth-child(9) { animation-delay: 0.9s; }
+.book-card:nth-child(10) { animation-delay: 1s; }
+.book-card:nth-child(11) { animation-delay: 1.1s; }
+.book-card:nth-child(12) { animation-delay: 1.2s; }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .catalog-title {
+    color: #f9fafb !important;
+  }
+
+  .catalog-subtitle {
+    color: #9ca3af;
+  }
+
+  .book-card {
+    background: #1f2937;
+  }
+
+  .book-title {
+    color: #f9fafb;
+  }
+
+  .book-subtitle,
+  .author-label,
+  .book-meta {
+    color: #9ca3af;
+  }
+
+  .book-cover-wrapper {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  }
+}

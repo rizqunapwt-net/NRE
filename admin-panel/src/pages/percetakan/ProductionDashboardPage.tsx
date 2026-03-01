@@ -139,7 +139,7 @@ const ProductionDashboardPage: React.FC = () => {
     return (
         <div className="p-6">
             <div className="mb-6">
-                <Title level={3}>🏭 Production Dashboard</Title>
+                <Title level={3}>Production Dashboard</Title>
                 <Text type="secondary">
                     Real-time monitoring produksi percetakan
                 </Text>
@@ -162,7 +162,7 @@ const ProductionDashboardPage: React.FC = () => {
                             title="In Progress"
                             value={stats.by_status?.in_progress || 0}
                             prefix={<ClockCircleOutlined />}
-                            valueStyle={{ color: '#1890ff' }}
+                            valueStyle={{ color: '#008B94' }}
                         />
                     </Card>
                 </Col>
@@ -192,7 +192,7 @@ const ProductionDashboardPage: React.FC = () => {
                 {/* Active Jobs */}
                 <Col xs={24} lg={16}>
                     <Card
-                        title="🔄 Active Production Jobs"
+                        title="Active Production Jobs"
                         className="mb-4"
                         extra={
                             <Badge count={stats.by_status?.in_progress || 0} showZero />
@@ -209,7 +209,7 @@ const ProductionDashboardPage: React.FC = () => {
                     </Card>
 
                     {/* Production by Stage */}
-                    <Card title="📊 Production by Stage" className="mb-4">
+                    <Card title="Production by Stage" className="mb-4">
                         <Row gutter={[16, 16]}>
                             {Object.entries(stats.by_stage || {}).map(([stage, count]: any) => (
                                 <Col xs={24} sm={12} lg={8} key={stage}>
@@ -219,9 +219,9 @@ const ProductionDashboardPage: React.FC = () => {
                                             value={count}
                                             valueStyle={{
                                                 color: stage === 'printing' ? '#722ed1' :
-                                                       stage === 'qc' ? '#13c2c2' :
-                                                       stage === 'packaging' ? '#52c41a' :
-                                                       stage === 'finishing' ? '#fa8c16' : '#1890ff',
+                                                    stage === 'qc' ? '#13c2c2' :
+                                                        stage === 'packaging' ? '#52c41a' :
+                                                            stage === 'finishing' ? '#fa8c16' : '#008B94',
                                             }}
                                         />
                                         <Progress
@@ -240,7 +240,7 @@ const ProductionDashboardPage: React.FC = () => {
                 {/* Urgent Orders & Alerts */}
                 <Col xs={24} lg={8}>
                     <Card
-                        title="🔥 Urgent Orders"
+                        title="Urgent Orders"
                         className="mb-4"
                         extra={
                             <Badge count={urgentOrders.length} showZero color="red" />
@@ -272,7 +272,7 @@ const ProductionDashboardPage: React.FC = () => {
                         )}
                     </Card>
 
-                    <Card title="⚠️ Alerts" className="mb-4">
+                    <Card title="Alerts" className="mb-4">
                         <Timeline
                             items={[
                                 {
@@ -294,7 +294,7 @@ const ProductionDashboardPage: React.FC = () => {
                     </Card>
 
                     {/* Stage Distribution */}
-                    <Card title="📈 Stage Distribution">
+                    <Card title="Stage Distribution">
                         {Object.entries(stats.by_stage || {}).map(([stage, count]: any) => (
                             <div key={stage} className="mb-4">
                                 <div className="flex justify-between mb-1">

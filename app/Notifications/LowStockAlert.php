@@ -16,7 +16,7 @@ class LowStockAlert extends Notification
      */
     public function __construct(public Book $book)
     {
-    //
+        //
     }
 
     /**
@@ -39,7 +39,7 @@ class LowStockAlert extends Notification
             ->subject("🚨 Low Stock Alert: {$this->book->title}")
             ->line("The stock for '{$this->book->title}' has reached a critical level.")
             ->line("Current Stock: {$this->book->stock}")
-            ->action('Update Stock', url('/admin/books/' . $this->book->id . '/edit'))
+            ->action('Update Stock', url('/admin/books/'.$this->book->id.'/edit'))
             ->line('Please restock as soon as possible to avoid losing sales.');
     }
 

@@ -16,9 +16,12 @@ class MarketplaceFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->company();
+
         return [
             'code' => fake()->unique()->lexify('mkp_????'),
-            'name' => fake()->company(),
+            'name' => $name,
+            'slug' => fake()->unique()->slug(),
             'is_active' => true,
         ];
     }

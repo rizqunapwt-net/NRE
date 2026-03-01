@@ -1,0 +1,366 @@
+/* Header Styles */
+
+.author-header {
+  height: 64px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.author-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.author-header__menu-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6B7280;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #F3F4F6;
+    color: #008B95;
+  }
+}
+
+.author-header__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+.author-header__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Search */
+.author-header__search {
+  position: relative;
+  width: 300px;
+}
+
+.author-header__search-input {
+  width: 100%;
+  padding: 10px 40px 10px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #008B95;
+    box-shadow: 0 0 0 3px rgba(0, 139, 149, 0.1);
+  }
+}
+
+.author-header__search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #9CA3AF;
+}
+
+/* Notifications */
+.author-header__notifications {
+  position: relative;
+}
+
+.author-header__notif-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #6B7280;
+  padding: 8px;
+  border-radius: 6px;
+  position: relative;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #F3F4F6;
+    color: #008B95;
+  }
+}
+
+.author-header__notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #EF4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.author-header__notif-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E7EB;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.author-header__notif-header {
+  padding: 16px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1F2937;
+  }
+  
+  button {
+    background: none;
+    border: none;
+    color: #008B95;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.author-header__notif-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.author-header__notif-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid #F3F4F6;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #F9FAFB;
+  }
+  
+  &.unread {
+    background: #EFF6FF;
+    border-left: 3px solid #008B95;
+  }
+}
+
+.author-header__notif-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.author-header__notif-content {
+  flex: 1;
+  
+  strong {
+    display: block;
+    font-size: 14px;
+    color: #1F2937;
+    margin-bottom: 4px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #6B7280;
+    line-height: 1.4;
+  }
+  
+  .author-header__notif-time {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #9CA3AF;
+  }
+}
+
+.author-header__notif-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 14px;
+}
+
+.author-header__notif-footer {
+  width: 100%;
+  padding: 12px;
+  background: #F9FAFB;
+  border: none;
+  color: #008B95;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #EFF6FF;
+  }
+}
+
+/* User Dropdown */
+.author-header__user {
+  position: relative;
+}
+
+.author-header__user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #F3F4F6;
+  }
+}
+
+.author-header__user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-header__user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.author-header__user-arrow {
+  font-size: 18px;
+  color: #9CA3AF;
+  transition: transform 0.2s ease;
+}
+
+.author-header__user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E7EB;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.author-header__user-info {
+  padding: 16px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  
+  strong {
+    font-size: 14px;
+    color: #1F2937;
+  }
+  
+  span {
+    font-size: 12px;
+    color: #6B7280;
+  }
+}
+
+.author-header__user-menu {
+  padding: 8px;
+  
+  button {
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    color: #6B7280;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #F3F4F6;
+      color: #008B95;
+    }
+  }
+}
+
+.author-header__user-divider {
+  height: 1px;
+  background: #E5E7EB;
+  margin: 8px 0;
+}
+
+.author-header__user-logout {
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: #DC2626;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #FEF2F2;
+  }
+}
+
+@media (max-width: 768px) {
+  .author-header {
+    padding: 0 16px;
+  }
+  
+  .author-header__search {
+    width: 200px;
+  }
+  
+  .author-header__notif-dropdown {
+    width: 320px;
+    right: -80px;
+  }
+  
+  .author-header__user-dropdown {
+    width: 220px;
+  }
+}

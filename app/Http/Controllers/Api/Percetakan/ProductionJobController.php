@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api\Percetakan;
 
 use App\Http\Controllers\Controller;
-use App\Models\Percetakan\ProductionJob;
-use App\Models\Percetakan\Order;
 use App\Http\Resources\Percetakan\ProductionJobResource;
-use Illuminate\Http\Request;
+use App\Models\Percetakan\Order;
+use App\Models\Percetakan\ProductionJob;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class ProductionJobController extends Controller
 {
@@ -46,12 +45,13 @@ class ProductionJobController extends Controller
 
         // Search by job number
         if ($request->filled('search')) {
-            $query->where('job_number', 'like', '%' . $request->search . '%');
+            $query->where('job_number', 'like', '%'.$request->search.'%');
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $allowedSorts = ['created_at', 'updated_at', 'job_number', 'status', 'started_at', 'completed_at'];
+        $sortBy = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'created_at';
+        $sortOrder = in_array($request->get('sort_order'), ['asc', 'desc']) ? $request->get('sort_order') : 'asc';
         $query->orderBy($sortBy, $sortOrder);
 
         $perPage = $request->get('per_page', 15);
@@ -75,7 +75,7 @@ class ProductionJobController extends Controller
         ]);
 
         // Generate job number
-        $jobNumber = 'JOB-' . date('Ymd') . '-' . str_pad(ProductionJob::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        $jobNumber = 'JOB-'.date('Ymd').'-'.str_pad(ProductionJob::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
 
         $job = ProductionJob::create([
             'job_number' => $jobNumber,

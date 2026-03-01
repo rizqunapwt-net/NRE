@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════════════════
+   PORTAL PENULIS — Settings Page
+   ───────────────────────────────────────────────
+   Teal: #008B95 | Glass Design
+   ════════════════════════════════════════────────────────────── */
+
+.settings-header {
+    margin-bottom: 32px;
+}
+
+.settings-page {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+/* ── Sidebar Navigation ── */
+.settings-sidebar {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    position: sticky;
+    top: 100px;
+}
+
+.settings-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: none;
+    background: transparent;
+    color: #4B5563;
+    font-size: 0.94rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+    width: 100%;
+}
+
+.settings-menu-item:hover {
+    background: rgba(0, 139, 149, 0.05);
+    color: #008B95;
+    transform: translateX(4px);
+}
+
+.settings-menu-item--active {
+    background: #008B95 !important;
+    color: #fff !important;
+    box-shadow: 0 8px 20px rgba(0, 139, 149, 0.2);
+}
+
+.settings-menu-item__icon {
+    font-size: 1.2rem;
+}
+
+.settings-menu-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+    margin: 12px 8px;
+}
+
+.settings-menu-item--logout {
+    color: #EF4444;
+}
+
+.settings-menu-item--logout:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #DC2626;
+}
+
+/* ── Content Card ── */
+.settings-content {
+    min-width: 0;
+}
+
+.settings-tab-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 24px;
+    padding: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .settings-page {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-sidebar {
+        position: static;
+        margin-bottom: 24px;
+    }
+
+    .settings-menu {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .settings-menu-item {
+        flex-shrink: 0;
+        width: auto;
+    }
+
+    .settings-menu-divider {
+        display: none;
+    }
+}

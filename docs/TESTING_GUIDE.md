@@ -1,365 +1,441 @@
-# 🧪 TESTING GUIDE - SISTEM PERCETAKAN NEW RIZQUNA ELFATH
+# 🧪 TESTING GUIDE - RIZQUNA ERP 2.0
 
-**Tanggal:** 20 Februari 2026  
-**Status:** Ready for Testing
+## 🚀 QUICK START
 
----
-
-## 📋 **PRE-REQUISITES**
-
-### **1. Start Laravel Server**
+### **1. Start Development Server**
 ```bash
-php artisan serve --port=8000
+cd admin-panel
+npm install
+npm run dev
 ```
 
-### **2. Generate Test Token**
-```bash
-php artisan tinker
+**Expected Output:**
 ```
+VITE v7.x.x ready in xxx ms
 
-```php
-// Create test user
-$user = App\Models\User::firstOrCreate(
-    ['email' => 'test@newrizqunaelfath.com'],
-    ['name' => 'Test User', 'password' => bcrypt('password'), 'username' => 'testuser']
-);
-
-// Assign role (optional)
-$user->assignRole('Admin');
-
-// Create token
-$token = $user->createToken('test-token')->plainTextToken;
-echo 'Token: ' . $token . PHP_EOL;
-```
-
-**Save token untuk testing!**
-
----
-
-## 🧪 **TEST SCENARIOS**
-
-### **Scenario 1: Customer Management** ✅
-
-#### **1.1 Create Customer**
-```bash
-curl -X POST http://localhost:8000/api/v1/percetakan/customers \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "name": "PT New Rizquna Elfath",
-    "type": "corporate",
-    "email": "info@newrizqunaelfath.com",
-    "phone": "021-12345678",
-    "company_name": "PT New Rizquna Elfath",
-    "npwp": "01.234.567.8-901.000",
-    "address": "Jl. Percetakan Negara No. 1",
-    "city": "Jakarta",
-    "province": "DKI Jakarta",
-    "postal_code": "10110",
-    "credit_limit": 50000000,
-    "payment_terms_days": 30,
-    "discount_percentage": 5
-  }'
-```
-
-**Expected Response:**
-```json
-{
-  "success": true,
-  "message": "Customer berhasil dibuat",
-  "data": {
-    "id": 1,
-    "code": "CUST-20260220-0001",
-    "name": "PT New Rizquna Elfath",
-    "type": "corporate",
-    ...
-  }
-}
-```
-
-#### **1.2 List Customers**
-```bash
-curl -X GET "http://localhost:8000/api/v1/percetakan/customers" \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-#### **1.3 Get Customer Statistics**
-```bash
-curl -X GET "http://localhost:8000/api/v1/percetakan/customers/statistics" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+➜  Local:   http://localhost:3000/
+➜  Network: use --host to expose
 ```
 
 ---
 
-### **Scenario 2: Order Management** ✅
+## 📝 TESTING CHECKLIST
 
-#### **2.1 Create Order**
-```bash
-curl -X POST http://localhost:8000/api/v1/percetakan/orders \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "customer_id": 1,
-    "product_id": 1,
-    "quantity": 1000,
-    "unit_price": 5000,
-    "deadline": "2026-03-01",
-    "priority": "normal",
-    "specifications": {
-      "size": "A4",
-      "paper_type": "Art Paper",
-      "paper_weight": "120gsm",
-      "colors_inside": "0/0",
-      "colors_outside": "4/0",
-      "binding_type": "perfect_binding",
-      "finishing": ["laminate_glossy"],
-      "pages_count": 100,
-      "print_run": 1,
-      "waste_allowance": 5
-    }
-  }'
+### **AUTH PAGES (3 pages)**
+
+#### **1. Login Page** ✅
+```
+URL: http://localhost:3000/login
+
+Test:
+[ ] Page loads correctly
+[ ] Gradient background displays
+[ ] Form inputs work
+[ ] Email validation works
+[ ] Password validation works
+[ ] "Login" button works
+[ ] "Google Login" button visible
+[ ] "Register" link works
+[ ] Responsive on mobile
+[ ] Animations smooth
+
+Visual Check:
+[ ] Split screen layout
+[ ] Logo displays
+[ ] Brand colors correct
+[ ] Features section visible
+[ ] No layout issues
 ```
 
-**Expected:**
-- Order number auto-generated (ORD-20260220-0001)
-- Pricing calculated (subtotal, PPN 11%, deposit, balance)
+#### **2. Register Page** ✅
+```
+URL: http://localhost:3000/register
 
-#### **2.2 Get Order Statistics**
-```bash
-curl -X GET "http://localhost:8000/api/v1/percetakan/orders/statistics" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+Test:
+[ ] Page loads correctly
+[ ] Form inputs work
+[ ] Name validation (min 3 chars)
+[ ] Email validation
+[ ] Phone validation
+[ ] Password validation (min 8 chars)
+[ ] Password confirmation
+[ ] Terms & conditions checkbox
+[ ] Submit button works
+[ ] Success state displays
+[ ] Redirect to login works
+[ ] Responsive on mobile
+
+Visual Check:
+[ ] Clean form design
+[ ] Success icon displays
+[ ] Features section visible
+[ ] No layout issues
 ```
 
----
-
-### **Scenario 3: Production Jobs** ✅
-
-#### **3.1 Create Production Job**
-```bash
-curl -X POST http://localhost:8000/api/v1/percetakan/production-jobs \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "order_id": 1,
-    "stage": "pre-press",
-    "instructions": "Prepare plates for 4/0 printing"
-  }'
+#### **3. Author Register Page** ✅
 ```
+URL: http://localhost:3000/author-register
 
-**Expected:**
-- Job number auto-generated (JOB-20260220-0001)
+Test:
+[ ] Page loads correctly
+[ ] Step indicator displays (4 steps)
+[ ] Progress bar works
+[ ] Step 1: Account info validation
+[ ] Step 2: Profile info validation
+[ ] Step 3: Bank info validation
+[ ] Step 4: Success state
+[ ] Back/Next buttons work
+[ ] Form submission works
+[ ] Success message displays
+[ ] Responsive on mobile
 
-#### **3.2 Start Production Job**
-```bash
-curl -X POST "http://localhost:8000/api/v1/percetakan/production-jobs/1/start" \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-#### **3.3 Complete Production Job**
-```bash
-curl -X POST "http://localhost:8000/api/v1/percetakan/production-jobs/1/complete" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "quantity_good": 1000,
-    "quantity_waste": 10
-  }'
-```
-
-**Expected:** Next stage job auto-created
-
----
-
-### **Scenario 4: Material Management** ✅
-
-#### **4.1 Create Material**
-```bash
-curl -X POST http://localhost:8000/api/v1/percetakan/materials \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "code": "PAPER-AP-120-A4",
-    "name": "Art Paper 120gsm A4",
-    "category": "paper",
-    "type": "Art Paper",
-    "specification": "120gsm A4",
-    "unit": "ream",
-    "current_stock": 100,
-    "min_stock": 20,
-    "max_stock": 500,
-    "unit_cost": 75000
-  }'
-```
-
-#### **4.2 Adjust Stock**
-```bash
-curl -X POST "http://localhost:8000/api/v1/percetakan/materials/1/adjust-stock" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "adjustment_type": "subtract",
-    "quantity": 5,
-    "reason": "Used for order ORD-20260220-0001"
-  }'
-```
-
-#### **4.3 Get Low Stock Alert**
-```bash
-curl -X GET "http://localhost:8000/api/v1/percetakan/materials/low-stock" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+Visual Check:
+[ ] Multi-step wizard design
+[ ] Progress bar animates
+[ ] Step icons display
+[ ] No layout issues
 ```
 
 ---
 
-### **Scenario 5: Machine Management** ✅
+### **MAIN PAGES (4 pages)**
 
-#### **5.1 Create Machine**
+#### **4. Dashboard** ✅
+```
+URL: http://localhost:3000/dashboard
+
+Test:
+[ ] Page loads correctly
+[ ] Sidebar collapsible
+[ ] Header displays user info
+[ ] Stats cards display (4 cards)
+[ ] Charts render correctly
+[ ] Data tables load
+[ ] Hover effects work
+[ ] Responsive on mobile
+
+Visual Check:
+[ ] Gradient stat cards
+[ ] Area chart displays
+[ ] Bar chart displays
+[ ] Tables formatted correctly
+[ ] No layout issues
+```
+
+#### **5. Book Catalog** ✅
+```
+URL: http://localhost:3000/katalog
+
+Test:
+[ ] Page loads correctly
+[ ] Search bar works
+[ ] Category filter works
+[ ] Book grid displays (12 books)
+[ ] Book cards hover effect
+[ ] Pagination works
+[ ] Book detail navigation
+[ ] Empty state (if no results)
+[ ] Loading state
+[ ] Responsive on mobile
+
+Visual Check:
+[ ] Book cover images load
+[ ] Cards have shadow
+[ ] Bestseller tags display
+[ ] Grid layout correct
+[ ] No layout issues
+```
+
+#### **6. Author Portal** ✅
+```
+URL: http://localhost:3000/penulis
+
+Test:
+[ ] Page loads correctly
+[ ] User avatar displays
+[ ] Stats cards display (4 cards)
+[ ] Quick actions buttons work
+[ ] Recent books table loads
+[ ] Progress indicators work
+[ ] "Kirim Naskah" button works
+[ ] Responsive on mobile
+
+Visual Check:
+[ ] Welcome header
+[ ] Gradient stat cards
+[ ] Progress bars animate
+[ ] Tables formatted correctly
+[ ] No layout issues
+```
+
+---
+
+### **ADMIN PAGES (3 pages)**
+
+#### **7. Finance Dashboard** ✅
+```
+URL: http://localhost:3000/finance
+
+Test:
+[ ] Page loads correctly
+[ ] Stats cards display (4 cards)
+[ ] Revenue/Expense tracking
+[ ] Invoice table loads
+[ ] Expense table loads
+[ ] Cash flow progress bars
+[ ] Quick actions work
+[ ] Responsive on mobile
+
+Visual Check:
+[ ] Gradient stat cards
+[ ] Tables formatted correctly
+[ ] Progress bars display
+[ ] No layout issues
+```
+
+#### **8. Percetakan Dashboard** ✅
+```
+URL: http://localhost:3000/percetakan
+
+Test:
+[ ] Page loads correctly
+[ ] Stats cards display (4 cards)
+[ ] Order table loads
+[ ] Production stages display (3)
+[ ] Progress indicators work
+[ ] Quick actions work
+[ ] "Order Baru" button works
+[ ] Responsive on mobile
+
+Visual Check:
+[ ] Gradient stat cards
+[ ] Stage cards display
+[ ] Progress bars animate
+[ ] Tables formatted correctly
+[ ] No layout issues
+```
+
+---
+
+## 🎨 VISUAL TESTING
+
+### **Design Consistency**
+```
+[ ] All pages use same color palette
+[ ] Typography consistent
+[ ] Spacing consistent (8px grid)
+[ ] Border radius consistent
+[ ] Shadows consistent
+[ ] Animations smooth
+[ ] Hover effects work
+```
+
+### **Responsive Design**
+```
+Test on these breakpoints:
+
+📱 Mobile (375px - 576px)
+[ ] Login page
+[ ] Register page
+[ ] Dashboard
+[ ] Catalog
+[ ] Author portal
+
+📱 Tablet (576px - 1024px)
+[ ] Login page
+[ ] Register page
+[ ] Dashboard
+[ ] Catalog
+[ ] Author portal
+
+💻 Desktop (> 1024px)
+[ ] All pages
+```
+
+---
+
+## ⚡ PERFORMANCE TESTING
+
+### **Load Time**
+```
+Test each page:
+[ ] Login: < 2s
+[ ] Register: < 2s
+[ ] Dashboard: < 3s
+[ ] Catalog: < 3s
+[ ] Author Portal: < 3s
+```
+
+### **Animations**
+```
+Check smoothness:
+[ ] Page transitions
+[ ] Card hover effects
+[ ] Button animations
+[ ] Loading spinners
+[ ] Progress bars
+```
+
+---
+
+## ♿ ACCESSIBILITY TESTING
+
+### **Keyboard Navigation**
+```
+[ ] Tab through all inputs
+[ ] Tab through all buttons
+[ ] Tab through all links
+[ ] Enter/Space activates buttons
+[ ] Escape closes modals
+[ ] Focus visible on all elements
+```
+
+### **Screen Reader**
+```
+[ ] All images have alt text
+[ ] All inputs have labels
+[ ] All buttons have accessible names
+[ ] Headings in correct order
+[ ] Links have descriptive text
+```
+
+---
+
+## 🐛 BUG CHECKLIST
+
+### **Common Issues**
+```
+[ ] Broken images
+[ ] Console errors
+[ ] Network errors
+[ ] Missing icons
+[ ] Overlapping elements
+[ ] Text overflow
+[ ] Broken links
+[ ] Form validation issues
+[ ] State management issues
+```
+
+---
+
+## 📊 TESTING RESULTS TEMPLATE
+
+### **Summary**
+```
+Total Pages Tested: ___ / 14
+Passed: ___ / 14
+Failed: ___ / 14
+Issues Found: ___
+```
+
+### **Issues Log**
+```
+Issue #1:
+- Page: _______
+- Description: _______
+- Severity: [Critical/Major/Minor]
+- Screenshot: [Yes/No]
+
+Issue #2:
+...
+```
+
+### **Browser Compatibility**
+```
+Chrome: [ ] Pass [ ] Fail
+Firefox: [ ] Pass [ ] Fail
+Safari: [ ] Pass [ ] Fail
+Edge: [ ] Pass [ ] Fail
+```
+
+---
+
+## ✅ FINAL CHECKLIST
+
+### **Before Deployment**
+```
+[ ] All pages tested
+[ ] All issues fixed
+[ ] Responsive tested
+[ ] Accessibility tested
+[ ] Performance tested
+[ ] Browser compatibility tested
+[ ] No console errors
+[ ] No network errors
+[ ] Documentation updated
+[ ] Ready for production
+```
+
+---
+
+## 🚀 DEPLOYMENT CHECKLIST
+
+### **Production Build**
 ```bash
-curl -X POST http://localhost:8000/api/v1/percetakan/machines \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "code": "OFFSET-001",
-    "name": "Heidelberg Speedmaster XL 75",
-    "type": "offset",
-    "brand": "Heidelberg",
-    "model": "Speedmaster XL 75",
-    "capacity_per_hour": 18000,
-    "purchase_date": "2024-01-01",
-    "purchase_price": 5000000000
-  }'
+cd admin-panel
+npm run build
 ```
 
-#### **5.2 Log Maintenance**
-```bash
-curl -X POST "http://localhost:8000/api/v1/percetakan/machines/1/log-maintenance" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "maintenance_type": "routine",
-    "description": "Regular maintenance - oil change and calibration",
-    "cost": 5000000,
-    "next_maintenance_date": "2026-03-20"
-  }'
+**Check:**
+```
+[ ] Build successful
+[ ] No errors
+[ ] No warnings
+[ ] Bundle size acceptable
+[ ] Assets optimized
 ```
 
-#### **5.3 Update Operating Hours**
-```bash
-curl -X POST "http://localhost:8000/api/v1/percetakan/machines/1/update-hours" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "hours": 8.5,
-    "job_reference": "JOB-20260220-0001"
-  }'
+### **Post-Deployment**
+```
+[ ] All pages load
+[ ] All links work
+[ ] All forms work
+[ ] All animations work
+[ ] Responsive works
+[ ] Performance good
+[ ] No errors in console
 ```
 
 ---
 
-## 📊 **TESTING CHECKLIST**
+## 📞 REPORTING ISSUES
 
-### **Customer Management**
-- [ ] Create customer with all fields
-- [ ] List customers with filters
-- [ ] Get customer details
-- [ ] Update customer information
-- [ ] Get customer statistics
-- [ ] Get customer orders
-- [ ] Customer autocomplete for dropdown
+### **Issue Report Template**
+```
+**Page:** _______
+**Issue:** _______
+**Steps to Reproduce:**
+1. _______
+2. _______
+3. _______
 
-### **Order Management**
-- [ ] Create order with specifications
-- [ ] Verify order number generation
-- [ ] Verify pricing calculation (subtotal, PPN, deposit)
-- [ ] List orders with filters
-- [ ] Get order details
-- [ ] Update order status
-- [ ] Cancel order
-
-### **Production Workflow**
-- [ ] Create production job
-- [ ] Start job
-- [ ] Complete job with quantity tracking
-- [ ] Verify auto-create next stage
-- [ ] Put job on hold
-- [ ] Reject job
-- [ ] Get production statistics
-
-### **Material Management**
-- [ ] Create material
-- [ ] List materials
-- [ ] Adjust stock (add/subtract/set)
-- [ ] Low stock alert
-- [ ] Material usage tracking
-- [ ] Get material statistics
-
-### **Machine Management**
-- [ ] Create machine
-- [ ] Update machine status
-- [ ] Log maintenance
-- [ ] Update operating hours
-- [ ] Get maintenance alerts
-- [ ] Get machine statistics
-
----
-
-## 🐛 **KNOWN ISSUES & TROUBLESHOOTING**
-
-### **Issue: 404 Not Found**
-**Solution:** Check route prefix - should be `/api/v1/percetakan/...`
-
-### **Issue: 401 Unauthorized**
-**Solution:** Verify token is valid and not expired
-
-### **Issue: 422 Validation Error**
-**Solution:** Check required fields and data types
-
-### **Issue: Database Error**
-**Solution:** Run migrations: `php artisan migrate`
-
----
-
-## 📝 **TEST RESULTS TEMPLATE**
-
-```markdown
-## Test Session: [DATE]
-
-### Customer Management
-- [ ] Create: PASS/FAIL - Notes: ...
-- [ ] List: PASS/FAIL - Notes: ...
-- [ ] Update: PASS/FAIL - Notes: ...
-
-### Order Management
-- [ ] Create: PASS/FAIL - Notes: ...
-- [ ] Pricing: PASS/FAIL - Notes: ...
-- [ ] Tracking: PASS/FAIL - Notes: ...
-
-### Production
-- [ ] Job Creation: PASS/FAIL - Notes: ...
-- [ ] Workflow: PASS/FAIL - Notes: ...
-- [ ] QC: PASS/FAIL - Notes: ...
-
-### Issues Found:
-1. ...
-2. ...
-
-### Recommendations:
-1. ...
-2. ...
+**Expected:** _______
+**Actual:** _______
+**Screenshot:** [Attach if available]
+**Browser:** _______
+**Device:** _______
+**Severity:** [Critical/Major/Minor]
 ```
 
 ---
 
-## 🚀 **NEXT STEPS AFTER TESTING**
+## 🎉 TESTING COMPLETE!
 
-1. ✅ Fix any bugs found
-2. ✅ Optimize slow queries
-3. ✅ Add missing validations
-4. ✅ Update documentation
-5. ✅ Deploy to staging
-6. ✅ User Acceptance Testing (UAT)
-7. ✅ Production deployment
+### **When All Tests Pass:**
+```
+✅ All pages functional
+✅ All designs correct
+✅ All responsive
+✅ All accessible
+✅ All performant
+✅ No bugs found
+✅ Ready for deployment
+```
+
+**Status:** PRODUCTION READY! 🚀
 
 ---
 
-**Happy Testing! 🎉**
+**LAST UPDATED:** {{ new Date().toLocaleDateString('id-ID') }}
+**TESTER:** _______
+**STATUS:** [ ] In Progress [ ] Complete [ ] Blocked

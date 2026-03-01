@@ -24,7 +24,7 @@ class PublicTrackingController extends Controller
 
         $book = Book::where('tracking_code', $request->input('code'))->first();
 
-        if (!$book) {
+        if (! $book) {
             return $this->error('Kode tracking tidak ditemukan.', 404);
         }
 
@@ -32,15 +32,14 @@ class PublicTrackingController extends Controller
             'tracking_code' => $book->tracking_code,
             'title' => $book->title,
             'status' => $book->status?->value ?? $book->status,
-            'status_label' => $book->status?->getLabel() ?? '-',
+            'status_label' => $book->getStatusLabel(),
             'progress' => $book->getProgressPercentage(),
             'author' => $book->author?->name,
             'updated_at' => $book->updated_at,
-            'logs' => $book->statusLogs()->orderBy('created_at')->get()->map(fn($l) => [
+            'logs' => $book->statusLogs()->orderBy('created_at')->get()->map(fn ($l) => [
                 'from' => $l->from_status,
                 'to' => $l->to_status,
                 'date' => $l->created_at->toDateTimeString(),
-                'notes' => $l->notes,
             ]),
         ]);
     }

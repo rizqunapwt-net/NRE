@@ -10,9 +10,11 @@ class BookFile extends Model
     protected $fillable = [
         'book_id',
         'file_type',
+        'storage_disk',
         'file_path',
         'original_name',
         'file_size',
+        'mime_type',
         'uploaded_by',
         'notes',
     ];
@@ -24,20 +26,22 @@ class BookFile extends Model
 
     public function uploader(): BelongsTo
     {
-        return $this->belongsTo(User::class , 'uploaded_by');
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 
     public function getFileTypeLabel(): string
     {
         return match ($this->file_type) {
-                'manuscript' => 'Naskah Asli',
-                'edited' => 'Hasil Editing',
-                'layout' => 'File Layout',
-                'proof' => 'Proof / Dummy',
-                'isbn_cert' => 'Sertifikat ISBN',
-                'cover_final' => 'Cover Final',
-                'print_ready' => 'File Siap Cetak',
-                default => $this->file_type,
-            };
+            'manuscript' => 'Naskah Asli',
+            'edited' => 'Hasil Editing',
+            'layout' => 'File Layout',
+            'proof' => 'Proof / Dummy',
+            'isbn_cert' => 'Sertifikat ISBN',
+            'cover_final' => 'Cover Final',
+            'print_ready'  => 'File Siap Cetak',
+            'pdf_full'     => 'PDF Lengkap',
+            'pdf_preview'  => 'PDF Preview',
+            default => $this->file_type,
+        };
     }
 }

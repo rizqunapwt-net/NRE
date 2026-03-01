@@ -20,8 +20,8 @@ class AssignmentContractGuardTest extends TestCase
     {
         $this->seed(RolePermissionSeeder::class);
 
-        $marketing = User::factory()->create();
-        $marketing->assignRole('Marketing');
+        $marketing = User::factory()->create(['is_verified_author' => true]);
+        $marketing->assignRole('User');
 
         $this->actingAs($marketing);
 

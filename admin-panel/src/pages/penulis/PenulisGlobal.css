@@ -1,0 +1,578 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PORTAL PENULIS — Global Design System (v3 – Bokify-Inspired)
+   ─────────────────────────────────────────────────────────────────
+   Teal:   #008B95          Kuning: #D9E021
+   Oranye: #F6A61F          Dark:   #00666E
+   ─────────────────────────────────────────────────────────────────
+   Typography: DM Serif Display (headings) + Plus Jakarta Sans (body)
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+
+:root {
+    --pp-primary: #008B95;
+    --pp-primary-dark: #00666E;
+    --pp-primary-light: #CCF0F2;
+    --pp-primary-glow: rgba(0, 139, 149, 0.18);
+
+    --pp-accent: #D9E021;
+    --pp-accent-dark: #B8BF1C;
+
+    --pp-orange: #F6A61F;
+    --pp-orange-light: #FFF4E0;
+
+    --pp-text: #1F2937;
+    --pp-text-muted: #6B7280;
+    --pp-bg: #F4F6F8;
+    --pp-bg-warm: #F9F7F4;
+    --pp-white: #FFFFFF;
+
+    --pp-glass: rgba(255, 255, 255, 0.65);
+    --pp-glass-border: rgba(255, 255, 255, 0.35);
+    --pp-glass-blur: 16px;
+    --pp-radius: 16px;
+    --pp-radius-sm: 12px;
+    --pp-radius-lg: 24px;
+
+    /* Bokify-inspired generous spacing */
+    --pp-section-gap: 40px;
+    --pp-container-padding: 32px;
+
+    /* Serif heading font */
+    --pp-font-heading: 'DM Serif Display', Georgia, serif;
+    --pp-font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+
+/* ── Container ─────────────────────────────────────────────────── */
+.pp-container {
+    padding: var(--pp-container-padding);
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+/* ── Typography (Bokify-style editorial) ──────────────────────── */
+.pp-title {
+    font-family: var(--pp-font-heading);
+    font-size: 1.85rem;
+    font-weight: 400;
+    color: var(--pp-text);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.pp-subtitle {
+    font-size: 0.95rem;
+    color: var(--pp-text-muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+
+.pp-text-bold {
+    font-weight: 800;
+    color: var(--pp-text);
+}
+
+.pp-help-text {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+    margin-top: 8px;
+}
+
+/* Section header: small tag + large heading (Bokify pattern) */
+.pp-section-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--pp-primary);
+    background: rgba(0, 139, 149, 0.08);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+
+.pp-section-heading {
+    font-family: var(--pp-font-heading);
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--pp-text);
+    margin-bottom: 8px;
+    line-height: 1.25;
+}
+
+.pp-section-desc {
+    font-size: 0.92rem;
+    color: var(--pp-text-muted);
+    max-width: 560px;
+    line-height: 1.65;
+    margin-bottom: 28px;
+}
+
+/* ── Glass Card (Core Component) ───────────────────────────────── */
+.pp-card {
+    background: var(--pp-glass);
+    backdrop-filter: blur(var(--pp-glass-blur));
+    -webkit-backdrop-filter: blur(var(--pp-glass-blur));
+    border-radius: var(--pp-radius);
+    padding: 24px;
+    border: 1px solid var(--pp-glass-border);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.pp-card--shadow:hover {
+    box-shadow: 0 12px 40px rgba(0, 139, 149, 0.1);
+    transform: translateY(-4px);
+}
+
+.pp-card--solid {
+    background: var(--pp-white);
+    backdrop-filter: none;
+}
+
+/* ── Global Glass Pane Helpers ─────────────────────────────────── */
+.pp-glass-pane {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.pp-glass-pane--dark {
+    background: rgba(0, 50, 55, 0.25);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Scroll Reveal (Bokify-inspired element entrance) ─────────── */
+.pp-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pp-reveal--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.pp-reveal--delay-1 {
+    transition-delay: 0.1s;
+}
+
+.pp-reveal--delay-2 {
+    transition-delay: 0.2s;
+}
+
+.pp-reveal--delay-3 {
+    transition-delay: 0.3s;
+}
+
+.pp-reveal--delay-4 {
+    transition-delay: 0.4s;
+}
+
+/* ── Global Animations ─────────────────────────────────────────── */
+@keyframes pp-blob-float {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+@keyframes pp-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes pp-pulse-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 5px rgba(0, 139, 149, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(0, 139, 149, 0.2);
+    }
+}
+
+@keyframes pp-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pp-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Buttons (refined with Bokify proportions) ─────────────────── */
+.pp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 26px;
+    border-radius: var(--pp-radius-sm);
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.pp-btn--primary {
+    background: linear-gradient(135deg, #008B95, #00666E);
+    color: var(--pp-white);
+    box-shadow: 0 4px 16px rgba(0, 139, 149, 0.3);
+}
+
+.pp-btn--primary:hover {
+    box-shadow: 0 8px 28px rgba(0, 139, 149, 0.4);
+    transform: translateY(-3px);
+}
+
+.pp-btn--accent {
+    background: linear-gradient(135deg, #D9E021, #B8BF1C);
+    color: var(--pp-primary-dark);
+    font-weight: 800;
+}
+
+.pp-btn--accent:hover {
+    box-shadow: 0 6px 20px rgba(217, 224, 33, 0.4);
+    transform: translateY(-2px);
+}
+
+.pp-btn--orange {
+    background: linear-gradient(135deg, #F6A61F, #E08E10);
+    color: #fff;
+}
+
+.pp-btn--outline {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: var(--pp-text);
+}
+
+.pp-btn--outline:hover {
+    background: rgba(0, 139, 149, 0.06);
+    border-color: var(--pp-primary);
+    color: var(--pp-primary);
+}
+
+/* Ghost text-only button (Bokify "Read more →" style) */
+.pp-btn--ghost {
+    background: transparent;
+    border: none;
+    color: var(--pp-primary);
+    font-weight: 700;
+    padding: 8px 0;
+    position: relative;
+}
+
+.pp-btn--ghost::after {
+    content: '→';
+    margin-left: 6px;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.pp-btn--ghost:hover::after {
+    transform: translateX(4px);
+}
+
+.pp-btn--sm {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    border-radius: 10px;
+}
+
+.pp-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.pp-btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* ── Forms ─────────────────────────────────────────────────────── */
+.pp-form-group {
+    margin-bottom: 22px;
+}
+
+.pp-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--pp-text);
+    margin-bottom: 8px;
+}
+
+.pp-input,
+.pp-select,
+.pp-textarea {
+    width: 100%;
+    padding: 13px 18px;
+    border-radius: var(--pp-radius-sm);
+    border: 1.5px solid rgba(0, 0, 0, 0.08);
+    font-size: 0.92rem;
+    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+}
+
+.pp-input:focus,
+.pp-select:focus,
+.pp-textarea:focus {
+    outline: none;
+    border-color: var(--pp-primary);
+    background: var(--pp-white);
+    box-shadow: 0 0 0 4px var(--pp-primary-glow);
+}
+
+.pp-textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.6;
+}
+
+.pp-required {
+    color: #EF4444;
+    margin-left: 4px;
+}
+
+/* ── Table ─────────────────────────────────────────────────────── */
+.pp-table-wrap {
+    overflow-x: auto;
+    border-radius: var(--pp-radius-sm);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.pp-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pp-table th {
+    background: rgba(0, 139, 149, 0.04);
+    text-align: left;
+    padding: 14px 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.pp-table td {
+    padding: 16px 20px;
+    font-size: 0.9rem;
+    color: var(--pp-text);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.pp-table tr:last-child td {
+    border-bottom: none;
+}
+
+.pp-table tr:hover td {
+    background: rgba(0, 139, 149, 0.03);
+}
+
+/* ── Badges ────────────────────────────────────────────────────── */
+.pp-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.pp-badge--teal {
+    background: rgba(0, 139, 149, 0.12);
+    color: #006D75;
+}
+
+.pp-badge--gold {
+    background: rgba(217, 224, 33, 0.2);
+    color: #6B6E0F;
+}
+
+.pp-badge--orange {
+    background: rgba(246, 166, 31, 0.15);
+    color: #9A5F05;
+}
+
+.pp-badge--blue {
+    background: #EFF6FF;
+    color: #1E40AF;
+}
+
+.pp-badge--green {
+    background: #ECFDF5;
+    color: #065F46;
+}
+
+.pp-badge--red {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+.pp-badge--gray {
+    background: #F3F4F6;
+    color: #4B5563;
+}
+
+/* ── Divider ───────────────────────────────────────────────────── */
+.pp-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(0, 139, 149, 0.15), transparent);
+    margin: 32px 0;
+    border: none;
+}
+
+/* ── Stepper (Kirim Naskah) ────────────────────────────────────── */
+.pp-stepper {
+    display: flex;
+    gap: 20px;
+    padding: 10px;
+}
+
+.pp-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.pp-step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.04);
+    color: #9CA3AF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    border: 2px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.3s;
+}
+
+.pp-step--active .pp-step-num {
+    background: var(--pp-accent);
+    color: var(--pp-primary-dark);
+    border-color: var(--pp-primary);
+    box-shadow: 0 0 0 5px var(--pp-primary-glow);
+}
+
+.pp-step--done .pp-step-num {
+    background: var(--pp-primary);
+    color: var(--pp-white);
+    border-color: var(--pp-primary);
+}
+
+.pp-step-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.pp-step-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #9CA3AF;
+}
+
+.pp-step--active .pp-step-title {
+    color: var(--pp-primary);
+}
+
+.pp-step--done .pp-step-title {
+    color: var(--pp-text);
+}
+
+/* ── Grid System ───────────────────────────────────────────────── */
+.pp-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.pp-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.pp-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.pp-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    .pp-grid-2,
+    .pp-grid-3,
+    .pp-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .pp-stepper {
+        flex-wrap: wrap;
+    }
+
+    .pp-title {
+        font-size: 1.5rem;
+    }
+
+    .pp-section-heading {
+        font-size: 1.3rem;
+    }
+}

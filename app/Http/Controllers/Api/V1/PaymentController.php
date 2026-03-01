@@ -13,8 +13,22 @@ class PaymentController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly PaymentService $paymentService)
+    public function __construct(private readonly PaymentService $paymentService) {}
+
+    public function index(): JsonResponse
     {
+        $payments = Payment::with(['royaltyCalculation.author'])
+            ->latest()
+            ->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'method' => 'Bank Transfer', // Default for now
+                'amount' => (float) $p->amount,
+                'status' => $p->status->value,
+                'date' => $p->paid_at ? $p->paid_at->toISOString() : $p->created_at->toISOString(),
+            ]);
+
+        return response()->json($payments);
     }
 
     public function markPaid(MarkPaymentPaidRequest $request, Payment $payment): JsonResponse

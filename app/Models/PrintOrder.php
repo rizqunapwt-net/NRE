@@ -41,14 +41,14 @@ class PrintOrder extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self$order) {
+        static::creating(function (self $order) {
             if (empty($order->order_number)) {
-                $order->order_number = 'PO-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(4));
+                $order->order_number = 'PO-'.date('Ymd').'-'.strtoupper(\Illuminate\Support\Str::random(4));
             }
             $order->total_cost = $order->quantity * $order->unit_cost;
         });
 
-        static::updating(function (self$order) {
+        static::updating(function (self $order) {
             $order->total_cost = $order->quantity * $order->unit_cost;
         });
     }
@@ -60,6 +60,6 @@ class PrintOrder extends Model
 
     public function orderer(): BelongsTo
     {
-        return $this->belongsTo(User::class , 'ordered_by');
+        return $this->belongsTo(User::class, 'ordered_by');
     }
 }

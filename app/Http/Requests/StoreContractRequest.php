@@ -8,7 +8,7 @@ class StoreContractRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['Admin', 'Legal']) ?? false;
+        return $this->user()?->hasRole('Admin') ?? false;
     }
 
     public function rules(): array

@@ -117,7 +117,7 @@ const OrderDetailPage: React.FC = () => {
                         Kembali
                     </Button>
                     <Title level={3} className="!mb-1">
-                        📋 Order {order.order_number}
+                        Order {order.order_number}
                     </Title>
                     <Paragraph type="secondary">
                         Detail order dan tracking produksi
@@ -177,7 +177,7 @@ const OrderDetailPage: React.FC = () => {
                         </Descriptions>
                     </Card>
 
-                    <Card title="⚙️ Spesifikasi Cetak" className="mb-4">
+                    <Card title="Spesifikasi Cetak" className="mb-4">
                         <Descriptions column={2} bordered>
                             <Descriptions.Item label="Ukuran">
                                 {order.detailed_specifications?.size}
@@ -207,18 +207,18 @@ const OrderDetailPage: React.FC = () => {
                     </Card>
 
                     {/* Production Timeline */}
-                    <Card title="🏭 Tracking Produksi" className="mb-4">
+                    <Card title="Tracking Produksi" className="mb-4">
                         {productionJobs.length > 0 ? (
                             <Timeline
                                 items={productionJobs.map((job: any) => ({
                                     key: job.id,
                                     color: job.status === 'completed' ? 'green' :
-                                           job.status === 'in_progress' ? 'blue' :
-                                           job.status === 'pending' ? 'gray' : 'red',
+                                        job.status === 'in_progress' ? 'blue' :
+                                            job.status === 'pending' ? 'gray' : 'red',
                                     dot: job.stage === 'printing' ? <PrinterOutlined /> :
-                                         job.stage === 'packaging' ? <TruckOutlined /> :
-                                         job.status === 'completed' ? <CheckCircleOutlined /> :
-                                         <ClockCircleOutlined />,
+                                        job.stage === 'packaging' ? <TruckOutlined /> :
+                                            job.status === 'completed' ? <CheckCircleOutlined /> :
+                                                <ClockCircleOutlined />,
                                     title: `${job.stage_label} - ${job.status_label}`,
                                     children: (
                                         <div>
@@ -307,7 +307,7 @@ const OrderDetailPage: React.FC = () => {
                                     value={order.payment?.deposit_paid || 0}
                                     prefix="Rp"
                                     precision={0}
-                                    valueStyle={{ color: '#1890ff' }}
+                                    valueStyle={{ color: '#008B94' }}
                                 />
                             </Col>
                             <Col span={24}>

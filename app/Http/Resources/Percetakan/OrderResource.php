@@ -23,8 +23,8 @@ class OrderResource extends JsonResource
             'customer' => new CustomerResource($this->whenLoaded('customer')),
             'product' => [
                 'id' => $this->product_id,
-                'name' => $this->when($this->product, fn() => $this->product->name),
-                'code' => $this->when($this->product, fn() => $this->product->code),
+                'name' => $this->when($this->product, fn () => $this->product->name),
+                'code' => $this->when($this->product, fn () => $this->product->code),
             ],
             'specifications' => $this->specifications,
             'detailed_specifications' => new OrderSpecificationResource(
@@ -37,7 +37,7 @@ class OrderResource extends JsonResource
                 'discount' => $this->discount_amount,
                 'tax' => $this->tax_amount,
                 'total' => $this->total_amount,
-                'formatted_total' => 'Rp ' . number_format($this->total_amount, 0, ',', '.'),
+                'formatted_total' => 'Rp '.number_format($this->total_amount, 0, ',', '.'),
             ],
             'payment' => [
                 'deposit_percentage' => $this->deposit_percentage,
@@ -45,7 +45,7 @@ class OrderResource extends JsonResource
                 'deposit_paid' => $this->deposit_paid,
                 'deposit_balance' => $this->deposit_amount - $this->deposit_paid,
                 'balance_due' => $this->balance_due,
-                'formatted_balance' => 'Rp ' . number_format($this->balance_due, 0, ',', '.'),
+                'formatted_balance' => 'Rp '.number_format($this->balance_due, 0, ',', '.'),
             ],
             'dates' => [
                 'order_date' => $this->order_date->format('Y-m-d'),
@@ -59,7 +59,7 @@ class OrderResource extends JsonResource
             'customer_notes' => $this->customer_notes,
             'sales' => [
                 'id' => $this->sales_id,
-                'name' => $this->when($this->sales, fn() => $this->sales->name),
+                'name' => $this->when($this->sales, fn () => $this->sales->name),
             ],
             'created_at' => $this->created_at->format('Y-m-d H:i'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i'),

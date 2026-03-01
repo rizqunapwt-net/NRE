@@ -1,0 +1,59 @@
+/* Create Book Wizard Styles */
+
+.create-book-wizard {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.wizard-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.wizard-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: #1F2937;
+  margin-bottom: 8px;
+}
+
+.wizard-subtitle {
+  font-size: 16px;
+  color: #6B7280;
+}
+
+.wizard-content {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 20px;
+  padding: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  min-height: 500px;
+}
+
+@media (max-width: 768px) {
+  .create-book-wizard {
+    padding: 20px 16px;
+  }
+
+  .wizard-header {
+    margin-bottom: 24px;
+  }
+
+  .wizard-title {
+    font-size: 24px;
+  }
+
+  .wizard-subtitle {
+    font-size: 14px;
+  }
+
+  .wizard-content {
+    padding: 24px 16px;
+    min-height: auto;
+  }
+}

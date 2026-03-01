@@ -243,7 +243,7 @@ const OrderListPage: React.FC = () => {
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <Title level={3}>📋 Daftar Order</Title>
+                    <Title level={3}>Daftar Order</Title>
                     <Typography.Text type="secondary">
                         Kelola semua order percetakan
                     </Typography.Text>
@@ -265,7 +265,7 @@ const OrderListPage: React.FC = () => {
                         <Statistic
                             title="Total Order"
                             value={statistics.total_orders}
-                            prefix="📦"
+                            prefix=""
                         />
                     </Card>
                 </Col>
@@ -275,7 +275,7 @@ const OrderListPage: React.FC = () => {
                             title="Bulan Ini"
                             value={statistics.this_month?.orders || 0}
                             suffix={`orders`}
-                            prefix="📊"
+                            prefix=""
                         />
                     </Card>
                 </Col>
@@ -284,7 +284,7 @@ const OrderListPage: React.FC = () => {
                         <Statistic
                             title="Pending Approval"
                             value={statistics.pending_approval || 0}
-                            prefix="⏳"
+                            prefix=""
                             valueStyle={{ color: '#fa8c16' }}
                         />
                     </Card>
@@ -294,7 +294,7 @@ const OrderListPage: React.FC = () => {
                         <Statistic
                             title="Urgent"
                             value={statistics.urgent_orders || 0}
-                            prefix="🔥"
+                            prefix=""
                             valueStyle={{ color: '#cf1322' }}
                         />
                     </Card>

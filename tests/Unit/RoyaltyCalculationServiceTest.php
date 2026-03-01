@@ -25,7 +25,7 @@ class RoyaltyCalculationServiceTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $finance = User::factory()->create();
-        $finance->assignRole('Finance');
+        $finance->assignRole('Admin');
 
         $author = Author::factory()->create();
         $book = Book::factory()->create(['author_id' => $author->id]);
@@ -74,7 +74,7 @@ class RoyaltyCalculationServiceTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $finance = User::factory()->create();
-        $finance->assignRole('Finance');
+        $finance->assignRole('Admin');
 
         $calculation = RoyaltyCalculation::factory()->create([
             'status' => RoyaltyStatus::Finalized,

@@ -13,6 +13,7 @@ class Payment extends Model
 {
     /** @use HasFactory<\Database\Factories\PaymentFactory> */
     use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

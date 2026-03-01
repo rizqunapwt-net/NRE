@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Customers table (B2B + B2C) - percetakan specific
-        if (!Schema::hasTable('percetakan_customers')) {
+        if (! Schema::hasTable('percetakan_customers')) {
             Schema::create('percetakan_customers', function (Blueprint $table) {
                 $table->id();
                 $table->string('code')->unique();
@@ -33,14 +33,14 @@ return new class extends Migration
                 $table->text('notes')->nullable();
                 $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
                 $table->timestamps();
-                
+
                 $table->index('type');
                 $table->index('status');
             });
         }
 
         // Product categories
-        if (!Schema::hasTable('percetakan_product_categories')) {
+        if (! Schema::hasTable('percetakan_product_categories')) {
             Schema::create('percetakan_product_categories', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -53,7 +53,7 @@ return new class extends Migration
         }
 
         // Products (printing products)
-        if (!Schema::hasTable('percetakan_products')) {
+        if (! Schema::hasTable('percetakan_products')) {
             Schema::create('percetakan_products', function (Blueprint $table) {
                 $table->id();
                 $table->string('code')->unique();
@@ -66,14 +66,14 @@ return new class extends Migration
                 $table->boolean('is_active')->default(true);
                 $table->json('specifications')->nullable();
                 $table->timestamps();
-                
+
                 $table->index('category_id');
                 $table->index('is_active');
             });
         }
 
         // Orders (printing jobs)
-        if (!Schema::hasTable('percetakan_orders')) {
+        if (! Schema::hasTable('percetakan_orders')) {
             Schema::create('percetakan_orders', function (Blueprint $table) {
                 $table->id();
                 $table->string('order_number')->unique();
@@ -103,7 +103,7 @@ return new class extends Migration
                 $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
                 $table->timestamp('approved_at')->nullable();
                 $table->timestamps();
-                
+
                 $table->index('status');
                 $table->index('customer_id');
                 $table->index('order_date');
@@ -112,7 +112,7 @@ return new class extends Migration
         }
 
         // Order specifications
-        if (!Schema::hasTable('percetakan_order_specifications')) {
+        if (! Schema::hasTable('percetakan_order_specifications')) {
             Schema::create('percetakan_order_specifications', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('order_id')->constrained('percetakan_orders')->cascadeOnDelete();
@@ -132,7 +132,7 @@ return new class extends Migration
         }
 
         // Production jobs
-        if (!Schema::hasTable('percetakan_production_jobs')) {
+        if (! Schema::hasTable('percetakan_production_jobs')) {
             Schema::create('percetakan_production_jobs', function (Blueprint $table) {
                 $table->id();
                 $table->string('job_number')->unique();
@@ -149,7 +149,7 @@ return new class extends Migration
                 $table->text('instructions')->nullable();
                 $table->text('notes')->nullable();
                 $table->timestamps();
-                
+
                 $table->index('stage');
                 $table->index('status');
                 $table->index('order_id');
@@ -157,7 +157,7 @@ return new class extends Migration
         }
 
         // Job cards
-        if (!Schema::hasTable('percetakan_job_cards')) {
+        if (! Schema::hasTable('percetakan_job_cards')) {
             Schema::create('percetakan_job_cards', function (Blueprint $table) {
                 $table->id();
                 $table->string('card_number')->unique();
@@ -180,7 +180,7 @@ return new class extends Migration
         }
 
         // Materials
-        if (!Schema::hasTable('percetakan_materials')) {
+        if (! Schema::hasTable('percetakan_materials')) {
             Schema::create('percetakan_materials', function (Blueprint $table) {
                 $table->id();
                 $table->string('code')->unique();
@@ -199,14 +199,14 @@ return new class extends Migration
                 $table->string('location')->nullable();
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
-                
+
                 $table->index('category');
                 $table->index('is_active');
             });
         }
 
         // Machines
-        if (!Schema::hasTable('percetakan_machines')) {
+        if (! Schema::hasTable('percetakan_machines')) {
             Schema::create('percetakan_machines', function (Blueprint $table) {
                 $table->id();
                 $table->string('code')->unique();
@@ -225,14 +225,14 @@ return new class extends Migration
                 $table->text('notes')->nullable();
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
-                
+
                 $table->index('type');
                 $table->index('status');
             });
         }
 
         // Material usage
-        if (!Schema::hasTable('percetakan_material_usage')) {
+        if (! Schema::hasTable('percetakan_material_usage')) {
             Schema::create('percetakan_material_usage', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('job_card_id')->constrained('percetakan_job_cards')->cascadeOnDelete();
@@ -248,7 +248,7 @@ return new class extends Migration
         }
 
         // Invoices
-        if (!Schema::hasTable('percetakan_invoices')) {
+        if (! Schema::hasTable('percetakan_invoices')) {
             Schema::create('percetakan_invoices', function (Blueprint $table) {
                 $table->id();
                 $table->string('invoice_number')->unique();
@@ -267,7 +267,7 @@ return new class extends Migration
                 $table->text('notes')->nullable();
                 $table->date('paid_at')->nullable();
                 $table->timestamps();
-                
+
                 $table->index('status');
                 $table->index('invoice_date');
                 $table->index('due_date');

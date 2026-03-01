@@ -2,13 +2,13 @@
 
 namespace App\Observers;
 
-use App\Models\Sale;
+use App\Enums\ContractStatus;
+use App\Enums\RoyaltyStatus;
 use App\Models\Book;
 use App\Models\Contract;
 use App\Models\RoyaltyCalculation;
 use App\Models\RoyaltyItem;
-use App\Enums\ContractStatus;
-use App\Enums\RoyaltyStatus;
+use App\Models\Sale;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -27,11 +27,7 @@ class SaleObserver
 
                 // 3. Proactive Alert: Low Stock
                 if ($book->stock <= 10) {
-                    $admins = \App\Models\User::role('Admin')->get();
-                    if ($admins->isEmpty()) {
-                        // Fallback if Spatie role not found but role field used
-                        $admins = \App\Models\User::whereIn('role', ['ADMIN', 'OWNER'])->get();
-                    }
+                    $admins = \App\Models\User::role('Admin', 'web')->get();
 
                     \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\LowStockAlert($book));
                 }
@@ -39,49 +35,7 @@ class SaleObserver
 
             // 2. Auto-Calculate Royalty
             $this->processRoyalty($sale);
-
-            // 3. Auto-Accounting (Journal Entry) - Only for manual sales
-            if (!$sale->sales_import_id) {
-                $this->processAccounting($sale);
-            }
         });
-    }
-
-    /**
-     * Process automated accounting for a sale.
-     */
-    protected function processAccounting(Sale $sale): void
-    {
-        $arAccount = \App\Models\Accounting\Account::where('code', '1200')->first(); // Piutang Usaha
-        $salesAccount = \App\Models\Accounting\Account::where('code', '4000')->first(); // Penjualan Buku
-
-        if (!$arAccount || !$salesAccount)
-            return;
-
-        $totalAmount = $sale->net_price * $sale->quantity;
-
-        $journal = \App\Models\Accounting\Journal::create([
-            'date' => now(),
-            'reference' => "SALE-{$sale->transaction_id}",
-            'description' => "Penjualan Otomatis: {$sale->book->title} x {$sale->quantity}",
-            'total_amount' => $totalAmount,
-            'status' => 'draft', // Draft by default for review
-        ]);
-
-        $journal->entries()->createMany([
-            [
-                'account_id' => $arAccount->id,
-                'type' => 'debit',
-                'amount' => $totalAmount,
-                'memo' => "Piutang Penjualan {$sale->transaction_id}",
-            ],
-            [
-                'account_id' => $salesAccount->id,
-                'type' => 'credit',
-                'amount' => $totalAmount,
-                'memo' => "Pendapatan Penjualan {$sale->transaction_id}",
-            ],
-        ]);
     }
 
     /**
@@ -114,8 +68,9 @@ class SaleObserver
     protected function processRoyalty(Sale $sale): void
     {
         $book = $sale->book;
-        if (!$book)
+        if (! $book) {
             return;
+        }
 
         $periodDate = Carbon::createFromFormat('Y-m', $sale->period_month);
         $periodStart = $periodDate->copy()->startOfMonth();
@@ -129,19 +84,20 @@ class SaleObserver
             ->whereDate('end_date', '>=', $periodStart)
             ->first();
 
-        if (!$contract)
+        if (! $contract) {
             return;
+        }
 
         // Find or create RoyaltyCalculation parent (Draft only)
         $calculation = RoyaltyCalculation::firstOrCreate(
-        [
-            'period_month' => $sale->period_month,
-            'author_id' => $book->author_id,
-        ],
-        [
-            'status' => RoyaltyStatus::Draft,
-            'total_amount' => 0,
-        ]
+            [
+                'period_month' => $sale->period_month,
+                'author_id' => $book->author_id,
+            ],
+            [
+                'status' => RoyaltyStatus::Draft,
+                'total_amount' => 0,
+            ]
         );
 
         // Only add items to Draft calculations

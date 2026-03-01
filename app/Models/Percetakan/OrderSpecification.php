@@ -10,6 +10,8 @@ class OrderSpecification extends Model
 {
     use HasFactory;
 
+    protected $table = 'percetakan_order_specifications';
+
     protected $fillable = [
         'order_id',
         'size',
@@ -49,7 +51,7 @@ class OrderSpecification extends Model
     {
         $inside = $this->colors_inside ?? 'N/A';
         $outside = $this->colors_outside ?? 'N/A';
-        
+
         return "Outside: {$outside}, Inside: {$inside}";
     }
 }

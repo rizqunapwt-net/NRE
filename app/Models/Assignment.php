@@ -15,6 +15,7 @@ class Assignment extends Model
 {
     /** @use HasFactory<\Database\Factories\AssignmentFactory> */
     use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

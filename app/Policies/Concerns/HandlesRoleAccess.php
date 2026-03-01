@@ -6,8 +6,8 @@ use App\Models\User;
 
 trait HandlesRoleAccess
 {
-    protected function hasAnyRole(User $user, array $roles): bool
+    protected function isAdmin(User $user): bool
     {
-        return $user->hasRole('Admin') || $user->hasAnyRole($roles);
+        return $user->hasRole('Admin');
     }
 }

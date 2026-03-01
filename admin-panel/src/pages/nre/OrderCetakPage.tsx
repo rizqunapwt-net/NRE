@@ -234,7 +234,7 @@ const OrderCetakPage: React.FC = () => {
             <Row gutter={16} style={{ marginBottom: 16 }}>
                 <Col span={6}><Card><Statistic title="Total Order" value={totalOrders} prefix={<PrinterOutlined />} /></Card></Col>
                 <Col span={6}><Card><Statistic title="Menunggu" value={pending} valueStyle={{ color: '#faad14' }} prefix={<ClockCircleOutlined />} /></Card></Col>
-                <Col span={6}><Card><Statistic title="Dalam Produksi" value={inProd} valueStyle={{ color: '#1890ff' }} prefix={<SyncOutlined />} /></Card></Col>
+                <Col span={6}><Card><Statistic title="Dalam Produksi" value={inProd} valueStyle={{ color: '#008B94' }} prefix={<SyncOutlined />} /></Card></Col>
                 <Col span={6}><Card><Statistic title="Total Biaya" value={totalCost} prefix="Rp" valueStyle={{ color: '#52c41a' }}
                     formatter={(v) => Number(v).toLocaleString('id-ID')} /></Card></Col>
             </Row>

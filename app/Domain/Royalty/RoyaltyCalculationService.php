@@ -11,8 +11,8 @@ use App\Models\RoyaltyItem;
 use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class RoyaltyCalculationService
@@ -28,9 +28,20 @@ class RoyaltyCalculationService
             ->where('status', SaleStatus::Completed)
             ->get();
 
+        $bookIds = $sales->pluck('book_id')->unique();
+        
+        // Pre-fetch all approved contracts for these books that could overlap with the period
+        $contracts = Contract::query()
+            ->whereIn('book_id', $bookIds)
+            ->where('status', ContractStatus::Approved)
+            ->whereDate('start_date', '<=', $periodEnd)
+            ->whereDate('end_date', '>=', $periodStart)
+            ->get()
+            ->groupBy('book_id');
+
         $grouped = $sales->groupBy(fn (Sale $sale) => $sale->book->author_id);
 
-        return DB::transaction(function () use ($grouped, $periodMonth, $periodStart, $periodEnd, $user): Collection {
+        return DB::transaction(function () use ($grouped, $contracts, $periodMonth, $periodStart, $periodEnd, $user): Collection {
             $results = collect();
 
             foreach ($grouped as $authorId => $authorSales) {
@@ -54,15 +65,14 @@ class RoyaltyCalculationService
                 $calculation->items()->delete();
 
                 $totalAmount = 0;
+                $itemsToInsert = [];
 
                 /** @var Sale $sale */
                 foreach ($authorSales as $sale) {
-                    $contract = Contract::query()
-                        ->where('book_id', $sale->book_id)
-                        ->where('status', ContractStatus::Approved)
-                        ->whereDate('start_date', '<=', $periodEnd)
-                        ->whereDate('end_date', '>=', $periodStart)
-                        ->latest('start_date')
+                    // Find the best matching contract from pre-fetched collection
+                    $bookContracts = $contracts->get($sale->book_id, collect());
+                    $contract = $bookContracts
+                        ->sortByDesc('start_date')
                         ->first();
 
                     if (! $contract) {
@@ -71,7 +81,7 @@ class RoyaltyCalculationService
 
                     $amount = round((float) $sale->quantity * (float) $sale->net_price * ((float) $contract->royalty_percentage / 100), 2);
 
-                    RoyaltyItem::create([
+                    $itemsToInsert[] = [
                         'royalty_calculation_id' => $calculation->id,
                         'sale_id' => $sale->id,
                         'book_id' => $sale->book_id,
@@ -79,9 +89,15 @@ class RoyaltyCalculationService
                         'net_price' => $sale->net_price,
                         'royalty_percentage' => $contract->royalty_percentage,
                         'amount' => $amount,
-                    ]);
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
 
                     $totalAmount += $amount;
+                }
+
+                if (!empty($itemsToInsert)) {
+                    RoyaltyItem::insert($itemsToInsert);
                 }
 
                 $calculation->update([

@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens;
+
     use HasFactory;
     use HasRoles;
     use Notifiable;
@@ -24,64 +25,103 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'username',
         'password',
-        'role',
-        'face_descriptor',
         'is_active',
+        'must_change_password',
+        'password_changed_at',
         'last_login_at',
+        'google_id',
+        'avatar_url',
+        // Phase 2 — Digital Library
+        'phone',
+        'address',
+        'is_verified_author',
+        'author_verified_at',
+        'author_profile_id',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
-        'face_descriptor',
     ];
 
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-            'last_login_at' => 'datetime',
+            'email_verified_at'   => 'datetime',
+            'password'            => 'hashed',
+            'is_active'           => 'boolean',
+            'must_change_password' => 'boolean',
+            'password_changed_at' => 'datetime',
+            'last_login_at'       => 'datetime',
+            // Phase 2 — Digital Library
+            'is_verified_author'  => 'boolean',
+            'author_verified_at'  => 'datetime',
         ];
-    }
-
-    // ─── Filament Auth ───
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        // Only non-Karyawan users can access Filament admin panel
-        return $this->is_active && !$this->isKaryawan();
     }
 
     // ─── Relationships ───
 
-    public function employee(): HasOne
+    /**
+     * Get the author profile linked to this user.
+     */
+    public function author(): HasOne
     {
-        return $this->hasOne(Employee::class);
+        return $this->hasOne(Author::class);
     }
 
-    // ─── Helpers ───
+    // ─── Digital Library Relationships ───
+
+    public function bookPurchases(): HasMany
+    {
+        return $this->hasMany(BookPurchase::class);
+    }
+
+    public function bookAccess(): HasMany
+    {
+        return $this->hasMany(BookAccess::class, 'user_id');
+    }
+
+    public function accessibleBooks(): BelongsToMany
+    {
+        return $this->belongsToMany(Book::class, 'book_access', 'user_id', 'book_id')
+            ->wherePivot('is_active', true)
+            ->withPivot(['access_level', 'granted_by', 'granted_at', 'expires_at']);
+    }
+
+    // ─── Role Helpers ───
 
     public function isAdmin(): bool
     {
-        return $this->hasRole('Admin') || in_array($this->role, ['ADMIN', 'OWNER']);
+        return $this->hasRole('Admin');
     }
 
-    public function isOwner(): bool
+    /**
+     * Cek apakah user adalah User (bukan Admin).
+     */
+    public function isUser(): bool
     {
-        return $this->hasRole('Owner') || $this->role === 'OWNER';
+        return $this->hasRole('User');
     }
 
-    public function isKaryawan(): bool
+    /**
+     * Cek apakah user adalah penulis terverifikasi.
+     * Menggantikan isAuthor() yang berbasis role.
+     */
+    public function isVerifiedAuthor(): bool
     {
-        // Spatie roles take priority — if user has any admin-level role,
-        // they are NOT a Karyawan even if the DB column says 'KARYAWAN'
-        $adminRoles = ['Admin', 'Owner', 'HR', 'Finance', 'Legal'];
-        if ($this->hasAnyRole($adminRoles)) {
-            return false;
-        }
+        return $this->is_verified_author === true;
+    }
 
-        return $this->hasRole('Karyawan') || $this->role === 'KARYAWAN';
+    /**
+     * Backward compatibility — tetap bisa pakai isAuthor()
+     */
+    public function isAuthor(): bool
+    {
+        return $this->isVerifiedAuthor();
+    }
+
+    public function isPenulis(): bool
+    {
+        return $this->isVerifiedAuthor();
     }
 }

@@ -8,7 +8,7 @@ class ImportSalesRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasRole('Finance') ?? false;
+        return $this->user()?->hasRole('Admin') ?? false;
     }
 
     public function rules(): array

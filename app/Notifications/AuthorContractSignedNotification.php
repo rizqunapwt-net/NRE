@@ -12,6 +12,7 @@ class AuthorContractSignedNotification extends Notification implements ShouldQue
     use Queueable;
 
     protected $bookTitle;
+
     protected $action; // 'approved' or 'rejected'
 
     /**
@@ -39,13 +40,13 @@ class AuthorContractSignedNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         $actionText = $this->action === 'approved' ? 'Disetujui' : 'Ditolak';
-        $message = $this->action === 'approved' 
+        $message = $this->action === 'approved'
             ? 'Kontrak penjualan buku Anda telah disetujui.'
             : 'Kontrak penjualan buku Anda ditolak. Silakan cek dashboard untuk informasi lebih lanjut.';
 
         return (new MailMessage)
             ->subject("Kontrak {$actionText} - {$this->bookTitle}")
-            ->greeting('Halo ' . $notifiable->name . '!')
+            ->greeting('Halo '.$notifiable->name.'!')
             ->line($message)
             ->line("Buku: {$this->bookTitle}")
             ->line("Status: {$actionText}")
@@ -61,7 +62,7 @@ class AuthorContractSignedNotification extends Notification implements ShouldQue
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => 'contract_' . $this->action,
+            'type' => 'contract_'.$this->action,
             'message' => "Kontrak buku '{$this->bookTitle}' telah {$this->action}",
             'book_title' => $this->bookTitle,
             'action' => $this->action,

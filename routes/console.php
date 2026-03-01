@@ -3,6 +3,7 @@
 use App\Console\Commands\AuditExportCommand;
 use App\Console\Commands\ContractsExpireCommand;
 use App\Console\Commands\ContractsNotifyExpiringCommand;
+use App\Console\Commands\RevokeExpiredAccess;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -21,4 +22,13 @@ Schedule::command(ContractsNotifyExpiringCommand::class)
 
 Schedule::command(AuditExportCommand::class)
     ->monthlyOn(1, '00:20')
+    ->withoutOverlapping();
+
+// Phase 3-6: Digital Library scheduled jobs
+Schedule::command(RevokeExpiredAccess::class)
+    ->hourly()
+    ->withoutOverlapping();
+
+Schedule::command('books:cancel-expired-purchases')
+    ->hourly()
     ->withoutOverlapping();

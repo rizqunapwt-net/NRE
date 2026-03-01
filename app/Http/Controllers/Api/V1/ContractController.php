@@ -17,9 +17,7 @@ class ContractController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly ContractService $contractService)
-    {
-    }
+    public function __construct(private readonly ContractService $contractService) {}
 
     public function store(StoreContractRequest $request): JsonResponse
     {

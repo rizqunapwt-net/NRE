@@ -1,7 +1,10 @@
-.PHONY: up down restart status logs test psql bootstrap
+.PHONY: up down restart status logs test psql bootstrap dev
 
 up:
 	./scripts/dev.sh up
+
+dev:
+	./run.sh
 
 bootstrap:
 	./scripts/dev.sh bootstrap
@@ -23,4 +26,11 @@ test:
 
 psql:
 	./scripts/dev.sh psql
+
+artisan:
+	./scripts/dev.sh artisan $(filter-out $@,$(MAKECMDGOALS))
+
+# Allow passing arguments to artisan and other targets
+%:
+	@:
 

@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Api\Percetakan;
 
 use App\Http\Controllers\Controller;
-use App\Models\Percetakan\Customer;
 use App\Http\Resources\Percetakan\CustomerResource;
 use App\Http\Resources\Percetakan\OrderResource;
-use Illuminate\Http\Request;
+use App\Models\Percetakan\Customer;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of customers.
      */
@@ -35,24 +38,30 @@ class CustomerController extends Controller
 
         // Search by name, code, email, or phone
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('code', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%')
-                  ->orWhere('phone', 'like', '%' . $request->search . '%')
-                  ->orWhere('company_name', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('code', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%')
+                    ->orWhere('phone', 'like', '%'.$request->search.'%')
+                    ->orWhere('company_name', 'like', '%'.$request->search.'%');
             });
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'name');
-        $sortOrder = $request->get('sort_order', 'asc');
+        $allowedSorts = ['name', 'code', 'email', 'company_name', 'created_at', 'updated_at'];
+        $sortBy = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'name';
+        $sortOrder = in_array($request->get('sort_order'), ['asc', 'desc']) ? $request->get('sort_order') : 'asc';
         $query->orderBy($sortBy, $sortOrder);
 
         $perPage = $request->get('per_page', 15);
         $customers = $query->paginate($perPage);
 
-        return CustomerResource::collection($customers);
+        return $this->success(CustomerResource::collection($customers), 200, [
+            'current_page' => $customers->currentPage(),
+            'total' => $customers->total(),
+            'per_page' => $customers->perPage(),
+            'last_page' => $customers->lastPage(),
+        ]);
     }
 
     /**
@@ -79,16 +88,12 @@ class CustomerController extends Controller
         ]);
 
         // Generate customer code
-        $code = 'CUST-' . date('Ymd') . '-' . str_pad(Customer::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        $code = 'CUST-'.date('Ymd').'-'.str_pad(Customer::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
         $validated['code'] = $code;
 
         $customer = Customer::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Customer berhasil dibuat',
-            'data' => new CustomerResource($customer),
-        ], 201);
+        return $this->success(new CustomerResource($customer), 201, ['message' => 'Customer berhasil dibuat']);
     }
 
     /**
@@ -96,14 +101,11 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer): JsonResponse
     {
-        $customer->load(['user', 'orders' => function($q) {
+        $customer->load(['user', 'orders' => function ($q) {
             $q->with('product')->orderBy('created_at', 'desc')->limit(10);
         }]);
 
-        return response()->json([
-            'success' => true,
-            'data' => new CustomerResource($customer),
-        ]);
+        return $this->success(new CustomerResource($customer));
     }
 
     /**
@@ -114,7 +116,7 @@ class CustomerController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'type' => ['sometimes', 'in:retail,corporate,reseller'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:percetakan_customers,email,' . $customer->id],
+            'email' => ['nullable', 'email', 'max:255', 'unique:percetakan_customers,email,'.$customer->id],
             'phone' => ['nullable', 'string', 'max:50'],
             'company_name' => ['nullable', 'string', 'max:255'],
             'npwp' => ['nullable', 'string', 'max:50'],
@@ -132,11 +134,7 @@ class CustomerController extends Controller
 
         $customer->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Customer berhasil diupdate',
-            'data' => new CustomerResource($customer->fresh(['user'])),
-        ]);
+        return $this->success(new CustomerResource($customer->fresh(['user'])), 200, ['message' => 'Customer berhasil diupdate']);
     }
 
     /**
@@ -146,18 +144,12 @@ class CustomerController extends Controller
     {
         // Check if customer has orders
         if ($customer->orders()->count() > 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Customer tidak dapat dihapus karena memiliki order',
-            ], 422);
+            return $this->error('Customer tidak dapat dihapus karena memiliki order', 422);
         }
 
         $customer->update(['status' => 'inactive']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Customer berhasil dihapus (soft delete)',
-        ]);
+        return $this->success(null, 200, ['message' => 'Customer berhasil dihapus (soft delete)']);
     }
 
     /**
@@ -172,14 +164,20 @@ class CustomerController extends Controller
             $query->where('status', $request->status);
         }
 
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $allowedSorts = ['created_at', 'updated_at', 'order_date', 'total_amount', 'status'];
+        $sortBy = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'created_at';
+        $sortOrder = $request->get('sort_order') === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortBy, $sortOrder);
 
         $perPage = $request->get('per_page', 15);
         $orders = $query->paginate($perPage);
 
-        return OrderResource::collection($orders);
+        return $this->success(OrderResource::collection($orders), 200, [
+            'current_page' => $orders->currentPage(),
+            'total' => $orders->total(),
+            'per_page' => $orders->perPage(),
+            'last_page' => $orders->lastPage(),
+        ]);
     }
 
     /**
@@ -197,12 +195,12 @@ class CustomerController extends Controller
                 'delivered' => $customer->orders()->where('status', 'delivered')->count(),
             ],
             'total_revenue' => $customer->orders()->sum('total_amount'),
-            'formatted_total_revenue' => 'Rp ' . number_format($customer->orders()->sum('total_amount'), 0, ',', '.'),
+            'formatted_total_revenue' => 'Rp '.number_format($customer->orders()->sum('total_amount'), 0, ',', '.'),
             'outstanding_balance' => $customer->orders()->sum('balance_due'),
-            'formatted_outstanding' => 'Rp ' . number_format($customer->orders()->sum('balance_due'), 0, ',', '.'),
+            'formatted_outstanding' => 'Rp '.number_format($customer->orders()->sum('balance_due'), 0, ',', '.'),
             'average_order_value' => $customer->orders()->avg('total_amount') ?? 0,
             'last_order_date' => $customer->orders()->latest()->first()?->order_date?->format('Y-m-d'),
-            'credit_utilization' => $customer->credit_limit > 0 
+            'credit_utilization' => $customer->credit_limit > 0
                 ? round(($customer->orders()->sum('balance_due') / $customer->credit_limit) * 100, 2)
                 : 0,
         ];
@@ -223,11 +221,11 @@ class CustomerController extends Controller
 
         // Search
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('code', 'like', '%' . $request->search . '%')
-                  ->orWhere('company_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('code', 'like', '%'.$request->search.'%')
+                    ->orWhere('company_name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -238,19 +236,16 @@ class CustomerController extends Controller
 
         $customers = $query->limit(50)->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $customers->map(fn($c) => [
-                'id' => $c->id,
-                'code' => $c->code,
-                'name' => $c->name,
-                'company_name' => $c->company_name,
-                'full_name' => $c->company_name ?? $c->name,
-                'type' => $c->type,
-                'email' => $c->email,
-                'phone' => $c->phone,
-            ]),
-        ]);
+        return $this->success($customers->map(fn ($c) => [
+            'id' => $c->id,
+            'code' => $c->code,
+            'name' => $c->name,
+            'company_name' => $c->company_name,
+            'full_name' => $c->company_name ?? $c->name,
+            'type' => $c->type,
+            'email' => $c->email,
+            'phone' => $c->phone,
+        ]));
     }
 
     /**
@@ -275,19 +270,19 @@ class CustomerController extends Controller
             'total_outstanding' => Customer::where('status', 'active')
                 ->join('percetakan_orders', 'percetakan_customers.id', '=', 'percetakan_orders.customer_id')
                 ->sum('percetakan_orders.balance_due'),
-            'top_customers' => Customer::withCount(['orders' => function($q) {
-                    $q->selectRaw('SUM(total_amount) as total_revenue')
-                      ->orderByDesc('total_revenue');
-                }])
+            'top_customers' => Customer::withCount(['orders' => function ($q) {
+                $q->selectRaw('SUM(total_amount) as total_revenue')
+                    ->orderByDesc('total_revenue');
+            }])
                 ->orderByDesc('orders_count')
                 ->limit(10)
                 ->get()
-                ->map(fn($c) => [
-                    'id' => $c->id,
-                    'name' => $c->name,
-                    'company_name' => $c->company_name,
-                    'total_orders' => $c->orders_count,
-                ]),
+                ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'company_name' => $c->company_name,
+                'total_orders' => $c->orders_count,
+            ]),
         ];
 
         return response()->json([

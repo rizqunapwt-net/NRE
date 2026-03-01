@@ -15,6 +15,7 @@ class RoyaltyCalculation extends Model
 {
     /** @use HasFactory<\Database\Factories\RoyaltyCalculationFactory> */
     use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

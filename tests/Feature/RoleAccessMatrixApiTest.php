@@ -6,33 +6,31 @@ use App\Models\Payment;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class RoleAccessMatrixApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_marketing_cannot_import_sales(): void
+    public function test_author_cannot_import_sales(): void
     {
         $this->seed(RolePermissionSeeder::class);
 
-        $marketing = User::factory()->create();
-        $marketing->assignRole('Marketing');
-        Sanctum::actingAs($marketing);
+        $author = User::factory()->create();
+        $author->assignRole('User');
+        $this->actingAs($author);
 
         $response = $this->postJson('/api/v1/sales/import', []);
 
         $response->assertStatus(403);
     }
 
-    public function test_finance_can_access_royalty_calculation_endpoint(): void
+    public function test_admin_can_access_royalty_calculation_endpoint(): void
     {
         $this->seed(RolePermissionSeeder::class);
 
-        $finance = User::factory()->create();
-        $finance->assignRole('Finance');
-        Sanctum::actingAs($finance);
+        $admin = User::factory()->create();
+        $this->actingAsWithRole($admin, 'Admin');
 
         $response = $this->postJson('/api/v1/royalties/calculate', [
             'period_month' => '2026-02',
@@ -42,13 +40,13 @@ class RoleAccessMatrixApiTest extends TestCase
             ->assertJsonPath('success', true);
     }
 
-    public function test_legal_cannot_mark_payment_paid(): void
+    public function test_author_cannot_mark_payment_paid(): void
     {
         $this->seed(RolePermissionSeeder::class);
 
-        $legal = User::factory()->create();
-        $legal->assignRole('Legal');
-        Sanctum::actingAs($legal);
+        $author = User::factory()->create();
+        $author->assignRole('User');
+        $this->actingAs($author);
 
         $payment = Payment::factory()->create();
 

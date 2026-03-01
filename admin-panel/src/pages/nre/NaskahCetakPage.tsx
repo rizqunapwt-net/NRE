@@ -30,9 +30,9 @@ interface BookRecord {
 
 // 6-step printing workflow (simpler, no ISBN/surat/approval)
 const WORKFLOW_STEPS = [
-    { value: 'incoming', label: '1. Naskah Masuk', color: '#1890ff', icon: '📥' },
+    { value: 'incoming', label: '1. Naskah Masuk', color: '#008B94', icon: '📥' },
     { value: 'review', label: '2. Review', color: '#fa8c16', icon: '🔍' },
-    { value: 'editorial', label: '3. Editing & Layout', color: '#1677ff', icon: '✏️' },
+    { value: 'editorial', label: '3. Editing & Layout', color: '#008B94', icon: '✏️' },
     { value: 'covering', label: '4. Desain Cover', color: '#722ed1', icon: '🎨' },
     { value: 'production', label: '5. Cetak', color: '#2f54eb', icon: '🖨️' },
     { value: 'done', label: '6. Selesai', color: '#52c41a', icon: '✅' },
@@ -157,7 +157,7 @@ const NaskahCetakPage: React.FC = () => {
         {
             title: 'Progress', key: 'progress', width: 120,
             render: (_: unknown, r: BookRecord) => (
-                <Progress percent={r.progress || 0} size="small" strokeColor={r.progress === 100 ? '#52c41a' : '#1677ff'} />
+                <Progress percent={r.progress || 0} size="small" strokeColor={r.progress === 100 ? '#52c41a' : '#008B94'} />
             ),
         },
         {
@@ -222,7 +222,7 @@ const NaskahCetakPage: React.FC = () => {
             <Row gutter={16} style={{ marginBottom: 16 }}>
                 <Col span={6}><Card size="small"><Statistic title="Total Naskah" value={total} prefix={<FileTextOutlined />} /></Card></Col>
                 <Col span={6}><Card size="small"><Statistic title="Selesai" value={done} valueStyle={{ color: '#52c41a' }} prefix={<CheckCircleOutlined />} /></Card></Col>
-                <Col span={6}><Card size="small"><Statistic title="Dalam Proses" value={inProcess} valueStyle={{ color: '#1677ff' }} prefix={<PrinterOutlined />} /></Card></Col>
+                <Col span={6}><Card size="small"><Statistic title="Dalam Proses" value={inProcess} valueStyle={{ color: '#008B94' }} prefix={<PrinterOutlined />} /></Card></Col>
                 <Col span={6}><Card size="small"><Statistic title="Revisi" value={revision} valueStyle={{ color: '#ff4d4f' }} prefix={<CloseCircleOutlined />} /></Card></Col>
             </Row>
 
@@ -331,7 +331,7 @@ const NaskahCetakPage: React.FC = () => {
                                 </Tag>
                                 <Text type="secondary">{detailData.tracking_code}</Text>
                             </div>
-                            <Progress percent={detailData.progress || 0} strokeColor={detailData.progress === 100 ? '#52c41a' : '#1677ff'} />
+                            <Progress percent={detailData.progress || 0} strokeColor={detailData.progress === 100 ? '#52c41a' : '#008B94'} />
                         </Card>
 
                         <Descriptions column={1} bordered size="small" style={{ marginBottom: 16 }}>

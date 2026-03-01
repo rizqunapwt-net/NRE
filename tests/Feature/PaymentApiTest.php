@@ -11,7 +11,6 @@ use App\Models\Sale;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class PaymentApiTest extends TestCase
@@ -21,12 +20,9 @@ class PaymentApiTest extends TestCase
     public function test_invoice_and_mark_paid_flow(): void
     {
         $this->seed(RolePermissionSeeder::class);
-        $this->seed(\Database\Seeders\AccountingAccountSeeder::class);
 
         $finance = User::factory()->create();
-        $finance->assignRole('Finance');
-
-        Sanctum::actingAs($finance);
+        $this->actingAsWithRole($finance, 'Admin');
 
         $author = Author::factory()->create();
         $book = Book::factory()->create(['author_id' => $author->id]);
