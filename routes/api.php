@@ -340,31 +340,7 @@ Route::prefix('v1/public')->group(function () {
     Route::get('/books/{book}/cover',   [BookFileController::class, 'cover']);
     Route::get('/books/{book}/preview', [BookFileController::class, 'preview']);
     Route::get('/books/{book}/preview-stream', [BookFileController::class, 'previewStream']);
-    
-    // Direct image serving by book ID (for <img src>)
-    Route::get('/books/{book}/cover-image', function (\App\Models\Book $book) {
-        if (!$book->cover_path) {
-            abort(404);
-        }
-
-        // 1. Try private books storage first
-        $path = storage_path('app/private/books/' . $book->cover_path);
-        
-        // 2. Try public storage if not found (for imported covers)
-        if (!file_exists($path)) {
-            $path = storage_path('app/public/' . $book->cover_path);
-        }
-
-        if (!file_exists($path)) {
-            abort(404);
-        }
-
-        $mime = @mime_content_type($path) ?: 'image/png';
-        return response()->file($path, [
-            'Content-Type' => $mime, 
-            'Cache-Control' => 'public, max-age=86400'
-        ]);
-    });
+    Route::get('/books/{book}/cover-image', [BookFileController::class, 'coverImage']);
 });
 
 // Authenticated file access (baca PDF penuh — harus punya akses beli)

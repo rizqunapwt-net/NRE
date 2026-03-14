@@ -151,7 +151,7 @@ class BookSeeder extends Seeder
                     'status' => 'published',
                     'is_published' => true,
                     'is_digital' => true,
-                    'language' => 'Bahasa Indonesia',
+                    'language' => 'id', // Use short code
                     'publisher' => 'Rizquna Publishing',
                     'publisher_city' => 'Jakarta',
                     'published_at' => now(),

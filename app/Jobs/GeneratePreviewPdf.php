@@ -33,60 +33,79 @@ class GeneratePreviewPdf implements ShouldQueue
     {
         ini_set('memory_limit', '512M');
 
-        $disk = 'books';
-        if (!Storage::disk($disk)->exists($this->fullPdfPath)) {
-            $disk = 'public';
+        $sourceDisk = (string) config('books.disk', 'books');
+        if (! Storage::disk($sourceDisk)->exists($this->fullPdfPath)) {
+            $sourceDisk = 'public';
         }
 
-        // Download full PDF ke temporary file
+        if (! Storage::disk($sourceDisk)->exists($this->fullPdfPath)) {
+            Log::warning("GeneratePreviewPdf skipped for book {$this->book->id}: source PDF missing at {$this->fullPdfPath}");
+            return;
+        }
+
+        $destinationDisk = (string) config('books.disk', 'books');
         $tempFullPath = tempnam(sys_get_temp_dir(), 'pdf_full_');
-        file_put_contents(
-            $tempFullPath,
-            Storage::disk($disk)->get($this->fullPdfPath)
-        );
+        $tempPreviewPath = tempnam(sys_get_temp_dir(), 'pdf_preview_');
+
+        if ($tempFullPath === false || $tempPreviewPath === false) {
+            Log::warning("GeneratePreviewPdf skipped for book {$this->book->id}: could not create temp files");
+            return;
+        }
 
         try {
-            // Buat preview PDF
-            $tempPreviewPath = tempnam(sys_get_temp_dir(), 'pdf_preview_');
-            $this->extractPages($tempFullPath, $tempPreviewPath, $this->previewPages);
+            file_put_contents(
+                $tempFullPath,
+                Storage::disk($sourceDisk)->get($this->fullPdfPath)
+            );
 
-            // Upload preview ke S3/MinIO
+            $pageCount = $this->extractPages($tempFullPath, $tempPreviewPath, $this->previewPages);
+            $previewPages = min($this->previewPages, $pageCount);
+
             $previewPath = "pdfs/preview/{$this->book->id}_preview.pdf";
-            Storage::disk($disk)->put(
+            Storage::disk($destinationDisk)->put(
                 $previewPath,
                 file_get_contents($tempPreviewPath),
                 ['visibility' => 'private']
             );
 
-            // Update book record
-            $this->book->update(['pdf_preview_path' => $previewPath]);
+            $bookUpdates = ['pdf_preview_path' => $previewPath];
+            if (! $this->book->total_pdf_pages) {
+                $bookUpdates['total_pdf_pages'] = $pageCount;
+            }
+            if (! $this->book->page_count) {
+                $bookUpdates['page_count'] = $pageCount;
+            }
 
-            // Update atau create book_previews record
+            $this->book->update($bookUpdates);
+
             BookPreview::updateOrCreate(
                 ['book_id' => $this->book->id],
                 [
-                    'preview_pages'    => $this->previewPages,
+                    'preview_pages'    => $previewPages,
                     'allow_preview'    => true,
                     'preview_pdf_path' => $previewPath,
                 ]
             );
-
-            @unlink($tempPreviewPath);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning("Could not generate preview for book {$this->book->id}: " . $e->getMessage());
+        } finally {
+            @unlink($tempPreviewPath);
+            @unlink($tempFullPath);
         }
-
-        // Cleanup temp files
-        @unlink($tempFullPath);
     }
 
     /**
      * Extract N halaman pertama dari PDF menggunakan FPDI dengan watermark.
      */
-    private function extractPages(string $sourcePath, string $destPath, int $pages): void
+    private function extractPages(string $sourcePath, string $destPath, int $pages): int
     {
         $pdf       = new Fpdi();
         $pageCount = $pdf->setSourceFile($sourcePath);
+
+        if ($pageCount < 1) {
+            throw new \RuntimeException('PDF tidak memiliki halaman yang bisa dipreview.');
+        }
+
         $extract   = min($pages, $pageCount);
 
         for ($i = 1; $i <= $extract; $i++) {
@@ -108,30 +127,24 @@ class GeneratePreviewPdf implements ShouldQueue
         }
 
         $pdf->Output($destPath, 'F');
+
+        return $pageCount;
     }
 
     /**
-     * Tambah watermark "PREVIEW" diagonal di tengah halaman.
+     * Tambah watermark sederhana yang kompatibel dengan FPDI/FPDF default.
      */
     private function addWatermark(Fpdi $pdf, float $width, float $height): void
     {
-        // Simpan state graphics
-        $pdf->SetAlpha(0.3); // Transparency 30%
-        $pdf->SetTextColor(200, 200, 200); // Abu-abu terang
-        $pdf->SetFont('helvetica', 'B', 50); // Font besar
-        
-        // Hitung posisi tengah
+        $pdf->SetTextColor(220, 220, 220);
+        $pdf->SetFont('Helvetica', 'B', 32);
+
         $text = 'PREVIEW';
         $textWidth = $pdf->GetStringWidth($text);
-        
-        // Rotasi 45 derajat di tengah halaman
-        $pdf->StartTransform();
-        $pdf->Rotate(45, $width / 2, $height / 2);
-        $pdf->Text(($width - $textWidth) / 2, $height / 2, $text);
-        $pdf->StopTransform();
-        
-        // Restore state
-        $pdf->SetAlpha(1.0);
+        $x = max(8.0, ($width - $textWidth) / 2);
+        $y = max(35.0, $height / 2);
+
+        $pdf->Text($x, $y, $text);
         $pdf->SetTextColor(0, 0, 0);
     }
 
@@ -140,7 +153,7 @@ class GeneratePreviewPdf implements ShouldQueue
      */
     private function addFooter(Fpdi $pdf, float $width, float $height, int $currentPage, int $totalPages): void
     {
-        $pdf->SetFontSize(8);
+        $pdf->SetFont('Helvetica', '', 8);
         $pdf->SetTextColor(100, 100, 100);
         $pdf->SetY($height - 15);
         

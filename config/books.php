@@ -17,6 +17,10 @@ return [
     // Preview
     'preview_pages' => env('BOOKS_PREVIEW_PAGES', 10),
 
+    // Maintenance
+    'cleanup_chunk_size' => env('BOOKS_CLEANUP_CHUNK_SIZE', 200),
+    'cover_download_timeout' => env('BOOKS_COVER_DOWNLOAD_TIMEOUT', 30),
+
     // Allowed MIME types
     'allowed_cover_types' => ['image/jpeg', 'image/png', 'image/webp'],
     'allowed_pdf_types'   => ['application/pdf'],

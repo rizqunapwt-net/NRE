@@ -14,7 +14,12 @@ use App\Jobs\SyncBookToGoogleWorkspace;
 
 class BookStorageService
 {
-    private string $disk = 'books';
+    private string $disk;
+
+    public function __construct()
+    {
+        $this->disk = (string) config('books.disk', 'books');
+    }
 
     /**
      * Upload cover buku dan antrekan thumbnail generation.
@@ -121,6 +126,14 @@ class BookStorageService
             return null;
         }
 
+        if (filter_var($book->cover_path, FILTER_VALIDATE_URL)) {
+            return $book->cover_path;
+        }
+
+        if ($this->shouldServeCoverViaApp($book->cover_path)) {
+            return url("/api/v1/public/books/{$book->id}/cover-image");
+        }
+
         $sizePath = match ($size) {
             'original' => $book->cover_path,
             'large'    => "covers/large/{$book->id}_large.jpg",
@@ -132,6 +145,10 @@ class BookStorageService
         // Fallback ke original jika thumbnail belum di-generate
         if (! Storage::disk($this->disk)->exists($sizePath)) {
             $sizePath = $book->cover_path;
+        }
+
+        if (! Storage::disk($this->disk)->exists($sizePath)) {
+            return null;
         }
 
         $ttl = config('books.cover_url_ttl', 3600);
@@ -225,7 +242,12 @@ class BookStorageService
         ]);
 
         foreach ($paths as $path) {
+            if (filter_var($path, FILTER_VALIDATE_URL)) {
+                continue;
+            }
+
             Storage::disk($this->disk)->delete($path);
+            Storage::disk('public')->delete($path);
         }
     }
 
@@ -252,30 +274,106 @@ class BookStorageService
      */
     public function getCoverUrlWithFallback(Book $book, string $size = 'medium'): ?string
     {
-        if (!$book->cover_path) {
+        $coverUrl = $this->getCoverUrl($book, $size);
+        if ($coverUrl) {
+            return $coverUrl;
+        }
+
+        return $this->getCoverUrlFromDrive($book, $size);
+    }
+
+    public function resolveCoverStorage(?string $path): ?array
+    {
+        if (! $path || filter_var($path, FILTER_VALIDATE_URL)) {
             return null;
         }
 
-        // Try S3 first
-        $sizePath = match ($size) {
-            'original' => $book->cover_path,
-            'large'    => "covers/large/{$book->id}_large.jpg",
-            'medium'   => "covers/medium/{$book->id}_medium.jpg",
-            'thumb'    => "covers/thumb/{$book->id}_thumb.jpg",
-            default    => "covers/medium/{$book->id}_medium.jpg",
-        };
-
-        try {
-            if (Storage::disk($this->disk)->exists($sizePath)) {
-                $ttl = config('books.cover_url_ttl', 3600);
-                return $this->getSignedUrl($sizePath, $ttl);
+        foreach ([$this->disk, 'public'] as $disk) {
+            try {
+                if (Storage::disk($disk)->exists($path)) {
+                    return [
+                        'disk' => $disk,
+                        'path' => $path,
+                    ];
+                }
+            } catch (\Throwable $exception) {
+                \Illuminate\Support\Facades\Log::warning('Cover storage lookup failed', [
+                    'disk' => $disk,
+                    'path' => $path,
+                    'error' => $exception->getMessage(),
+                ]);
             }
-        } catch (\Exception $e) {
-            // Log error but continue to fallback
-            \Illuminate\Support\Facades\Log::warning('Cover URL generation failed: ' . $e->getMessage());
         }
 
-        // Fallback to Google Drive
-        return $this->getCoverUrlFromDrive($book, $size);
+        return null;
+    }
+
+    public function coverExists(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return true;
+        }
+
+        return $this->resolveCoverStorage($path) !== null;
+    }
+
+    public function cleanupMissingCoverPaths(bool $dryRun = false): array
+    {
+        $summary = [
+            'checked' => 0,
+            'valid' => 0,
+            'external' => 0,
+            'missing' => 0,
+            'cleared' => 0,
+            'affected_books' => [],
+        ];
+
+        Book::query()
+            ->select(['id', 'title', 'cover_path'])
+            ->whereNotNull('cover_path')
+            ->where('cover_path', '!=', '')
+            ->orderBy('id')
+            ->chunkById((int) config('books.cleanup_chunk_size', 200), function ($books) use (&$summary, $dryRun): void {
+                foreach ($books as $book) {
+                    $summary['checked']++;
+
+                    if (filter_var($book->cover_path, FILTER_VALIDATE_URL)) {
+                        $summary['external']++;
+                        continue;
+                    }
+
+                    if ($this->coverExists($book->cover_path)) {
+                        $summary['valid']++;
+                        continue;
+                    }
+
+                    $summary['missing']++;
+                    $summary['affected_books'][] = [
+                        'id' => $book->id,
+                        'title' => $book->title,
+                        'cover_path' => $book->cover_path,
+                    ];
+
+                    if (! $dryRun) {
+                        $book->forceFill(['cover_path' => null])->save();
+                        $summary['cleared']++;
+                    }
+                }
+            });
+
+        return $summary;
+    }
+
+    private function shouldServeCoverViaApp(string $path): bool
+    {
+        if (Storage::disk('public')->exists($path)) {
+            return true;
+        }
+
+        return config('filesystems.disks.' . $this->disk . '.driver', 's3') === 'local';
     }
 }

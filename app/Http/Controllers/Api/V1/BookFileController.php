@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Services\BookAccessService;
 use App\Services\BookStorageService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -176,6 +177,44 @@ class BookFileController extends Controller
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline',
             'Cache-Control'       => 'public, max-age=3600',
+        ]);
+    }
+
+    /**
+     * GET /api/v1/public/books/{book}/cover-image
+     * Direct image response for <img src>, supports private books disk and public imports.
+     */
+    public function coverImage(Book $book): StreamedResponse|JsonResponse|RedirectResponse|Response
+    {
+        if (! $book->cover_path) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cover tidak tersedia',
+            ], 404);
+        }
+
+        if (filter_var($book->cover_path, FILTER_VALIDATE_URL)) {
+            return redirect()->away($book->cover_path);
+        }
+
+        $location = $this->storageService->resolveCoverStorage($book->cover_path);
+        if (! $location) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File cover tidak ditemukan',
+            ], 404);
+        }
+
+        $mime = 'image/png';
+        try {
+            $mime = Storage::disk($location['disk'])->mimeType($location['path']) ?: $mime;
+        } catch (\Throwable) {
+            // Fallback to default mime type when storage metadata is unavailable.
+        }
+
+        return Storage::disk($location['disk'])->response($location['path'], basename($location['path']), [
+            'Content-Type' => $mime,
+            'Cache-Control' => 'public, max-age=86400',
         ]);
     }
 

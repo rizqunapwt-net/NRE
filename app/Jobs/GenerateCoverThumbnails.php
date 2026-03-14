@@ -20,7 +20,7 @@ class GenerateCoverThumbnails implements ShouldQueue
     public int $tries = 3;
     public array $backoff = [10, 30, 60];
 
-    private array $sizes = [
+    private array $fallbackSizes = [
         'large'  => [800, 1200],
         'medium' => [400, 600],
         'thumb'  => [200, 300],
@@ -35,16 +35,20 @@ class GenerateCoverThumbnails implements ShouldQueue
 
     public function handle(): void
     {
-        $disk    = 'books';
+        $disk    = (string) config('books.disk', 'books');
         $manager = new ImageManager(new Driver());
+        $sourceDisk = Storage::disk($disk)->exists($this->originalPath) ? $disk : 'public';
 
-        // Download original dari storage
-        $originalContent = Storage::disk($disk)->get($this->originalPath);
-        $image           = $manager->read($originalContent);
+        if (! Storage::disk($sourceDisk)->exists($this->originalPath)) {
+            Log::warning("GenerateCoverThumbnails skipped for book {$this->book->id}: original cover missing at {$this->originalPath}");
+            return;
+        }
 
-        foreach ($this->sizes as $sizeName => [$width, $height]) {
-            $resized = clone $image;
-            $resized->cover($width, $height);
+        $originalContent = Storage::disk($sourceDisk)->get($this->originalPath);
+        $sizes = config('books.cover_sizes', $this->fallbackSizes);
+
+        foreach ($sizes as $sizeName => [$width, $height]) {
+            $resized = $manager->read($originalContent)->cover($width, $height);
 
             $path = "covers/{$sizeName}/{$this->book->id}_{$sizeName}.jpg";
 
