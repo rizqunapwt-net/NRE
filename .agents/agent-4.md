@@ -63,6 +63,11 @@ services:
   minio:  # Object storage (dev only)
 ```
 
+## Setup Git & Repository
+- **Remote**: `https://github.com/rizqunapwt-net/NRE.git`
+- **Branch**: `main`
+- **Push Protection**: Aktif (Jangan commit file `.env` atau `ssh.md`)
+
 ## Tugas Utama
 
 ### 1. docker-compose.prod.yml
