@@ -75,14 +75,19 @@ class PublicSiteController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->has('category')) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $request->category));
+            $categorySlug = $request->category;
+            $query->whereHas('category', function ($q) use ($categorySlug) {
+                $q->where('slug', $categorySlug);
+            });
         }
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                    ->orWhereHas('author', fn ($a) => $a->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('author', function ($a) use ($search) {
+                        $a->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -102,13 +107,17 @@ class PublicSiteController extends Controller
      */
     public function bookDetail(string $idOrSlug): JsonResponse
     {
-        $book = Book::with(['author', 'preview', 'assignments.marketplace', 'marketplaceListings.marketplace'])
-            ->where('status', 'published')
-            ->where(function ($q) use ($idOrSlug) {
-                $q->where('id', $idOrSlug)
-                    ->orWhere('slug', $idOrSlug);
-            })
-            ->firstOrFail();
+        $query = Book::with(['author', 'preview', 'assignments.marketplace', 'marketplaceListings.marketplace'])
+            ->where('status', 'published');
+
+        // Fix: Separate queries to avoid PostgreSQL type casting issues
+        if (is_numeric($idOrSlug)) {
+            $query->where('id', (int) $idOrSlug);
+        } else {
+            $query->where('slug', $idOrSlug);
+        }
+
+        $book = $query->firstOrFail();
 
         $data = $this->transformBook($book);
 
@@ -145,7 +154,7 @@ class PublicSiteController extends Controller
     {
         $coverUrl = null;
         if ($book->cover_path) {
-            $coverUrl = '/api/v1/public/books/' . $book->id . '/cover-image';
+            $coverUrl = url('/api/v1/public/books/' . $book->id . '/cover-image');
         }
 
         return [

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Input, Select, Pagination, Spin, Empty, Tag } from 'antd';
-import { BookOutlined } from '@ant-design/icons';
+import { Input, Select, Pagination, Spin, Empty } from 'antd';
+import { BookOutlined, StarFilled } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
+import { useSEO } from '../../hooks/useSEO';
+import { CatalogSkeleton } from '../../components/SkeletonLoaders';
 import './EbookCatalogPage.css';
 
 const { Search } = Input;
@@ -16,6 +18,27 @@ const EbookCatalogPage: React.FC = () => {
   const [category, setCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // Set SEO metadata
+  useSEO({
+    title: 'Katalog Buku',
+    description: 'Jelajahi koleksi buku berkualitas dari Penerbit Rizquna Elfath. Temukan buku dalam berbagai kategori dengan harga terjangkau.',
+    url: window.location.href
+  });
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('public/categories');
+      setCategories(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
   useEffect(() => {
     fetchBooks();
@@ -27,12 +50,12 @@ const EbookCatalogPage: React.FC = () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         per_page: '12',
-        ...(category !== 'all' && { category_id: category }),
-        ...(searchTerm && { q: searchTerm }),
+        ...(category !== 'all' && { category: category }),
+        ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await api.get(`/api/v1/public/repository?${params}`);
-      const data = response.data.data;
+      const response = await api.get(`public/catalog?${params}`);
+      const data = response.data;
       
       setBooks(data.data || []);
       setTotal(data.total || 0);
@@ -44,7 +67,7 @@ const EbookCatalogPage: React.FC = () => {
   };
 
   const handleBookClick = (slug: string) => {
-    navigate(`/katalog/${slug}`);
+    navigate(`/buku/${slug}`);
   };
 
   return (
@@ -73,76 +96,75 @@ const EbookCatalogPage: React.FC = () => {
         
         <Select
           placeholder="Semua Kategori"
-          size="large"
           className="catalog-filter-select"
-          value={category}
-          onChange={setCategory}
+          defaultValue="all"
+          onChange={(value) => {
+            setCategory(value);
+            setCurrentPage(1);
+          }}
         >
           <Option value="all">Semua Kategori</Option>
-          <Option value="1">Edukasi</Option>
-          <Option value="2">Fiksi</Option>
-          <Option value="3">Sains</Option>
-          <Option value="4">Bisnis</Option>
-          <Option value="5">Teknologi</Option>
+          {categories.map((c: any) => (
+            <Option key={c.id} value={c.slug}>{c.name}</Option>
+          ))}
         </Select>
       </div>
 
       {/* Books Grid */}
       {loading ? (
-        <div className="catalog-loading">
-          <Spin size="large" tip="Memuat katalog..." />
-        </div>
+        <CatalogSkeleton />
       ) : books.length === 0 ? (
         <div className="catalog-empty">
           <Empty description="Tidak ada buku ditemukan" />
         </div>
       ) : (
         <>
-          <Row gutter={[24, 24]} className="catalog-grid">
+          <div className="catalog-grid">
             {books.map((book) => (
-              <Col xs={24} sm={12} lg={8} xl={6} key={book.id}>
-                <Card
-                  hoverable
-                  className="book-card"
-                  onClick={() => handleBookClick(book.slug)}
-                  cover={
-                    <div className="book-cover-wrapper">
-                      {book.cover_url ? (
-                        <img alt={book.title} src={book.cover_url} className="book-cover" />
-                      ) : (
-                        <div className="book-cover-placeholder">
-                          <BookOutlined size={48} />
-                        </div>
-                      )}
-                      {book.is_bestseller && (
-                        <Tag color="red" className="bestseller-tag">Bestseller</Tag>
-                      )}
+              <div 
+                key={book.id} 
+                className="book-card"
+                onClick={() => handleBookClick(book.slug)}
+              >
+                <div className="book-cover-wrapper">
+                  {book.cover_url ? (
+                    <img alt={book.title} src={book.cover_url} className="book-cover" />
+                  ) : (
+                    <div className="book-cover-placeholder">
+                      <BookOutlined />
                     </div>
-                  }
-                >
-                  <div className="book-info">
-                    <h3 className="book-title">{book.title}</h3>
-                    {book.subtitle && <p className="book-subtitle">{book.subtitle}</p>}
-                    <p className="book-author">
-                      <span className="author-label">Penulis:</span> {book.author?.name || 'Anonim'}
-                    </p>
-                    <div className="book-meta">
-                      <span className="book-year">{book.year || 'N/A'}</span>
-                      {book.isbn && (
-                        <>
-                          <span className="book-divider">•</span>
-                          <span className="book-isbn">ISBN: {book.isbn}</span>
-                        </>
-                      )}
-                    </div>
-                    {book.category && (
-                      <Tag color="blue" className="book-category">{book.category.name}</Tag>
+                  )}
+                  {book.is_bestseller && (
+                    <div className="bestseller-badge">Bestseller</div>
+                  )}
+                </div>
+                
+                <div className="book-info">
+                  <h3 className="book-title">{book.title}</h3>
+                  <p className="book-author">{book.author?.nama || book.author?.name || 'Penulis Tidak Diketahui'}</p>
+                  
+                  <div className="book-rating">
+                    {[...Array(5)].map((_, i) => {
+                      const rating = book.rating || 4;
+                      return <StarFilled key={i} className={i < Math.round(rating) ? 'star-filled' : 'star-empty'} />;
+                    })}
+                    <span className="rating-text">({(book.rating || 4.0).toFixed(1)})</span>
+                  </div>
+                  
+                  <div className="book-price">
+                    <span className="price-main">
+                      {Number(book.price) > 0 ? `Rp ${Number(book.price).toLocaleString('id-ID')}` : 'Hubungi Kami'}
+                    </span>
+                    {book.original_price && Number(book.original_price) > Number(book.price) && (
+                      <span className="price-original">
+                        Rp {Number(book.original_price).toLocaleString('id-ID')}
+                      </span>
                     )}
                   </div>
-                </Card>
-              </Col>
+                </div>
+              </div>
             ))}
-          </Row>
+          </div>
 
           <div className="catalog-pagination">
             <Pagination

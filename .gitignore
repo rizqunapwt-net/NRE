@@ -25,3 +25,5 @@ yarn-error.log
 /public/admin
 /reports
 .DS_Store
+rizquna_erp_test_*
+*-journal

@@ -39,9 +39,6 @@ RUN pecl install redis \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Install Laravel Horizon
-RUN composer global require laravel/horizon
-
 WORKDIR /var/www/html
 
 # Create supervisor log directory

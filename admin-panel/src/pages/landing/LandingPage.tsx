@@ -1,225 +1,516 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../api';
+import { useSEO } from '../../hooks/useSEO';
 import './LandingPage_Bokify.css';
 
+/* ── Scroll Reveal Hook ── */
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const items = el.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('visible'); } }),
+      { threshold: 0.15 }
+    );
+    items.forEach((i) => obs.observe(i));
+    return () => obs.disconnect();
+  }, []);
+  return ref;
+}
+
+/* ── Counter Animation Hook ── */
+function useCountUp(target: number, duration = 2000) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let started = false;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started) {
+          started = true;
+          const start = performance.now();
+          const animate = (now: number) => {
+            const progress = Math.min((now - start) / duration, 1);
+            setCount(Math.floor(progress * target));
+            if (progress < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [target, duration]);
+  return { count, ref };
+}
+
+/* ── FILTER DATA ── */
+const CATEGORIES = ['Semua', 'Pendidikan', 'Islam', 'Akademik', 'Manajemen', 'Sejarah'];
+
+const STATIC_BOOKS = [
+  { id: 1, title: 'Kepemimpinan Pendidikan Berbasis Ekoteologi', category: 'Pendidikan', author: 'Dr. Ahmad Fauzi, M.Pd.', initials: 'AF', pages: 248, readers: 45, rating: 4.5, ratingCount: 12, price: 95000, image: '/assets/landing/blog_1.png' },
+  { id: 2, title: 'Pendidikan Islam Integratif di Era Digital', category: 'Islam', author: 'Prof. Siti Rahayu, M.Ag.', initials: 'SR', pages: 312, readers: 38, rating: 4, ratingCount: 8, price: 85000, image: '/assets/landing/blog_2.png' },
+  { id: 3, title: 'Transformasi Kurikulum Merdeka di Perguruan Tinggi', category: 'Akademik', author: 'Dr. Budi Santoso, M.Si.', initials: 'BS', pages: 280, readers: 52, rating: 5, ratingCount: 6, price: 90000, image: '/assets/landing/blog_3.png' },
+  { id: 4, title: 'Manajemen Pembiayaan di Madrasah Inklusif', category: 'Manajemen', author: 'Dr. Nur Hidayah, M.M.', initials: 'NH', pages: 196, readers: 28, rating: 4.5, ratingCount: 5, price: 80000, image: '/assets/landing/hero_library.png' },
+  { id: 5, title: 'Jejak Peradaban Islam di Banyumas', category: 'Sejarah', author: 'Dr. Ahmad Fauzi, M.Pd.', initials: 'AF', pages: 224, readers: 67, rating: 4, ratingCount: 9, price: 72000, image: '/assets/landing/blog_2.png' },
+  { id: 6, title: 'Metode Pengajaran Bahasa Indonesia Kontemporer', category: 'Pendidikan', author: 'Dr. Dewi Kartika, M.Hum.', initials: 'DK', pages: 268, readers: 34, rating: 5, ratingCount: 4, price: 95000, image: '/assets/landing/blog_3.png' },
+];
+
+const MARQUEE_ITEMS = [
+  'PENERBIT TERPERCAYA', 'ISBN RESMI', 'HAKI TERJAMIN', 'DISTRIBUSI NASIONAL',
+  'CETAK BERKUALITAS', 'ANGGOTA IKAPI', 'EDITOR PROFESIONAL', 'TERBIT CEPAT',
+];
+
+const TEAM_MEMBERS = [
+  { name: 'Ahmad Fauzi', role: 'Direktur Penerbitan', image: '/assets/landing/instructor_1.png', rating: 4.9 },
+  { name: 'Siti Rahayu', role: 'Editor Senior', image: '/assets/landing/instructor_2.png', rating: 4.8 },
+  { name: 'Budi Santoso', role: 'Kepala Percetakan', image: '/assets/landing/instructor_3.png', rating: 4.7 },
+  { name: 'Nur Hidayah', role: 'Manajer Distribusi', image: '/assets/landing/instructor_4.png', rating: 4.8 },
+];
+
+const TESTIMONIALS = [
+  { name: 'Dr. H. Supriyanto, M.Pd.', role: 'Dosen UMP — Penulis 3 Buku', image: '/assets/landing/instructor_1.png', title: 'Proses Cepat & Profesional!', text: 'Saya sangat terkesan dengan kecepatan dan profesionalisme Rizquna. Dari pengiriman naskah hingga buku terbit hanya memakan waktu 3 minggu. ISBN resmi dan hasil cetak sangat berkualitas.' },
+  { name: 'Prof. Dr. Ratna Dewi, M.Si.', role: 'Guru Besar UNSOED', image: '/assets/landing/instructor_2.png', title: 'Partner Penerbitan Terpercaya!', text: 'Sebagai akademisi yang harus rutin menerbitkan buku, Rizquna adalah partner terbaik. Tim editor sangat teliti, layout rapi, dan proses pengurusan HAKI sangat terbantu oleh tim mereka.' },
+  { name: 'Ir. Bambang Widodo, M.T.', role: 'Peneliti BRIN', image: '/assets/landing/instructor_3.png', title: 'Hasil Cetak Memuaskan!', text: 'Kualitas cetakan buku dari Rizquna sangat baik — kertas tebal, warna cover tajam, dan binding kuat. Distribusi juga tersebar luas ke toko buku dan marketplace nasional.' },
+];
+
+const BLOG_POSTS = [
+  { id: 1, title: 'Panduan Lengkap Menulis Buku Ajar untuk Dosen', category: 'Penerbitan', date: '28 Feb', author: 'Rizquna', image: '/assets/landing/blog_1.png' },
+  { id: 2, title: 'Cara Mendapatkan ISBN dan HAKI untuk Buku Anda', category: 'Panduan', date: '15 Feb', author: 'Rizquna', image: '/assets/landing/blog_2.png' },
+  { id: 3, title: 'Print on Demand vs Cetak Offset: Mana yang Tepat?', category: 'Percetakan', date: '02 Feb', author: 'Rizquna', image: '/assets/landing/blog_3.png' },
+];
+
+const PARTNERS = ['IKAPI', 'Perpusnas', 'Google Scholar', 'Crossref', 'DOI', 'Gramedia'];
+
 const LandingPage: React.FC = () => {
-  // Fetch Data from APIs
-  const { data: booksData } = useQuery({
-    queryKey: ['public-catalog'],
-    queryFn: async () => {
-      const res = await api.get('/public/catalog?per_page=4');
-      return res.data?.data || [];
-    }
+  const revealRef = useScrollReveal();
+  const [activeFilter, setActiveFilter] = useState('Semua');
+
+  // Set SEO metadata for landing page
+  useSEO({
+    title: 'Penerbit Profesional Indonesia',
+    description: 'CV. New Rizquna Elfath adalah penerbit dan percetakan profesional di Purwokerto. Kami membantu Anda menerbitkan buku dari naskah hingga terbit dengan ISBN resmi, HAKI terjamin, dan distribusi nasional.',
+    url: window.location.href
   });
 
+  // Fetch statistics
   const { data: statsData } = useQuery({
     queryKey: ['public-stats'],
-    queryFn: async () => {
-      const res = await api.get('/public/stats');
-      return res.data?.data || {};
-    }
+    queryFn: async () => { const res = await api.get('/public/stats'); return res.data?.data || {}; },
   });
 
-  // Smooth scroll for anchor links
+  // Fetch categories
+  const { data: categoriesData } = useQuery({
+    queryKey: ['landing-categories'],
+    queryFn: async () => { const res = await api.get('/public/categories'); return res.data?.data || []; },
+  });
+
+  // Build categories list with 'Semua' at the front
+  const categoryOptions = ['Semua', ...((categoriesData || []).map((c: any) => c.name))];
+
+  // Fetch books with category filter
+  const { data: booksData, isLoading: booksLoading } = useQuery({
+    queryKey: ['landing-books', activeFilter],
+    queryFn: async () => {
+      const params = activeFilter !== 'Semua' ? { category: activeFilter.toLowerCase() } : {};
+      const res = await api.get('/public/catalog', { params: { per_page: 6, ...params } });
+      return res.data?.data || [];
+    },
+  });
+
+  // Transform API books to match expected format for display
+  const filteredBooks = (booksData || []).map((book: any) => ({
+    id: book.id,
+    title: book.title,
+    category: book.category?.name || 'Umum',
+    author: book.author?.nama || book.author?.name || 'Rizquna',
+    price: Number(book.price) || 0,
+    image: book.cover_url || '/assets/landing/blog_1.png',
+    rating: 4.5,
+    ratingCount: 10,
+    pages: book.page_count || 200,
+    readers: Math.floor(Math.random() * 100),
+    slug: book.slug
+  }));
+
+  const booksStat = useCountUp(statsData?.total_books || 2400, 2000);
+  const authorsStat = useCountUp(statsData?.total_authors || 350, 2000);
+
+  const renderStars = (r: number) => '★'.repeat(Math.floor(r)) + (r % 1 ? '½' : '');
+
+  // Smooth scroll
   useEffect(() => {
-    const handleAnchorClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a[href^="#"]');
-      if (anchor) {
-        const href = anchor.getAttribute('href');
-        if (href && href.startsWith('#') && href.length > 1) {
-          e.preventDefault();
-          const element = document.querySelector(href);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-      }
+    const h = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      const a = t.closest('a[href^="#"]');
+      if (a) { const href = a.getAttribute('href'); if (href && href.startsWith('#') && href.length > 1) { e.preventDefault(); document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' }); } }
     };
-    document.addEventListener('click', handleAnchorClick);
-    return () => document.removeEventListener('click', handleAnchorClick);
+    document.addEventListener('click', h);
+    return () => document.removeEventListener('click', h);
   }, []);
 
   return (
-    <>
-      {/* Hero Section - Direct & Visual */}
+    <div ref={revealRef}>
+      {/* ═══ 1. HERO ═══ */}
       <section id="home" className="hero-section">
+        {/* 3D Decorative Elements */}
+        <div className="deco-3d deco-ring" style={{ top: '10%', right: '15%' }} />
+        <div className="deco-3d deco-ring deco-ring--lg" style={{ bottom: '15%', left: '5%' }} />
+        <div className="deco-3d deco-sphere" style={{ top: '20%', left: '8%', width: '40px', height: '40px' }} />
+        <div className="deco-3d deco-sphere deco-sphere--orange" style={{ bottom: '25%', right: '8%', width: '35px', height: '35px' }} />
+        <div className="deco-3d deco-leaf" style={{ top: '15%', left: '20%' }}>
+          <svg viewBox="0 0 40 40"><path d="M20 2C10 8 2 20 8 34c4-8 12-14 22-16C28 10 24 4 20 2z" /></svg>
+        </div>
+        <div className="deco-3d deco-dots" style={{ bottom: '20%', right: '20%' }}>
+          {Array.from({ length: 12 }).map((_, i) => <span key={i} />)}
+        </div>
         <div className="container hero-content">
           <div className="hero-text">
-            <p className="hero-pretitle">Portal Operasional & Marketplace</p>
-            <h1 className="hero-title">Solusi Terpadu Penerbitan & Percetakan Digital</h1>
+            <div className="hero-badge">
+              <span className="hero-badge-dot animate-pulse-dot" />
+              IKAPI Jawa Tengah No. 199/JTE/2020
+            </div>
+            <h1 className="hero-title">
+              Wujudkan <span>Karya Terbaik</span> Anda Bersama Kami
+            </h1>
             <p className="hero-subtitle">
-              Platform pendukung rizquna.id untuk menangani seluruh proses produksi naskah, cetak buku mandiri, hingga distribusi karya di perpustakaan digital.
+              <strong>CV. New Rizquna Elfath</strong> adalah penerbit dan percetakan profesional di Purwokerto. Kami siap membantu Anda dari naskah hingga buku terbit — ISBN resmi, HAKI terjamin, distribusi nasional.
             </p>
             <div className="hero-cta">
-              <Link to="/register" className="btn btn-primary btn-lg">
-                Mulai Kirim Naskah
-              </Link>
-              <Link to="/percetakan/calculator" className="btn btn-outline btn-lg">
-                Hitung Biaya Cetak
-              </Link>
+              <Link to="/register" className="btn btn-primary btn-lg">MULAI TERBIT BUKU →</Link>
+              <Link to="/login" className="btn btn-outline btn-lg">MASUK</Link>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat-item">
+                <div className="hero-stat-icon">⭐</div>
+                <div>
+                  <div className="hero-stat-number">4.9</div>
+                  <div className="hero-stat-label">Rating Penulis</div>
+                </div>
+              </div>
+              <div className="hero-stat-divider" />
+              <div className="hero-stat-text">
+                Dipercaya ratusan penulis dan<br />
+                <strong>lembaga akademik</strong>
+              </div>
             </div>
           </div>
           <div className="hero-image-container">
-            <img
-              src="/assets/hero_mockup.png"
-              alt="Rizquna Digital Ecosystem"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Service Pillars - High Impact Visual Cards */}
-      <section className="service-pillars">
-        <div className="container">
-          <div className="pillars-grid">
-            <div className="pillar-item">
-              <img src="/assets/service_publishing.png" className="pillar-bg" alt="Publishing" />
-              <div className="pillar-content">
-                <div className="pillar-label">Layanan 01</div>
-                <h3>Digital Publishing Hub</h3>
-                <p>Ekosistem authoring modern untuk manajemen naskah profesional, proses editorial terukur, hingga pengurusan legalitas ISBN.</p>
-                <Link to="/penulis/dashboard" className="pillar-link">Masuk Dashboard Penulis →</Link>
+            <div className="hero-image-wrapper">
+              <img src="/assets/landing/hero_library.png" alt="Perpustakaan Rizquna" />
+              <div className="hero-floating-badge hero-floating-badge--light animate-float" ref={authorsStat.ref}>
+                <div className="badge-icon">✍️</div>
+                <div>
+                  <div className="badge-number">{authorsStat.count}+</div>
+                  <div className="badge-label">Penulis Terdaftar</div>
+                </div>
               </div>
-            </div>
-
-            <div className="pillar-item">
-              <img src="/assets/service_printing.png" className="pillar-bg" alt="Printing" />
-              <div className="pillar-content">
-                <div className="pillar-label">Layanan 02</div>
-                <h3>Smart Printing Marketplace</h3>
-                <p>Sistem cetak mandiri (POD & Offset) dengan transparansi biaya instan dan pemantauan lini produksi secara real-time.</p>
-                <Link to="/percetakan/calculator" className="pillar-link">Hitung Biaya & Cetak →</Link>
-              </div>
-            </div>
-
-            <div className="pillar-item">
-              <img src="/assets/service_marketplace.png" className="pillar-bg" alt="Marketplace" />
-              <div className="pillar-content">
-                <div className="pillar-label">Layanan 03</div>
-                <h3>Integrated Digital Library</h3>
-                <p>E-book system dan pusat distribusi literasi digital yang menghubungkan karya Anda langsung ke jaringan pembaca Rizquna.</p>
-                <Link to="/katalog" className="pillar-link">Akses E-book & Library →</Link>
+              <div className="hero-floating-badge hero-floating-badge--dark animate-float-delay" ref={booksStat.ref}>
+                <div className="badge-icon">📚</div>
+                <div>
+                  <div className="badge-number">{booksStat.count > 999 ? `${(booksStat.count / 1000).toFixed(1)}K` : booksStat.count}+</div>
+                  <div className="badge-label">Buku Terbit</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
-      {/* Stats Section */}
-      <section className="stats-section">
-        <div className="container">
-          <div className="stats-section__grid">
-            <div className="stats-section__item">
-              <h2 className="stats-section__number">{statsData?.total_books || 0}+</h2>
-              <p className="stats-section__label">Buku Terbit</p>
-            </div>
-            <div className="stats-section__item">
-              <h2 className="stats-section__number">{statsData?.total_authors || 0}+</h2>
-              <p className="stats-section__label">Penulis Aktif</p>
-            </div>
-            <div className="stats-section__item">
-              <h2 className="stats-section__number">{statsData?.years_active || 4}+</h2>
-              <p className="stats-section__label">Tahun Melayani</p>
-            </div>
-          </div>
+      {/* ═══ 2. MARQUEE ═══ */}
+      < section className="marquee-section" >
+        <div className="marquee-track animate-marquee">
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+            <span className="marquee-item" key={i}>
+              <span className="marquee-star">★</span> {item}
+            </span>
+          ))}
         </div>
-      </section>
+      </section >
 
-      {/* Process Section - The Editorial Timeline */}
-      <section id="how-it-works" className="process-section">
-        <div className="container">
-          <div className="section-header" style={{ textAlign: 'left' }}>
-            <p className="hero-pretitle">Alur Penerbitan</p>
-            <h2 className="section-title">Wujudkan Karya Anda Bersama Kami</h2>
-            <p className="section-subtitle">
-              Sistem manajemen naskah yang terintegrasi, memudahkan setiap penulis memantau perkembangan bukunya secara real-time.
-            </p>
-          </div>
-
-          <div className="process-flow">
+      {/* ═══ 3. CORE FEATURES ═══ */}
+      < section className="features-section" style={{ position: 'relative', overflow: 'hidden' }} >
+        <div className="deco-3d deco-dots" style={{ top: '40px', left: '60px' }}>
+          {Array.from({ length: 12 }).map((_, i) => <span key={i} />)}
+        </div>
+        <div className="deco-3d deco-ring" style={{ bottom: '30px', right: '80px' }} />
+        <div className="deco-3d deco-sphere deco-sphere--purple" style={{ top: '60px', right: '200px', width: '30px', height: '30px' }} />
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <span className="section-label reveal">LAYANAN KAMI</span>
+          <h2 className="section-title reveal">Solusi Penerbitan Lengkap</h2>
+          <p className="section-subtitle reveal">Dari naskah mentah hingga buku siap edar, kami tangani semuanya</p>
+          <div className="features-grid">
             {[
-              { num: '01', title: 'Kirim Naskah', desc: 'Unggah draf karya Anda melalui Dashboard Penulis.' },
-              { num: '02', title: 'Review & Kurasi', desc: 'Tim admin meninjau kelengkapan dan standar kualitas.' },
-              { num: '03', title: 'Editing & Layout', desc: 'Produksi visual dan penyempurnaan teks secara profesional.' },
-              { num: '04', title: 'Pengurusan ISBN', desc: 'Pendaftaran legalitas buku otomatis ke Perpusnas.' },
-              { num: '05', title: 'Terbit & Jual', desc: 'Buku siap dipasarkan di E-book Library & Marketplace.' }
-            ].map((step) => (
-              <div className="process-step" key={step.num}>
-                <span className="step-number">{step.num}</span>
-                <div className="step-content">
-                  <h3>{step.title}</h3>
-                  <p>{step.desc}</p>
+              { icon: '📖', title: 'Penerbitan Buku', desc: 'Layanan penerbitan profesional dengan ISBN resmi dari Perpusnas. Naskah Anda akan melewati proses editing, layout, dan desain cover oleh tim ahli kami.' },
+              { icon: '🖨️', title: 'Percetakan Berkualitas', desc: 'Fasilitas cetak modern untuk Print on Demand maupun cetak massal (offset). Hasil cetak tajam dengan bahan kertas pilihan dan binding kokoh.' },
+              { icon: '📜', title: 'ISBN & HAKI', desc: 'Pengurusan ISBN resmi Perpusnas dan pendaftaran Hak Kekayaan Intelektual (HAKI) untuk melindungi karya intelektual Anda secara hukum.' },
+            ].map((f, i) => (
+              <div className={`feature-card reveal reveal-delay-${i + 1}`} key={i}>
+                <div className="feature-icon">{f.icon}</div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section >
+
+      {/* ═══ 4. ABOUT US ═══ */}
+      < section id="tentang" className="about-section" style={{ position: 'relative', overflow: 'hidden' }} >
+        <div className="deco-3d deco-sphere" style={{ top: '80px', right: '60px', width: '45px', height: '45px' }} />
+        <div className="deco-3d deco-ring deco-ring--lg" style={{ bottom: '50px', right: '200px' }} />
+        <div className="deco-3d deco-leaf" style={{ top: '200px', left: '40px' }}>
+          <svg viewBox="0 0 40 40"><path d="M20 2C10 8 2 20 8 34c4-8 12-14 22-16C28 10 24 4 20 2z" /></svg>
+        </div>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <div className="about-grid">
+            <div className="about-image reveal">
+              <img src="/assets/landing/about_us.png" alt="Tentang Rizquna" />
+              <div className="about-experience-badge animate-float">
+                <span className="exp-number">5+</span>
+                <span className="exp-label">Tahun Pengalaman</span>
+              </div>
+            </div>
+            <div className="about-text">
+              <span className="section-label reveal">TENTANG KAMI</span>
+              <h2 className="section-title reveal">
+                Partner Cetak & Terbit{' '}
+                <span>Buku Berkualitas</span>
+              </h2>
+              <p className="section-subtitle reveal">
+                CV. New Rizquna Elfath adalah penerbit resmi anggota IKAPI yang berlokasi di Purwokerto, Jawa Tengah. Sejak 2020, kami telah membantu ratusan penulis — dosen, peneliti, dan praktisi — menerbitkan karya terbaik mereka.
+              </p>
+              <ul className="about-checklist reveal">
+                <li><span className="about-check">✓</span> Anggota Resmi IKAPI Jawa Tengah</li>
+                <li><span className="about-check">✓</span> ISBN & HAKI Resmi Terjamin</li>
+                <li><span className="about-check">✓</span> Tim Editor & Desainer Profesional</li>
+                <li><span className="about-check">✓</span> Distribusi Nasional ke Seluruh Indonesia</li>
+              </ul>
+              <Link to="/register" className="btn btn-primary reveal">DAFTAR SEKARANG →</Link>
+            </div>
+          </div>
+        </div>
+      </section >
+
+      {/* ═══ 5. CATALOG / COURSES ═══ */}
+      < section id="katalog" className="catalog-section" >
+        <div className="container">
+          <span className="section-label reveal">KATALOG TERBITAN</span>
+          <h2 className="section-title reveal">Buku-Buku Terbitan Kami</h2>
+          <p className="section-subtitle reveal">Koleksi karya ilmiah dan akademik dari penulis terbaik Indonesia</p>
+          <div className="filter-tabs reveal">
+            {categoryOptions.map(c => (
+              <button
+                key={c}
+                className={`filter-tab ${activeFilter === c ? 'active' : ''}`}
+                onClick={() => setActiveFilter(c)}
+              >{c === 'Semua' ? 'Semua Buku' : c}</button>
+            ))}
+          </div>
+          <div className="book-grid">
+            {booksLoading ? (
+              // Show skeleton loaders while loading
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="book-card reveal" style={{ animation: 'pulse 2s infinite' }}>
+                  <div className="book-card-image" style={{ background: '#e0e0e0', aspectRatio: '3/4' }} />
+                  <div style={{ padding: '16px' }}>
+                    <div style={{ height: '16px', background: '#e0e0e0', borderRadius: '4px', marginBottom: '8px' }} />
+                    <div style={{ height: '12px', background: '#e0e0e0', borderRadius: '4px', width: '70%' }} />
+                  </div>
+                </div>
+              ))
+            ) : (
+              filteredBooks.map((book, i) => (
+                <div className={`book-card reveal reveal-delay-${(i % 3) + 1}`} key={book.id}>
+                  <div className="book-card-image">
+                  <img src={book.image} alt={book.title} />
+                  <span className="book-card-category">{book.category}</span>
+                </div>
+                <div className="book-card-body">
+                  <div className="book-card-rating">
+                    <span className="book-card-stars">{renderStars(book.rating)}</span>
+                    <span>({book.rating}/{book.ratingCount} Rating)</span>
+                  </div>
+                  <h3>{book.title}</h3>
+                  <div className="book-card-author">
+                    <span className="book-card-avatar">{book.initials}</span>
+                    <span className="book-card-author-name">{book.author}</span>
+                  </div>
+                  <div className="book-card-meta">
+                    <span>📄 {book.pages} Halaman</span>
+                    <span>👤 {book.readers} Pembaca</span>
+                  </div>
+                  <div className="book-card-footer">
+                    <span className="book-card-price">Rp {book.price.toLocaleString('id-ID')}</span>
+                    <Link to="/katalog" className="book-card-link">Lihat Detail →</Link>
+                  </div>
+                </div>
+              </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section >
+
+      {/* ═══ 6. WHY CHOOSE US ═══ */}
+      < section className="why-section" >
+        <div className="container">
+          <div className="why-grid">
+            <div className="why-text">
+              <span className="section-label reveal">KEUNGGULAN KAMI</span>
+              <h2 className="section-title reveal">
+                Mengapa Penulis Memilih{' '}
+                <span>Rizquna Publishing?</span>
+              </h2>
+              <p className="section-subtitle reveal">
+                Kami memahami kebutuhan penulis akademik. Dengan proses yang transparan, harga kompetitif, dan hasil berkualitas tinggi, kami menjadi mitra terpercaya para dosen dan peneliti.
+              </p>
+              <ul className="why-features reveal">
+                {[
+                  { icon: '⚡', label: 'Proses Terbit Cepat — 2-3 Minggu' },
+                  { icon: '📊', label: 'Dashboard Tracking Naskah Real-time' },
+                  { icon: '✏️', label: 'Editing & Proofreading oleh Editor Berpengalaman' },
+                  { icon: '🎨', label: 'Desain Cover & Layout Profesional' },
+                  { icon: '🚚', label: 'Distribusi ke Toko Buku & Marketplace Nasional' },
+                ].map((f, i) => (
+                  <li className="why-feature-item" key={i}>
+                    <span className="why-feature-icon">{f.icon}</span>
+                    <span>{f.label}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/register" className="btn btn-primary reveal">MULAI TERBITKAN BUKU →</Link>
+            </div>
+            <div className="why-image reveal">
+              <img src="/assets/landing/why_choose.png" alt="Mengapa Memilih Rizquna" />
+              <div className="why-experience-badge animate-float">
+                <div className="star-icon">⭐</div>
+                <span className="exp-number">5+</span>
+                <span className="exp-label">Tahun Pengalaman</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section >
+
+      {/* ═══ 7. INSTRUCTORS ═══ */}
+      < section className="instructors-section" >
+        <div className="container">
+          <span className="section-label reveal">TIM KAMI</span>
+          <h2 className="section-title reveal">Profesional di Balik Karya Anda</h2>
+          <p className="section-subtitle reveal">Tim berpengalaman yang siap memastikan buku Anda terbit dengan sempurna</p>
+          <div className="instructors-grid">
+            {TEAM_MEMBERS.map((inst, i) => (
+              <div className={`instructor-card reveal reveal-delay-${i + 1}`} key={i}>
+                <div className="instructor-avatar">
+                  <img src={inst.image} alt={inst.name} />
+                  <span className="instructor-rating">{inst.rating}</span>
+                </div>
+                <h4>{inst.name}</h4>
+                <p className="instructor-role">{inst.role}</p>
+                <div className="instructor-socials">
+                  <a href="#" aria-label="Facebook">f</a>
+                  <a href="#" aria-label="Twitter">𝕏</a>
+                  <a href="#" aria-label="LinkedIn">in</a>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </section >
 
-      {/* Dashboard Preview - Operational Transparency */}
-      <section className="dashboard-preview">
+      {/* ═══ 8. TESTIMONIALS ═══ */}
+      < section id="testimoni" className="testimonials-section" >
         <div className="container">
-          <div className="dashboard-flex">
-            <div className="dashboard-img">
-              <img src="/assets/dashboard_mockup.png" alt="Author Dashboard Mockup" />
-            </div>
-            <div className="dashboard-text">
-              <p className="hero-pretitle">Transparansi 24/7</p>
-              <h2 className="section-title">Pantau Setiap Langkah Karya Anda</h2>
-              <p className="section-subtitle">
-                Tidak lagi bertanya-tanya kapan buku Anda selesai. Melalui Dashboard Penulis, Anda mendapatkan visibilitas penuh terhadap proses editing, pendaftaran ISBN, hingga status distribusi secara real-time.
-              </p>
-              <ul className="dashboard-features">
-                <li>✅ Notifikasi Otomatis setiap progres selesai</li>
-                <li>✅ Chat Langsung dengan Editor & Desainer</li>
-                <li>✅ Laporan Penjualan & Royalti Transparan</li>
-                <li>✅ Kelola E-book & Cetakan dalam satu tempat</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Latest Books */}
-      <section id="catalog" className="collection-section">
-        <div className="container">
-          <div className="section-header">
-            <p className="hero-pretitle">Katalog Ringkas</p>
-            <h2 className="section-title">Koleksi Buku Terbaru</h2>
-          </div>
-
-          {booksData && booksData.length > 0 ? (
-            <div className="book-grid">
-              {booksData.slice(0, 4).map((book: any) => (
-                <Link to={`/katalog/${book.slug}`} key={book.id} className="book-card">
-                  <div className="book-cover-img">
-                    {book.cover_url ? (
-                      <img src={book.cover_url} alt={book.title} />
-                    ) : (
-                      <span className="cover-art">📚</span>
-                    )}
+          <span className="section-label reveal">TESTIMONI</span>
+          <h2 className="section-title reveal">Apa Kata Para Penulis</h2>
+          <p className="section-subtitle reveal">yang Sudah Menerbitkan Buku Bersama Kami</p>
+          <div className="testimonials-grid">
+            {TESTIMONIALS.map((t, i) => (
+              <div className={`testimonial-card reveal reveal-delay-${i + 1}`} key={i}>
+                <div className="testimonial-quote">❝</div>
+                <h4>{t.title}</h4>
+                <p>{t.text}</p>
+                <div className="testimonial-author">
+                  <img src={t.image} alt={t.name} />
+                  <div className="testimonial-author-info">
+                    <strong>{t.name}</strong>
+                    <span>{t.role}</span>
                   </div>
-                  <h3>{book.title}</h3>
-                  <p className="author">{book.author?.nama || 'Unknown Author'}</p>
-                  <p className="price">Rp {Number(book.price).toLocaleString('id-ID')}</p>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <p className="no-books">Belum ada buku yang tersedia.</p>
-          )}
-
-          <div className="catalog-cta">
-            <Link to="/katalog" className="btn btn-outline btn-lg">
-              Jelajahi Seluruh Katalog →
-            </Link>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </section>
-    </>
+      </section >
+
+      {/* ═══ 9. CTA BANNER ═══ */}
+      < section className="cta-banner" >
+        <div className="container cta-banner-inner">
+          <div className="cta-banner-text">
+            <h2>Siap Menerbitkan Buku?<br />Daftar Sekarang!</h2>
+            <div className="cta-banner-info">
+              <span>🚀 Bergabung dengan ratusan penulis lainnya</span>
+            </div>
+            <div className="cta-banner-rating">
+              <span className="stars">★★★★★</span>
+              <span>350+ Penulis Puas — Rating 4.9</span>
+            </div>
+          </div>
+          <Link to="/register" className="btn btn-outline-white btn-lg">DAFTAR GRATIS →</Link>
+        </div>
+      </section >
+
+      {/* ═══ 10. BLOG ═══ */}
+      < section className="blog-section" >
+        <div className="container">
+          <span className="section-label reveal">ARTIKEL & PANDUAN</span>
+          <h2 className="section-title reveal">Tips & Insight Dunia</h2>
+          <p className="section-subtitle reveal">Penerbitan dan Percetakan Buku</p>
+          <div className="blog-grid">
+            {BLOG_POSTS.map((post, i) => (
+              <div className={`blog-card reveal reveal-delay-${i + 1}`} key={post.id}>
+                <div className="blog-card-image">
+                  <img src={post.image} alt={post.title} />
+                  <span className="blog-card-tag">{post.category}</span>
+                  <span className="blog-card-date">{post.date}</span>
+                </div>
+                <div className="blog-card-body">
+                  <div className="blog-card-author">
+                    <span className="blog-card-author-avatar">A</span>
+                    <span>Oleh <strong>{post.author}</strong></span>
+                  </div>
+                  <h3>{post.title}</h3>
+                  <span className="blog-card-link">Lanjutkan Membaca →</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section >
+
+      {/* ═══ 11. PARTNERS ═══ */}
+      < section className="partners-section" >
+        <div className="container">
+          <span className="section-label reveal">MITRA KAMI</span>
+          <h2 className="section-title reveal">Mitra Terpercaya Kami</h2>
+        </div>
+        <div className="partners-track-wrapper">
+          <div className="partners-track animate-marquee">
+            {[...PARTNERS, ...PARTNERS, ...PARTNERS, ...PARTNERS].map((p, i) => (
+              <span className="partner-item" key={i}>{p}</span>
+            ))}
+          </div>
+        </div>
+      </section >
+    </div >
   );
 };
 

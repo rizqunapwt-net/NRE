@@ -28,6 +28,8 @@ const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [recentBooks, setRecentBooks] = useState<any[]>([]);
+  const [activeAuthors, setActiveAuthors] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -36,13 +38,17 @@ const DashboardPage: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsRes, chartRes] = await Promise.all([
+      const [statsRes, chartRes, recentBooksRes, activeAuthorsRes] = await Promise.all([
         api.get('/admin/dashboard-stats'),
         api.get('/dashboard/books'),
+        api.get('/admin/books?per_page=5'),
+        api.get('/admin/authors?per_page=5'),
       ]);
       
       setStats(statsRes.data.data);
       setChartData(chartRes.data.data || []);
+      setRecentBooks(recentBooksRes.data.data || []);
+      setActiveAuthors(activeAuthorsRes.data.data || []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
@@ -200,14 +206,11 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card title="Naskah Terbaru" className="table-card">
             <Table
-              dataSource={[
-                { id: 1, title: 'Belajar Laravel', author: 'John Doe', status: 'review', date: '2024-01-15' },
-                { id: 2, title: 'Pemrograman Python', author: 'Jane Smith', status: 'editing', date: '2024-01-14' },
-                { id: 3, title: 'Digital Marketing', author: 'Bob Wilson', status: 'published', date: '2024-01-13' },
-              ]}
+              dataSource={recentBooks}
+              rowKey="id"
               columns={[
-                { title: 'Judul', dataIndex: 'title', key: 'title' },
-                { title: 'Penulis', dataIndex: 'author', key: 'author' },
+                { title: 'Judul', dataIndex: 'title', key: 'title', ellipsis: true },
+                { title: 'Penulis', dataIndex: 'author', key: 'author', render: (a) => a?.nama || a?.name || '-' },
                 {
                   title: 'Status',
                   dataIndex: 'status',
@@ -217,8 +220,9 @@ const DashboardPage: React.FC = () => {
                       review: 'blue',
                       editing: 'orange',
                       published: 'green',
+                      draft: 'default'
                     };
-                    return <Tag color={colors[status]}>{status.toUpperCase()}</Tag>;
+                    return <Tag color={colors[status] || 'blue'}>{(status || 'review').toUpperCase()}</Tag>;
                   },
                 },
               ]}
@@ -231,16 +235,17 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card title="Penulis Aktif" className="table-card">
             <Table
-              dataSource={[
-                { id: 1, name: 'John Doe', books: 5, sales: 120, revenue: 'Rp 12.5jt' },
-                { id: 2, name: 'Jane Smith', books: 3, sales: 95, revenue: 'Rp 8.2jt' },
-                { id: 3, name: 'Bob Wilson', books: 7, sales: 210, revenue: 'Rp 18.7jt' },
-              ]}
+              dataSource={activeAuthors}
+              rowKey="id"
               columns={[
-                { title: 'Nama', dataIndex: 'name', key: 'name' },
-                { title: 'Buku', dataIndex: 'books', key: 'books' },
-                { title: 'Penjualan', dataIndex: 'sales', key: 'sales' },
-                { title: 'Revenue', dataIndex: 'revenue', key: 'revenue' },
+                { title: 'Nama', dataIndex: 'name', key: 'name', render: (val, record) => record.nama || val },
+                { title: 'Buku', dataIndex: 'books_count', key: 'books_count' },
+                { 
+                  title: 'Royalti', 
+                  dataIndex: 'total_royalties_amount', 
+                  key: 'revenue',
+                  render: (amount) => `Rp ${(amount || 0).toLocaleString('id-ID')}`
+                },
               ]}
               pagination={false}
               size="small"

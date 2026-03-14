@@ -56,7 +56,8 @@ class RepositoryController extends Controller
         // Transform cover_path to cover_url using BookStorageService
         $books->getCollection()->transform(function ($book) {
             if ($book->cover_path) {
-                $book->setAttribute('cover_url', $this->storageService->getCoverUrl($book, 'medium'));
+                // Try S3 first, fallback to Google Drive
+                $book->setAttribute('cover_url', $this->storageService->getCoverUrlWithFallback($book, 'medium'));
             } else {
                 $book->setAttribute('cover_url', null);
             }
@@ -84,7 +85,8 @@ class RepositoryController extends Controller
         
         // Add cover_url using BookStorageService
         if ($book->cover_path) {
-            $bookData['cover_url'] = $this->storageService->getCoverUrl($book, 'large');
+            // Try S3 first, fallback to Google Drive
+            $bookData['cover_url'] = $this->storageService->getCoverUrlWithFallback($book, 'large');
         } else {
             $bookData['cover_url'] = null;
         }
@@ -130,6 +132,7 @@ class RepositoryController extends Controller
     {
         $query = Book::with(['author:id,name', 'category:id,name', 'citation'])
             ->published()
+            ->where('is_digital', true)
             ->select([
                 'id',
                 'slug',
@@ -169,7 +172,8 @@ class RepositoryController extends Controller
         // Transform cover_path to cover_url using BookStorageService
         $books->getCollection()->transform(function ($book) {
             if ($book->cover_path) {
-                $book->setAttribute('cover_url', $this->storageService->getCoverUrl($book, 'medium'));
+                // Try S3 first, fallback to Google Drive
+                $book->setAttribute('cover_url', $this->storageService->getCoverUrlWithFallback($book, 'medium'));
             } else {
                 $book->setAttribute('cover_url', null);
             }

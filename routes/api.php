@@ -55,9 +55,11 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/authors/check-username', [AuthorRegisterController::class, 'checkUsername']);
     Route::get('/authors/check-email', [AuthorRegisterController::class, 'checkEmail']);
 
-    // Google OAuth
-    Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
-    Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+    // Google OAuth (Requires 'web' middleware for session state/CSRF)
+    Route::middleware(['web', 'throttle:auth'])->group(function () {
+        Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
+        Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+    });
 
     // Public Tracking
     Route::get('/tracking', [\App\Http\Controllers\Api\V1\PublicTrackingController::class, 'track']);
@@ -81,6 +83,9 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/repository', [RepositoryController::class, 'index']);
         Route::get('/repository/{slug}', [RepositoryController::class, 'show']);
         Route::get('/repository/{slug}/cite', [RepositoryController::class, 'cite']);
+        Route::get('/sitasi', [RepositoryController::class, 'index']);
+        Route::get('/sitasi/{slug}', [RepositoryController::class, 'show']);
+        Route::get('/sitasi/{slug}/cite', [RepositoryController::class, 'cite']);
 
     }
     );
@@ -240,13 +245,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
         Route::get('/books', [AdminDashboardController::class, 'books']);
         Route::get('/books/stats', [AdminDashboardController::class, 'bookStats']);
         Route::get('/authors', [AdminDashboardController::class, 'authors']);
-        Route::get('/authors/stats', [AdminDashboardController::class, 'authorStats']);
-        Route::get('/contracts', [AdminDashboardController::class, 'contracts']);
-        Route::get('/contracts/stats', [AdminDashboardController::class, 'contractStats']);
-        Route::get('/marketplaces', [AdminDashboardController::class, 'marketplaces']);
-        Route::get('/marketplaces/stats', [AdminDashboardController::class, 'marketplaceStats']);
-        Route::get('/royalties', [AdminDashboardController::class, 'royalties']);
-        Route::get('/royalties/stats', [AdminDashboardController::class, 'royaltyStats']);
     }
     );
 
@@ -348,14 +346,24 @@ Route::prefix('v1/public')->group(function () {
         if (!$book->cover_path) {
             abort(404);
         }
-        // Construct the path directly from the books storage root
-        $booksRoot = storage_path('app/private/books');
-        $path = $booksRoot . '/' . $book->cover_path;
+
+        // 1. Try private books storage first
+        $path = storage_path('app/private/books/' . $book->cover_path);
+        
+        // 2. Try public storage if not found (for imported covers)
+        if (!file_exists($path)) {
+            $path = storage_path('app/public/' . $book->cover_path);
+        }
+
         if (!file_exists($path)) {
             abort(404);
         }
-        $mime = mime_content_type($path) ?: 'image/png';
-        return response()->file($path, ['Content-Type' => $mime, 'Cache-Control' => 'public, max-age=86400']);
+
+        $mime = @mime_content_type($path) ?: 'image/png';
+        return response()->file($path, [
+            'Content-Type' => $mime, 
+            'Cache-Control' => 'public, max-age=86400'
+        ]);
     });
 });
 

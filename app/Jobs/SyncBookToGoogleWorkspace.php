@@ -66,7 +66,15 @@ class SyncBookToGoogleWorkspace implements ShouldQueue
             @unlink($tempPdf);
         }
 
-        // 3. Update Google Sheet
+        // 3. Update Book Model with Drive IDs
+        $this->book->update([
+            'google_drive_cover_id' => $coverDriveData['id'] ?? $this->book->google_drive_cover_id,
+            'google_drive_cover_url' => $coverDriveData['link'] ?? $this->book->google_drive_cover_url,
+            'google_drive_pdf_id' => $pdfDriveData['id'] ?? $this->book->google_drive_pdf_id,
+            'google_drive_pdf_url' => $pdfDriveData['link'] ?? $this->book->google_drive_pdf_url,
+        ]);
+
+        // 4. Update Google Sheet
         // Format: [Judul Buku, Penulis, ISBN, Harga, Deskripsi, Link Cover, Link PDF]
         $sheetRow = [
             $this->book->title,
@@ -74,8 +82,8 @@ class SyncBookToGoogleWorkspace implements ShouldQueue
             $this->book->isbn ?? '-',
             $this->book->price,
             Str::limit($this->book->description, 200),
-            $coverDriveData['link'] ?? '-',
-            $pdfDriveData['link'] ?? '-'
+            $coverDriveData['link'] ?? $this->book->google_drive_cover_url ?? '-',
+            $pdfDriveData['link'] ?? $this->book->google_drive_pdf_url ?? '-'
         ];
 
         $googleService->appendToSheet($sheetId, $sheetRow);

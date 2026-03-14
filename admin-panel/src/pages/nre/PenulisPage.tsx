@@ -19,6 +19,9 @@ const PenulisPage: React.FC = () => {
     const [data, setData] = useState<Author[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(15);
+    const [total, setTotal] = useState(0);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingAuthor, setEditingAuthor] = useState<Author | null>(null);
     const [form] = Form.useForm();
@@ -26,18 +29,25 @@ const PenulisPage: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await api.get('/authors');
+            const params: Record<string, string | number> = {
+                page,
+                per_page: perPage,
+            };
+            if (search) params.search = search;
+            
+            const res = await api.get('/admin/authors', { params });
             const list = res.data.data || res.data || [];
             setData(Array.isArray(list) ? list : []);
+            setTotal(res.data.total || list.length);
         } catch {
-            message.info('API Penulis belum tersedia — menunggu integrasi backend');
+            message.info('Gagal memuat data penulis');
             setData([]);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { fetchData(); }, [page, perPage, search]);
 
     const openAdd = () => {
         setEditingAuthor(null);
@@ -57,7 +67,7 @@ const PenulisPage: React.FC = () => {
             if (editingAuthor) {
                 // Edit existing
                 try {
-                    await api.put(`/authors/${editingAuthor.id}`, values);
+                    await api.put(`/admin/authors/${editingAuthor.id}`, values);
                     message.success(`Data "${values.name}" berhasil diperbarui`);
                 } catch {
                     // If API not ready, update locally
@@ -67,7 +77,7 @@ const PenulisPage: React.FC = () => {
             } else {
                 // Add new
                 try {
-                    await api.post('/authors', values);
+                    await api.post('/admin/authors', values);
                     message.success(`Penulis "${values.name}" berhasil ditambahkan`);
                 } catch {
                     // If API not ready, add locally
@@ -85,7 +95,7 @@ const PenulisPage: React.FC = () => {
 
     const handleDelete = async (author: Author) => {
         try {
-            await api.delete(`/authors/${author.id}`);
+            await api.delete(`/admin/authors/${author.id}`);
             message.success(`Penulis "${author.name}" dihapus`);
             fetchData();
         } catch {
@@ -113,20 +123,35 @@ const PenulisPage: React.FC = () => {
         },
     ];
 
-    const filtered = data.filter(a => a.name?.toLowerCase().includes(search.toLowerCase()));
-
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <Title level={4} style={{ margin: 0 }}>Manajemen Penulis</Title>
                 <Space>
-                    <Input placeholder="Cari penulis..." prefix={<SearchOutlined />} value={search} onChange={e => setSearch(e.target.value)} style={{ width: 250 }} />
+                    <Input.Search 
+                        placeholder="Cari penulis..." 
+                        allowClear 
+                        onSearch={value => { setSearch(value); setPage(1); }} 
+                        style={{ width: 250 }} 
+                    />
                     <Button icon={<ReloadOutlined />} onClick={fetchData}>Refresh</Button>
                     <Button type="primary" icon={<PlusOutlined />} onClick={openAdd}>Tambah Penulis</Button>
                 </Space>
             </div>
             <Card>
-                <Table columns={columns} dataSource={filtered} rowKey="id" loading={loading} pagination={{ pageSize: 15, showSizeChanger: true }} />
+                <Table 
+                    columns={columns} 
+                    dataSource={data} 
+                    rowKey="id" 
+                    loading={loading} 
+                    pagination={{ 
+                        current: page,
+                        pageSize: perPage,
+                        total: total > 0 ? total : data.length,
+                        onChange: (p, s) => { setPage(p); setPerPage(s); },
+                        showSizeChanger: true 
+                    }} 
+                />
             </Card>
 
             <Modal

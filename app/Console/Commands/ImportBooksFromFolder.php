@@ -44,6 +44,9 @@ class ImportBooksFromFolder extends Command
         }
 
         $folders = glob("{$basePath}/*/", GLOB_ONLYDIR);
+        if ($folders === false) {
+            $folders = [];
+        }
         $this->info("📁 Ditemukan " . count($folders) . " subfolder");
 
         $bar = $this->output->createProgressBar(count($folders));
@@ -93,14 +96,14 @@ class ImportBooksFromFolder extends Command
 
         if (!$pdfFile && !$coverFile) {
             $this->skipped++;
-            $this->line("\n⏭️ Skip {$folderName}: tidak ada PDF atau cover");
+            $this->line("Skip: {$folderName} - tidak ada PDF atau cover");
             return;
         }
 
         // Parse metadata
         $metadata = $this->parseMetadata($folder, $folderName, $metadataFile);
 
-        $this->line("\n📖 Processing: {$metadata['title']}");
+        $this->line("Processing: {$metadata['title']}");
 
         // ─── PHASE 1: Database Transaction (Cepat, <10ms) ───
         $book = null;
@@ -116,7 +119,7 @@ class ImportBooksFromFolder extends Command
             $existing = $this->findExistingBook($metadata, $coverFile, $pdfFile);
             if ($existing) {
                 $this->skipped++;
-                $this->warn("  ⏭️ Skipped (already exists): {$metadata['title']} (ID: {$existing->id})");
+                $this->line("Skipped (already exists): {$metadata['title']}");
                 throw new \Exception('Book already exists');
             }
 
@@ -138,7 +141,7 @@ class ImportBooksFromFolder extends Command
             // Create book (PHASE 1 - DB only)
             $book = Book::create([
                 'type' => 'publishing',
-                'status' => 'importing', // ← Status importing, bukan published
+                'status' => $skipUpload ? 'published' : 'importing',
                 'title' => $metadata['title'],
                 'slug' => Str::slug($metadata['title']) . '-' . Str::random(5),
                 'author_id' => $author->id,
@@ -151,7 +154,7 @@ class ImportBooksFromFolder extends Command
                 'language' => $metadata['language'] ?? 'Bahasa Indonesia',
                 'dimension' => $metadata['dimension'] ?? null,
                 'published_year' => $metadata['year'] ?? date('Y'),
-                'is_published' => false, // ← Published setelah upload selesai
+                'is_published' => $skipUpload,
                 'is_digital' => true,
                 'import_batch_id' => $this->batchId,
                 'import_source' => 'folder:' . $folderName,
@@ -165,6 +168,9 @@ class ImportBooksFromFolder extends Command
         });
 
         if ($isDryRun || $skipUpload || !$book) {
+            if ($skipUpload && $book) {
+                $this->info("  ⏭️ Upload skipped - book created without files");
+            }
             return;
         }
 

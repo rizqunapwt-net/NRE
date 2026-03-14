@@ -27,7 +27,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        // Only redirect to login for non-public endpoints
+        const publicPaths = ['/api/v1/public/', '/api/v1/search'];
+        const isPublicEndpoint = publicPaths.some(path => error.config?.url?.includes(path));
+        
+        if (error.response?.status === 401 && !isPublicEndpoint) {
             localStorage.removeItem('token');
             if (!window.location.pathname.includes('/login')) {
                 window.location.href = '/login';

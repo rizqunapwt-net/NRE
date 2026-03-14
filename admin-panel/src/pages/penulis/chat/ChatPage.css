@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════
    PORTAL PENULIS — Chat Page (Glassmorphism)
    ───────────────────────────────────────────────
-   Teal: #008B95 | Clean Glass Style
+   Teal: #E8642B | Clean Glass Style
    ═══════════════════════════════════════════════ */
 
 .chat-page {
@@ -57,9 +57,9 @@
 
 .chat-sidebar__search-input:focus {
   outline: none;
-  border-color: #008B95;
+  border-color: #E8642B;
   background: #fff;
-  box-shadow: 0 0 0 4px rgba(0, 139, 149, 0.1);
+  box-shadow: 0 0 0 4px rgba(232, 100, 43, 0.1);
 }
 
 /* Conversation List */
@@ -83,15 +83,15 @@
 }
 
 .conversation-item.active {
-  background: rgba(0, 139, 149, 0.1);
-  border-left: 4px solid #008B95;
+  background: rgba(232, 100, 43, 0.1);
+  border-left: 4px solid #E8642B;
 }
 
 .conversation-item__avatar {
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #008B95, #00666E);
+  background: linear-gradient(135deg, #E8642B, #C74E1A);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,10 +160,10 @@
 
 .message-bubble.sent {
   align-self: flex-end;
-  background: #008B95;
+  background: #E8642B;
   color: #fff;
   border-bottom-right-radius: 4px;
-  box-shadow: 0 8px 20px rgba(0, 139, 149, 0.2);
+  box-shadow: 0 8px 20px rgba(232, 100, 43, 0.2);
 }
 
 .message-bubble.received {
@@ -203,12 +203,12 @@
 
 .message-input__textarea:focus {
   outline: none;
-  border-color: #008B95;
-  box-shadow: 0 0 0 4px rgba(0, 139, 149, 0.1);
+  border-color: #E8642B;
+  box-shadow: 0 0 0 4px rgba(232, 100, 43, 0.1);
 }
 
 .message-input__send-btn {
-  background: #008B95;
+  background: #E8642B;
   color: #fff;
   padding: 10px 28px;
   border-radius: 14px;
@@ -216,12 +216,12 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0, 139, 149, 0.25);
+  box-shadow: 0 4px 12px rgba(232, 100, 43, 0.25);
 }
 
 .message-input__send-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 139, 149, 0.35);
+  box-shadow: 0 8px 20px rgba(232, 100, 43, 0.35);
 }
 
 /* Scrollbar */
@@ -232,6 +232,6 @@
 
 .conversation-list::-webkit-scrollbar-thumb,
 .messages-area::-webkit-scrollbar-thumb {
-  background: rgba(0, 139, 149, 0.2);
+  background: rgba(232, 100, 43, 0.2);
   border-radius: 10px;
 }

@@ -228,4 +228,54 @@ class BookStorageService
             Storage::disk($this->disk)->delete($path);
         }
     }
+
+    /**
+     * Generate Google Drive download URL untuk cover.
+     * Fallback jika file tidak ada di S3.
+     */
+    public function getCoverUrlFromDrive(Book $book, string $size = 'medium'): ?string
+    {
+        if ($book->google_drive_cover_url) {
+            return $book->google_drive_cover_url;
+        }
+
+        $folderId = config('services.google.drive.covers_folder_id');
+        if (!$folderId) {
+            return null;
+        }
+
+        return "https://drive.google.com/drive/folders/{$folderId}";
+    }
+
+    /**
+     * Get cover URL with fallback to Google Drive.
+     */
+    public function getCoverUrlWithFallback(Book $book, string $size = 'medium'): ?string
+    {
+        if (!$book->cover_path) {
+            return null;
+        }
+
+        // Try S3 first
+        $sizePath = match ($size) {
+            'original' => $book->cover_path,
+            'large'    => "covers/large/{$book->id}_large.jpg",
+            'medium'   => "covers/medium/{$book->id}_medium.jpg",
+            'thumb'    => "covers/thumb/{$book->id}_thumb.jpg",
+            default    => "covers/medium/{$book->id}_medium.jpg",
+        };
+
+        try {
+            if (Storage::disk($this->disk)->exists($sizePath)) {
+                $ttl = config('books.cover_url_ttl', 3600);
+                return $this->getSignedUrl($sizePath, $ttl);
+            }
+        } catch (\Exception $e) {
+            // Log error but continue to fallback
+            \Illuminate\Support\Facades\Log::warning('Cover URL generation failed: ' . $e->getMessage());
+        }
+
+        // Fallback to Google Drive
+        return $this->getCoverUrlFromDrive($book, $size);
+    }
 }

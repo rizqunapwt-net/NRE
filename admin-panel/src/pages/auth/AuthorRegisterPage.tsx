@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Alert, Row, Col, message } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, BookOutlined, BankOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { motion } from 'framer-motion';
+import { useNavigate, Link } from 'react-router-dom';
+import { Form, Input, Button, Row, Col, message, Typography, ConfigProvider, Steps } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, BookOutlined, BankOutlined, CheckCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api';
-import './AuthPages.css';
+import { designTokens } from '../../theme/designTokens';
+
+const { Title, Text, Paragraph } = Typography;
 
 const AuthorRegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +19,6 @@ const AuthorRegisterPage: React.FC = () => {
     { title: 'Akun', icon: <UserOutlined /> },
     { title: 'Profil', icon: <BookOutlined /> },
     { title: 'Bank', icon: <BankOutlined /> },
-    { title: 'Selesai', icon: <CheckCircleOutlined /> },
   ];
 
   const nextStep = () => {
@@ -68,262 +69,254 @@ const AuthorRegisterPage: React.FC = () => {
     }
   };
 
-  return (
-    <div className="auth-page-v2">
-      <div className="auth-form-side-v2">
-        <div className="auth-container-v2">
-          <div className="auth-logo-v2">
-            <h1 className="auth-brand-name">Rizquna ERP</h1>
-            <p className="auth-brand-tagline">Author Registration</p>
-          </div>
-
-          {/* Progress Steps */}
-          <div className="steps-container-v2">
-            {steps.map((step, index) => (
-              <div
-                key={index}
-                className={`step-v2 ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`}
-              >
-                <div className="step-icon-v2">
-                  {index < currentStep ? <CheckCircleOutlined /> : step.icon}
-                </div>
-                <div className="step-title-v2">{step.title}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Progress Bar */}
-          <div className="progress-bar-v2">
-            <div
-              className="progress-fill-v2"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-
-          {currentStep === 0 && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="step-content-v2"
-            >
-              <h3 className="step-title-content-v2">Informasi Akun</h3>
-              <Form form={form} layout="vertical" size="large" onFinish={onFinish}>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      name="name"
-                      label="Nama Lengkap"
-                      rules={[
-                        { required: true, message: 'Nama wajib diisi' },
-                        { min: 3, message: 'Minimal 3 karakter' }
-                      ]}
-                    >
-                      <Input prefix={<UserOutlined className="icon-gray" />} placeholder="Nama lengkap" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="username"
-                      label="Username"
-                      rules={[
-                        { required: true, message: 'Username wajib diisi' },
-                        { min: 3, message: 'Minimal 3 karakter' }
-                      ]}
-                    >
-                      <Input prefix={<UserOutlined className="icon-gray" />} placeholder="username" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="email"
-                  label="Email"
-                  rules={[
-                    { required: true, message: 'Email wajib diisi' },
-                    { type: 'email', message: 'Format email tidak valid' }
-                  ]}
-                >
-                  <Input prefix={<MailOutlined className="icon-gray" />} placeholder="email@contoh.com" />
-                </Form.Item>
-
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      name="password"
-                      label="Password"
-                      rules={[
-                        { required: true, message: 'Password wajib diisi' },
-                        { min: 8, message: 'Minimal 8 karakter' }
-                      ]}
-                    >
-                      <Input.Password prefix={<LockOutlined className="icon-gray" />} placeholder="••••••••" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="password_confirmation"
-                      label="Konfirmasi Password"
-                      dependencies={['password']}
-                      rules={[
-                        { required: true, message: 'Konfirmasi password wajib diisi' },
-                        ({ getFieldValue }) => ({
-                          validator(_, value) {
-                            if (!value || getFieldValue('password') === value) return Promise.resolve();
-                            return Promise.reject(new Error('Password tidak cocok'));
-                          },
-                        }),
-                      ]}
-                    >
-                      <Input.Password prefix={<LockOutlined className="icon-gray" />} placeholder="••••••••" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Button type="primary" block size="large" onClick={nextStep} className="auth-btn-primary-v2">
-                  Lanjut →
-                </Button>
-              </Form>
-            </motion.div>
-          )}
-
-          {currentStep === 1 && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="step-content-v2"
-            >
-              <h3 className="step-title-content-v2">Profil Penulis</h3>
-              <Form form={form} layout="vertical" size="large" onFinish={onFinish}>
-                <Form.Item
-                  name="phone"
-                  label="Nomor Telepon"
-                  rules={[
-                    { required: true, message: 'Nomor telepon wajib diisi' },
-                    { pattern: /^[0-9+\-\s()]+$/, message: 'Format tidak valid' }
-                  ]}
-                >
-                  <Input prefix={<PhoneOutlined className="icon-gray" />} placeholder="08123456789" />
-                </Form.Item>
-
-                <Form.Item
-                  name="bio"
-                  label="Biografi Singkat"
-                  rules={[{ min: 10, message: 'Minimal 10 karakter' }]}
-                >
-                  <Input.TextArea rows={4} placeholder="Ceritakan tentang diri Anda..." showCount maxLength={500} />
-                </Form.Item>
-
-                <div className="step-actions-v2">
-                  <Button size="large" onClick={prevStep} className="auth-btn-outline-v2">
-                    ← Kembali
-                  </Button>
-                  <Button type="primary" size="large" onClick={nextStep} className="auth-btn-primary-v2">
-                    Lanjut →
-                  </Button>
-                </div>
-              </Form>
-            </motion.div>
-          )}
-
-          {currentStep === 2 && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="step-content-v2"
-            >
-              <h3 className="step-title-content-v2">Informasi Bank</h3>
-              <Alert
-                message="Informasi ini digunakan untuk pembayaran royalti"
-                type="info"
-                showIcon
-                className="auth-alert-v2"
-              />
-              <Form form={form} layout="vertical" size="large" onFinish={onFinish}>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      name="bank_name"
-                      label="Nama Bank"
-                      rules={[{ required: true, message: 'Nama bank wajib diisi' }]}
-                    >
-                      <Input prefix={<BankOutlined className="icon-gray" />} placeholder="BCA, Mandiri, dll" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="bank_account"
-                      label="Nomor Rekening"
-                      rules={[
-                        { required: true, message: 'Nomor rekening wajib diisi' },
-                        { pattern: /^[0-9]+$/, message: 'Hanya angka' }
-                      ]}
-                    >
-                      <Input prefix={<BankOutlined className="icon-gray" />} placeholder="1234567890" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="bank_account_name"
-                  label="Nama Pemilik Rekening"
-                  rules={[{ required: true, message: 'Nama pemilik rekening wajib diisi' }]}
-                >
-                  <Input prefix={<UserOutlined className="icon-gray" />} placeholder="Nama sesuai rekening" />
-                </Form.Item>
-
-                <div className="step-actions-v2">
-                  <Button size="large" onClick={prevStep} className="auth-btn-outline-v2">
-                    ← Kembali
-                  </Button>
-                  <Button type="primary" htmlType="submit" size="large" loading={loading} className="auth-btn-primary-v2">
-                    {loading ? 'Mendaftar...' : 'Daftar Sekarang'} ✓
-                  </Button>
-                </div>
-              </Form>
-            </motion.div>
-          )}
-        </div>
+  const brandingSection = (
+    <div className="hidden md:flex md:w-1/2 lg:w-2/5 bg-teal-900 relative overflow-hidden items-center justify-center p-12">
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,#008B94,transparent)]" />
+        <svg className="absolute w-full h-full" width="100%" height="100%">
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+          </pattern>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
       </div>
 
-      <div className="auth-brand-side-v2">
-        <div className="auth-brand-content-v2">
-          <div className="auth-brand-badge-v2">✨ Menjadi Penulis</div>
-          <h2 className="auth-brand-title-v2">
-            Publikasikan Karya Anda<br />Untuk Jutaan Pembaca
-          </h2>
-          <p className="auth-brand-description-v2">
-            Bergabunglah dengan ekosistem penerbitan modern.
-            Kami bantu Anda dari naskah hingga distribusi.
-          </p>
-          
-          <div className="auth-features-v2">
-            <div className="auth-feature-v2">
-              <div className="auth-feature-icon-v2">📚</div>
-              <div>
-                <h4 className="auth-feature-title-v2">Publikasi Profesional</h4>
-                <p className="auth-feature-desc-v2">Standar penerbitan internasional</p>
-              </div>
+      <div className="relative z-10 max-w-md text-white">
+        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8 border border-white/20">
+          <span className="text-3xl font-bold">R</span>
+        </div>
+        <Title level={1} className="!text-white !font-serif !text-4xl !mb-6 leading-tight">
+          Menjadi Penulis Profesional.
+        </Title>
+        <Paragraph className="text-teal-100 text-base mb-10 leading-relaxed">
+          Wujudkan karya impian Anda. Kami menyediakan platform terintegrasi untuk membantu penulis mengelola naskah hingga distribusi.
+        </Paragraph>
+        
+        <div className="space-y-4">
+          <div className="flex items-start gap-4 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10">
+            <div className="text-xl mt-1">📚</div>
+            <div>
+              <Title level={5} className="!text-white !m-0">Publikasi Terstruktur</Title>
+              <Text className="text-teal-200 text-xs">Kelola ISBN & Legal Deposit otomatis</Text>
             </div>
-            
-            <div className="auth-feature-v2">
-              <div className="auth-feature-icon-v2">💵</div>
-              <div>
-                <h4 className="auth-feature-title-v2">Royalti Hingga 10%</h4>
-                <p className="auth-feature-desc-v2">Penghasilan pasif dari karya Anda</p>
-              </div>
-            </div>
-            
-            <div className="auth-feature-v2">
-              <div className="auth-feature-icon-v2">📈</div>
-              <div>
-                <h4 className="auth-feature-title-v2">Dashboard Analytics</h4>
-                <p className="auth-feature-desc-v2">Track penjualan real-time</p>
-              </div>
+          </div>
+          <div className="flex items-start gap-4 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10">
+            <div className="text-xl mt-1">💹</div>
+            <div>
+              <Title level={5} className="!text-white !m-0">Bagi Hasil Adil</Title>
+              <Text className="text-teal-200 text-xs">Royalti transparan & laporan real-time</Text>
             </div>
           </div>
         </div>
       </div>
+      
+      <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-teal-500 rounded-full blur-[100px] opacity-20" />
     </div>
+  );
+
+  return (
+    <ConfigProvider theme={{ 
+      token: { 
+        colorPrimary: designTokens.colors.primary[500], 
+        borderRadius: 12,
+        fontFamily: designTokens.typography.fontFamily.primary 
+      } 
+    }}>
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col md:flex-row font-sans">
+        {brandingSection}
+
+        <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-white">
+          <div className="w-full max-w-2xl">
+            <div className="mb-8">
+              <Link to="/login" className="text-slate-400 hover:text-teal-600 flex items-center gap-2 text-sm font-medium transition-colors">
+                <ArrowLeftOutlined /> Kembali ke Login
+              </Link>
+            </div>
+
+            <div className="mb-10">
+              <Title level={2} className="!m-0 !font-serif">Pendaftaran Penulis</Title>
+              <Text className="text-slate-400">Lengkapi data untuk bergabung sebagai penulis Rizquna.</Text>
+            </div>
+
+            <Steps 
+              current={currentStep} 
+              items={steps} 
+              className="mb-10"
+              responsive={false}
+            />
+
+            <AnimatePresence mode="wait">
+              {currentStep === 0 && (
+                <motion.div
+                  key="step0"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Title level={4} className="mb-6">Informasi Akun Utama</Title>
+                  <Form form={form} layout="vertical" size="large" requiredMark={false}>
+                    <Row gutter={16}>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="name"
+                          label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Nama Lengkap</Text>}
+                          rules={[{ required: true, message: 'Wajib diisi' }]}
+                        >
+                          <Input prefix={<UserOutlined className="text-slate-300" />} placeholder="Nama lengkap" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="username"
+                          label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Username</Text>}
+                          rules={[{ required: true, message: 'Wajib diisi' }]}
+                        >
+                          <Input prefix={<UserOutlined className="text-slate-300" />} placeholder="username" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Form.Item
+                      name="email"
+                      label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Alamat Email</Text>}
+                      rules={[{ required: true, message: 'Wajib diisi' }, { type: 'email' }]}
+                    >
+                      <Input prefix={<MailOutlined className="text-slate-300" />} placeholder="email@contoh.com" />
+                    </Form.Item>
+
+                    <Row gutter={16}>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="password"
+                          label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Password</Text>}
+                          rules={[{ required: true, message: 'Wajib diisi' }, { min: 8 }]}
+                        >
+                          <Input.Password prefix={<LockOutlined className="text-slate-300" />} placeholder="••••••••" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="password_confirmation"
+                          label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Konfirmasi</Text>}
+                          dependencies={['password']}
+                          rules={[
+                            { required: true, message: 'Wajib diisi' },
+                            ({ getFieldValue }) => ({
+                              validator(_, value) {
+                                if (!value || getFieldValue('password') === value) return Promise.resolve();
+                                return Promise.reject(new Error('Password tidak cocok'));
+                              },
+                            }),
+                          ]}
+                        >
+                          <Input.Password prefix={<LockOutlined className="text-slate-300" />} placeholder="••••••••" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Button type="primary" block size="large" onClick={nextStep} className="h-12 mt-4 bg-teal-700 hover:bg-teal-800 border-none font-bold">
+                      Langkah Selanjutnya →
+                    </Button>
+                  </Form>
+                </motion.div>
+              )}
+
+              {currentStep === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Title level={4} className="mb-6">Profil & Kontak</Title>
+                  <Form form={form} layout="vertical" size="large" requiredMark={false}>
+                    <Form.Item
+                      name="phone"
+                      label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Nomor Telepon/WA</Text>}
+                      rules={[{ required: true, message: 'Wajib diisi' }]}
+                    >
+                      <Input prefix={<PhoneOutlined className="text-slate-300" />} placeholder="08123456789" />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="bio"
+                      label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Biografi Singkat</Text>}
+                      rules={[{ min: 10, message: 'Minimal 10 karakter' }]}
+                    >
+                      <Input.TextArea rows={4} placeholder="Ceritakan sedikit tentang latar belakang menulis Anda..." showCount maxLength={500} className="rounded-xl" />
+                    </Form.Item>
+
+                    <div className="flex gap-4 mt-6">
+                      <Button size="large" onClick={prevStep} className="flex-1 h-12 rounded-xl">
+                        ← Kembali
+                      </Button>
+                      <Button type="primary" size="large" onClick={nextStep} className="flex-[2] h-12 bg-teal-700 hover:bg-teal-800 border-none font-bold rounded-xl">
+                        Lanjut ke Informasi Bank →
+                      </Button>
+                    </div>
+                  </Form>
+                </motion.div>
+              )}
+
+              {currentStep === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Title level={4} className="mb-2">Informasi Pembayaran</Title>
+                  <Paragraph className="text-slate-400 mb-8">Data ini diperlukan untuk pengiriman royalti hasil penjualan karya Anda.</Paragraph>
+                  
+                  <Form form={form} layout="vertical" size="large" onFinish={onFinish} requiredMark={false}>
+                    <Row gutter={16}>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="bank_name"
+                          label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Nama Bank</Text>}
+                          rules={[{ required: true, message: 'Wajib diisi' }]}
+                        >
+                          <Input prefix={<BankOutlined className="text-slate-300" />} placeholder="BCA, Mandiri, dll" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="bank_account"
+                          label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Nomor Rekening</Text>}
+                          rules={[{ required: true, message: 'Wajib diisi' }]}
+                        >
+                          <Input prefix={<BankOutlined className="text-slate-300" />} placeholder="1234567890" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Form.Item
+                      name="bank_account_name"
+                      label={<Text className="text-xs font-bold uppercase tracking-wider text-slate-500">Nama Pemilik Rekening</Text>}
+                      rules={[{ required: true, message: 'Wajib diisi' }]}
+                    >
+                      <Input prefix={<UserOutlined className="text-slate-300" />} placeholder="Nama sesuai di buku tabungan" />
+                    </Form.Item>
+
+                    <div className="flex gap-4 mt-8">
+                      <Button size="large" onClick={prevStep} className="flex-1 h-12 rounded-xl">
+                        ← Kembali
+                      </Button>
+                      <Button type="primary" htmlType="submit" size="large" loading={loading} className="flex-[2] h-12 bg-teal-700 hover:bg-teal-800 border-none font-bold rounded-xl shadow-lg shadow-teal-700/20">
+                        {loading ? 'Mendaftarkan...' : 'Selesaikan Pendaftaran ✓'}
+                      </Button>
+                    </div>
+                  </Form>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </ConfigProvider>
   );
 };
 

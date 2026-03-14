@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════
    Portal Penulis Layout — Production-Inspired Design
    ───────────────────────────────────────────────
-   Warm sidebar #F5E6D3 | Teal accent #008B95
+   Warm sidebar #F5E6D3 | Teal accent #E8642B
    ═══════════════════════════════════════════════ */
 
 /* ── App Root ── */
@@ -27,7 +27,7 @@
 .pl-bg-blob--1 {
     width: 500px;
     height: 500px;
-    background: radial-gradient(circle, rgba(0, 139, 149, 0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(232, 100, 43, 0.12) 0%, transparent 70%);
     top: -150px;
     left: -100px;
 }
@@ -85,14 +85,14 @@
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #008B95, #00666E);
+    background: linear-gradient(135deg, #E8642B, #C74E1A);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: 800;
     font-size: 1.2rem;
-    box-shadow: 0 4px 12px rgba(0, 139, 149, 0.3);
+    box-shadow: 0 4px 12px rgba(232, 100, 43, 0.3);
     transition: transform 0.2s;
 }
 
@@ -144,7 +144,7 @@
 
 .pl-sidebar__item:hover {
     background: rgba(255, 255, 255, 0.6);
-    color: #008B95;
+    color: #E8642B;
     transform: scale(1.08);
 }
 
@@ -307,8 +307,8 @@
 }
 
 .pl-header__search:focus-within {
-    border-color: #008B95;
-    box-shadow: 0 0 0 3px rgba(0, 139, 149, 0.1);
+    border-color: #E8642B;
+    box-shadow: 0 0 0 3px rgba(232, 100, 43, 0.1);
 }
 
 .pl-header__search-icon {
@@ -347,13 +347,13 @@
 }
 
 .pl-header__icon-btn:hover {
-    border-color: #008B95;
-    background: rgba(0, 139, 149, 0.05);
+    border-color: #E8642B;
+    background: rgba(232, 100, 43, 0.05);
 }
 
 .pl-header__icon-btn--active {
-    border-color: #008B95;
-    background: rgba(0, 139, 149, 0.08);
+    border-color: #E8642B;
+    background: rgba(232, 100, 43, 0.08);
 }
 
 .pl-header__badge {
@@ -380,7 +380,7 @@
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 139, 148, 0.08);
+    box-shadow: 0 8px 24px rgba(232, 100, 43, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.4);
     z-index: 200;
     overflow: hidden;
@@ -399,7 +399,7 @@
 .pl-notif-dropdown__mark-all {
     background: none;
     border: none;
-    color: #008B95;
+    color: #E8642B;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
@@ -469,7 +469,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #008B95;
+    background: #E8642B;
     flex-shrink: 0;
     margin-top: 6px;
 }
@@ -499,7 +499,7 @@
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #008B95, #00666E);
+    background: linear-gradient(135deg, #E8642B, #C74E1A);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -528,7 +528,7 @@
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     border-radius: 14px;
-    box-shadow: 0 8px 24px rgba(0, 139, 148, 0.08);
+    box-shadow: 0 8px 24px rgba(232, 100, 43, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.4);
     z-index: 200;
     overflow: hidden;
@@ -546,7 +546,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #008B95, #00666E);
+    background: linear-gradient(135deg, #E8642B, #C74E1A);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -587,7 +587,7 @@
 
 .pl-user-dropdown__item:hover {
     background: #F9FAFB;
-    color: #008B95;
+    color: #E8642B;
 }
 
 .pl-user-dropdown__item--danger {
@@ -601,7 +601,7 @@
 
 /* Header CTA button */
 .pl-header__btn {
-    background: linear-gradient(135deg, #008B95, #00666E);
+    background: linear-gradient(135deg, #E8642B, #C74E1A);
     color: #fff;
     padding: 10px 20px;
     border-radius: 10px;
@@ -609,13 +609,13 @@
     font-size: 0.88rem;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 139, 149, 0.25);
+    box-shadow: 0 4px 12px rgba(232, 100, 43, 0.25);
     transition: all 0.2s;
 }
 
 .pl-header__btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(0, 139, 149, 0.35);
+    box-shadow: 0 8px 20px rgba(232, 100, 43, 0.35);
 }
 
 /* ══════════════════════════════════════════════
@@ -640,7 +640,7 @@
     width: 36px;
     height: 36px;
     border: 3px solid #E5E7EB;
-    border-top-color: #008B95;
+    border-top-color: #E8642B;
     border-radius: 50%;
     animation: plSpin 0.8s ease infinite;
     margin-bottom: 16px;
@@ -675,7 +675,7 @@
     max-width: 420px;
     width: 90%;
     text-align: center;
-    box-shadow: 0 8px 24px rgba(0, 139, 148, 0.08);
+    box-shadow: 0 8px 24px rgba(232, 100, 43, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
 

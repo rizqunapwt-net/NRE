@@ -1,95 +1,54 @@
-name: Deploy NRE Stack
+name: Deploy to Production
 
 on:
-  workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - 'erp/**'
-      - 'frontend/**'
-      - '.github/workflows/deploy.yml'
-
-concurrency:
-  group: deploy-stack
-  cancel-in-progress: false
 
 jobs:
   deploy:
-    if: >-
-      ${{
-        secrets.DEPLOY_HOST != '' &&
-        secrets.DEPLOY_USER != '' &&
-        secrets.DEPLOY_PATH != '' &&
-        secrets.SSH_PRIVATE_KEY != '' &&
-        secrets.CF_ACCESS_TOKEN_ID != '' &&
-        secrets.CF_ACCESS_TOKEN_SECRET != ''
-      }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Install cloudflared
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: admin-panel/package-lock.json
+
+      - name: Build Admin Panel
+        working-directory: admin-panel
         run: |
-          curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-          sudo install -m 0755 cloudflared /usr/local/bin/cloudflared
-          cloudflared version
+          npm install
+          npm run build
 
       - name: Setup SSH
-        shell: bash
         run: |
-          set -euo pipefail
           mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-
-          if [[ -n "${{ secrets.SSH_KNOWN_HOSTS }}" ]]; then
-            echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-            chmod 644 ~/.ssh/known_hosts
-          fi
-
-          cat >> ~/.ssh/config <<EOF
-          Host deploy-target
-            HostName ${{ secrets.DEPLOY_HOST }}
-            User ${{ secrets.DEPLOY_USER }}
-            IdentityFile ~/.ssh/id_ed25519
-            IdentitiesOnly yes
-            ProxyCommand cloudflared access ssh --hostname ${{ secrets.DEPLOY_HOST }} --service-token-id ${{ secrets.CF_ACCESS_TOKEN_ID }} --service-token-secret ${{ secrets.CF_ACCESS_TOKEN_SECRET }}
-            StrictHostKeyChecking no
-            UserKnownHostsFile=/dev/null
-          EOF
-          chmod 600 ~/.ssh/config
-
-      - name: Deploy (git pull + build)
-        shell: bash
+      - name: Deploy with rsync
         run: |
-          set -euo pipefail
-          ssh deploy-target "
-            set -euo pipefail
-            cd '${{ secrets.DEPLOY_PATH }}'
-            
-            echo '--- Pulling latest code ---'
-            git fetch origin
-            git checkout main
-            git pull --ff-only origin main
-            
-            echo '--- Deploying ERP (Laravel) ---'
-            cd erp
-            bash scripts/deploy_server.sh
-            
-            echo '--- Deploying Frontend (Next.js) ---'
-            cd ../frontend
-            if [ -f \"package.json\" ]; then
-              npm install
-              npm run build
-              # Restarting pm2 process for frontend
-              pm2 restart nre-frontend || pm2 start npm --name \"nre-frontend\" -- start
-            fi
-            
-            echo '--- Deployment Complete ---'
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude 'vendor' \
+            --exclude 'storage/*.key' \
+            --exclude '.env' \
+            --exclude 'public/storage' \
+            ./ ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/html
+
+      - name: Restart Services and Migrate
+        run: |
+          ssh ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
+            cd /var/www/html && \
+            docker compose -f docker-compose.prod.yml up -d --build && \
+            docker exec nre_app_prod php artisan migrate --force && \
+            docker exec nre_app_prod php artisan config:cache && \
+            docker exec nre_app_prod php artisan route:cache && \
+            docker exec nre_app_prod php artisan view:cache
           "

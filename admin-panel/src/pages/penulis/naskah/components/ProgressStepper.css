@@ -32,7 +32,7 @@
 }
 
 .step.current .step-circle {
-  background: #008B95;
+  background: #E8642B;
   color: white;
   box-shadow: 0 0 0 4px #DBEAFE, 0 4px 12px rgba(59, 130, 246, 0.3);
   transform: scale(1.1);

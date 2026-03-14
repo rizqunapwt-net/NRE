@@ -5,7 +5,7 @@
 .auth-page-v2 {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #E8642B 0%, #C74E1A 100%);
 }
 
 /* Left Side - Form */
@@ -32,7 +32,7 @@
 .auth-brand-name {
   font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #E8642B 0%, #C74E1A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -83,8 +83,8 @@
 }
 
 .auth-input-v2:focus {
-  border-color: #667eea !important;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+  border-color: #E8642B !important;
+  box-shadow: 0 0 0 3px rgba(232, 100, 43, 0.1) !important;
 }
 
 .icon-gray {
@@ -101,13 +101,13 @@
 
 .auth-link-v2 {
   font-size: 0.875rem;
-  color: #667eea;
+  color: #E8642B;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .auth-link-v2:hover {
-  color: #764ba2;
+  color: #C74E1A;
   text-decoration: underline;
 }
 
@@ -116,7 +116,7 @@
   height: 48px;
   font-size: 1rem;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #E8642B 0%, #C74E1A 100%);
   border: none;
   border-radius: 0.5rem;
   transition: all 0.3s;
@@ -124,7 +124,7 @@
 
 .auth-btn-primary-v2:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 20px rgba(232, 100, 43, 0.3);
 }
 
 .auth-btn-google-v2 {
@@ -163,13 +163,13 @@
 }
 
 .auth-link-bold-v2 {
-  color: #667eea;
+  color: #E8642B;
   font-weight: 600;
   transition: color 0.2s;
 }
 
 .auth-link-bold-v2:hover {
-  color: #764ba2;
+  color: #C74E1A;
 }
 
 /* Right Side - Branding */
@@ -311,11 +311,11 @@
 }
 
 .step-v2.active .step-icon-v2 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #E8642B 0%, #C74E1A 100%);
   color: #ffffff;
-  border-color: #667eea;
+  border-color: #E8642B;
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(232, 100, 43, 0.4);
 }
 
 .step-v2.completed .step-icon-v2 {
@@ -331,7 +331,7 @@
 }
 
 .step-v2.active .step-title-v2 {
-  color: #667eea;
+  color: #E8642B;
   font-weight: 600;
 }
 
@@ -349,7 +349,7 @@
 
 .progress-fill-v2 {
   height: 100%;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #E8642B 0%, #C74E1A 100%);
   transition: width 0.4s ease;
   border-radius: 2px;
 }

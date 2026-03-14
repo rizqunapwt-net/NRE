@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════
    PORTAL PENULIS — Global Design System (v3 – Bokify-Inspired)
    ─────────────────────────────────────────────────────────────────
-   Teal:   #008B95          Kuning: #D9E021
-   Oranye: #F6A61F          Dark:   #00666E
+   Teal:   #E8642B          Kuning: #D9E021
+   Oranye: #F6A61F          Dark:   #C74E1A
    ─────────────────────────────────────────────────────────────────
    Typography: DM Serif Display (headings) + Plus Jakarta Sans (body)
    ═══════════════════════════════════════════════════════════════════ */
@@ -10,10 +10,10 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
 
 :root {
-    --pp-primary: #008B95;
-    --pp-primary-dark: #00666E;
+    --pp-primary: #E8642B;
+    --pp-primary-dark: #C74E1A;
     --pp-primary-light: #CCF0F2;
-    --pp-primary-glow: rgba(0, 139, 149, 0.18);
+    --pp-primary-glow: rgba(232, 100, 43, 0.18);
 
     --pp-accent: #D9E021;
     --pp-accent-dark: #B8BF1C;
@@ -87,7 +87,7 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--pp-primary);
-    background: rgba(0, 139, 149, 0.08);
+    background: rgba(232, 100, 43, 0.08);
     padding: 5px 14px;
     border-radius: 20px;
     margin-bottom: 12px;
@@ -124,7 +124,7 @@
 }
 
 .pp-card--shadow:hover {
-    box-shadow: 0 12px 40px rgba(0, 139, 149, 0.1);
+    box-shadow: 0 12px 40px rgba(232, 100, 43, 0.1);
     transform: translateY(-4px);
 }
 
@@ -210,11 +210,11 @@
 
     0%,
     100% {
-        box-shadow: 0 0 0 5px rgba(0, 139, 149, 0.1);
+        box-shadow: 0 0 0 5px rgba(232, 100, 43, 0.1);
     }
 
     50% {
-        box-shadow: 0 0 0 8px rgba(0, 139, 149, 0.2);
+        box-shadow: 0 0 0 8px rgba(232, 100, 43, 0.2);
     }
 }
 
@@ -258,13 +258,13 @@
 }
 
 .pp-btn--primary {
-    background: linear-gradient(135deg, #008B95, #00666E);
+    background: linear-gradient(135deg, #E8642B, #C74E1A);
     color: var(--pp-white);
-    box-shadow: 0 4px 16px rgba(0, 139, 149, 0.3);
+    box-shadow: 0 4px 16px rgba(232, 100, 43, 0.3);
 }
 
 .pp-btn--primary:hover {
-    box-shadow: 0 8px 28px rgba(0, 139, 149, 0.4);
+    box-shadow: 0 8px 28px rgba(232, 100, 43, 0.4);
     transform: translateY(-3px);
 }
 
@@ -292,7 +292,7 @@
 }
 
 .pp-btn--outline:hover {
-    background: rgba(0, 139, 149, 0.06);
+    background: rgba(232, 100, 43, 0.06);
     border-color: var(--pp-primary);
     color: var(--pp-primary);
 }
@@ -396,7 +396,7 @@
 }
 
 .pp-table th {
-    background: rgba(0, 139, 149, 0.04);
+    background: rgba(232, 100, 43, 0.04);
     text-align: left;
     padding: 14px 20px;
     font-size: 0.75rem;
@@ -419,7 +419,7 @@
 }
 
 .pp-table tr:hover td {
-    background: rgba(0, 139, 149, 0.03);
+    background: rgba(232, 100, 43, 0.03);
 }
 
 /* ── Badges ────────────────────────────────────────────────────── */
@@ -434,8 +434,8 @@
 }
 
 .pp-badge--teal {
-    background: rgba(0, 139, 149, 0.12);
-    color: #006D75;
+    background: rgba(232, 100, 43, 0.12);
+    color: #C74E1A;
 }
 
 .pp-badge--gold {
@@ -471,7 +471,7 @@
 /* ── Divider ───────────────────────────────────────────────────── */
 .pp-divider {
     height: 1px;
-    background: linear-gradient(to right, transparent, rgba(0, 139, 149, 0.15), transparent);
+    background: linear-gradient(to right, transparent, rgba(232, 100, 43, 0.15), transparent);
     margin: 32px 0;
     border: none;
 }

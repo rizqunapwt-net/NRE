@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import BookCoverPlaceholder from './components/BookCoverPlaceholder';
+import { useSEO } from '../../hooks/useSEO';
+import { DetailPageSkeleton } from '../../components/SkeletonLoaders';
 
 interface MarketplaceLink {
     marketplace: string;
@@ -76,6 +78,20 @@ const BookDetailPage: React.FC = () => {
         window.scrollTo(0, 0);
         fetchBook();
     }, [slug]);
+
+    // Set SEO metadata when book loads
+    useSEO(
+        book ? {
+            title: book.title,
+            description: book.description ? book.description.substring(0, 160) : `Baca ${book.title} dari Penerbit Rizquna Elfath`,
+            image: book.cover_url || undefined,
+            url: window.location.href,
+            type: 'book'
+        } : {
+            title: 'Buku',
+            description: 'Katalog buku dari Penerbit Rizquna Elfath'
+        }
+    );
 
     const fetchBook = async () => {
         setLoading(true);
@@ -190,11 +206,7 @@ const BookDetailPage: React.FC = () => {
     };
 
     if (loading || !book) {
-        return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 48, height: 48, border: '4px solid #f2f5fb', borderTopColor: '#008B94', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     return (
@@ -225,62 +237,48 @@ const BookDetailPage: React.FC = () => {
                     </nav>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 520px) 1fr', gap: 60, alignItems: 'start' }}>
-                        {/* Left Column: 3D Book */}
+                        {/* Left Column: Cover Image */}
                         <div style={{
-                            background: 'linear-gradient(145deg, #f0f2f5 0%, #e8eaef 100%)',
-                            padding: '60px',
+                            background: '#F8FAFC',
+                            padding: '40px',
                             display: 'flex',
                             justifyContent: 'center',
                             alignItems: 'center',
-                            perspective: '1200px',
-                            position: 'relative',
-                            minHeight: 480
+                            minHeight: 520,
+                            borderRadius: 24,
+                            border: '1px solid #E2E8F0'
                         }}>
                             <div style={{
-                                position: 'absolute',
-                                bottom: 40, left: '20%', right: '20%',
-                                height: 40,
-                                background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, transparent 70%)',
-                                filter: 'blur(6px)'
-                            }} />
-
-                            <div style={{
-                                transformStyle: 'preserve-3d',
-                                transform: 'rotateY(-20deg)',
-                                transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                                width: '100%',
+                                maxWidth: 360,
                                 position: 'relative',
-                                width: 280,
-                                height: 400
-                            }}
-                                onMouseOver={e => e.currentTarget.style.transform = 'rotateY(-8deg)'}
-                                onMouseOut={e => e.currentTarget.style.transform = 'rotateY(-20deg)'}
-                            >
-                                <div style={{
-                                    position: 'absolute', width: '100%', height: '100%',
-                                    borderRadius: '0 4px 4px 0', overflow: 'visible',
-                                }}>
-                                    <BookCoverPlaceholder
-                                        title={book.title}
-                                        author={book.author?.nama}
-                                        isbn={book.isbn}
-                                        size="large"
-                                        imageUrl={book.cover_url}
+                                borderRadius: 12,
+                                overflow: 'hidden',
+                                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                transform: 'translateY(0)',
+                                transition: 'all 0.3s ease'
+                            }}>
+                                {book.cover_url ? (
+                                    <img 
+                                        src={book.cover_url} 
+                                        alt={book.title}
+                                        style={{ 
+                                            width: '100%', 
+                                            height: 'auto', 
+                                            display: 'block',
+                                            objectFit: 'cover'
+                                        }}
                                     />
-                                </div>
-                                <div style={{
-                                    position: 'absolute', left: 0, top: 0, width: 40, height: '100%',
-                                    background: 'linear-gradient(90deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.2) 100%)',
-                                    backgroundColor: '#1e2d44',
-                                    transform: 'translateX(-40px) rotateY(90deg)', transformOrigin: 'right center',
-                                    borderRadius: '4px 0 0 4px'
-                                }} />
-                                <div style={{
-                                    position: 'absolute', right: 0, top: 4, width: 38, height: 'calc(100% - 8px)',
-                                    background: 'repeating-linear-gradient(90deg, #f5f5f0 0px, #ede8df 2px, #f5f5f0 4px)',
-                                    transform: 'translateX(38px) rotateY(-90deg)', transformOrigin: 'left center',
-                                    borderRadius: '0 3px 3px 0',
-                                    boxShadow: 'inset 0 0 4px rgba(0,0,0,0.1)'
-                                }} />
+                                ) : (
+                                    <div style={{ height: 480 }}>
+                                        <BookCoverPlaceholder
+                                            title={book.title}
+                                            author={book.author?.nama}
+                                            isbn={book.isbn}
+                                            size="large"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -310,7 +308,9 @@ const BookDetailPage: React.FC = () => {
                             </h1>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24 }}>
-                                <span style={{ fontSize: 28, fontWeight: 600 }}>{formatPrice(book.price)}</span>
+                                <span style={{ fontSize: 28, fontWeight: 600 }}>
+                                    {book.price > 0 ? formatPrice(book.price) : 'Hubungi Kami'}
+                                </span>
                                 <div style={{ height: 24, width: 1, background: '#dde3ef' }}></div>
                                 <StarRating rating={4} />
                             </div>
@@ -385,7 +385,7 @@ const BookDetailPage: React.FC = () => {
                             </div>
 
                             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'stretch' }}>
-                                {book.is_digital && (
+                                {book.is_digital && book.price > 0 && (
                                     <button
                                         onClick={() => {
                                             const token = localStorage.getItem('token');

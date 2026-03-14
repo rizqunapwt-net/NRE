@@ -12,6 +12,9 @@ import {
   BellOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  DollarOutlined,
+  QuestionCircleOutlined,
+  CommentOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -52,9 +55,31 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       label: 'Penjualan',
     },
     {
-      key: '/settings/users',
+      key: '/publishing/royalties',
+      icon: <DollarOutlined />,
+      label: 'Keuangan / Royalti',
+    },
+    {
+      key: 'settings_group',
       icon: <SettingOutlined />,
       label: 'Pengaturan',
+      children: [
+        {
+          key: '/settings/users',
+          icon: <UserOutlined />,
+          label: 'Manajemen User',
+        },
+        {
+          key: '/website/faq',
+          icon: <QuestionCircleOutlined />,
+          label: 'Kelola FAQ',
+        },
+        {
+          key: '/website/testimoni',
+          icon: <CommentOutlined />,
+          label: 'Kelola Testimoni',
+        },
+      ]
     },
   ];
 

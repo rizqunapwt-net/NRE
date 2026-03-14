@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Card, Typography, message, Select, Input, Space, Statistic, Row, Col, Drawer, Descriptions, Progress, Timeline, Modal, Form, InputNumber, Popconfirm, Divider } from 'antd';
-import { ReloadOutlined, SearchOutlined, EyeOutlined, FileTextOutlined, PrinterOutlined, BookOutlined, InboxOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Card, Typography, message, Select, Input, Space, Statistic, Row, Col, Drawer, Descriptions, Progress, Timeline, Modal, Form, InputNumber, Popconfirm, Divider, Upload, Alert } from 'antd';
+import { ReloadOutlined, SearchOutlined, EyeOutlined, FileTextOutlined, PrinterOutlined, BookOutlined, InboxOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import api from '../../api';
+import { API_V1_BASE } from '../../api/base';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -68,6 +69,12 @@ const ManajemenBukuPage: React.FC = () => {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(10);
+    const [total, setTotal] = useState(0);
+    const [publishingCount, setPublishingCount] = useState(0);
+    const [printingCount, setPrintingCount] = useState(0);
+    const [totalStock, setTotalStock] = useState(0);
     const [detailDrawer, setDetailDrawer] = useState(false);
     const [detailData, setDetailData] = useState<BookRecord | null>(null);
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -77,12 +84,24 @@ const ManajemenBukuPage: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const params: Record<string, string> = {};
+            const params: Record<string, string | number> = {
+                page,
+                per_page: perPage,
+            };
+            if (search) params.search = search;
             if (typeFilter) params.type = typeFilter;
             if (statusFilter) params.status = statusFilter;
             const res = await api.get('/books', { params });
             const list = res.data.data || res.data || [];
             setData(Array.isArray(list) ? list : []);
+            setTotal(res.data.total || list.length);
+            
+            // Fetch stats if available, otherwise just approximate
+            if (res.data.publishing_count !== undefined) {
+                setPublishingCount(res.data.publishing_count);
+                setPrintingCount(res.data.printing_count);
+                setTotalStock(res.data.total_stock);
+            }
         } catch {
             message.error('Gagal memuat data buku.');
             setData([]);
@@ -91,7 +110,7 @@ const ManajemenBukuPage: React.FC = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, [typeFilter, statusFilter]);
+    useEffect(() => { fetchData(); }, [page, perPage, typeFilter, statusFilter, search]);
 
     const loadDetail = async (id: number) => {
         try {
@@ -230,19 +249,13 @@ const ManajemenBukuPage: React.FC = () => {
         },
     ];
 
-    const filtered = data.filter(b => {
-        if (!search) return true;
-        const s = search.toLowerCase();
-        return b.title.toLowerCase().includes(s) ||
-            getAuthorName(b).toLowerCase().includes(s) ||
-            (b.isbn || '').toLowerCase().includes(s) ||
-            (b.tracking_code || '').toLowerCase().includes(s);
-    });
+    const filtered = data;
 
-    const total = data.length;
-    const publishingCount = data.filter(b => (b.type || 'publishing') === 'publishing').length;
-    const printingCount = data.filter(b => b.type === 'printing').length;
-    const totalStock = data.reduce((sum, b) => sum + (b.stock || 0), 0);
+    // Use state stats if populated, fallback to current page stats
+    const totalCount = total > 0 ? total : total;
+    const pubCount = publishingCount > 0 ? publishingCount : data.filter(b => (b.type || 'publishing') === 'publishing').length;
+    const printCount = printingCount > 0 ? printingCount : data.filter(b => b.type === 'printing').length;
+    const tStock = totalStock > 0 ? totalStock : data.reduce((sum, b) => sum + (b.stock || 0), 0);
 
     return (
         <div className="fade-in">
@@ -281,18 +294,17 @@ const ManajemenBukuPage: React.FC = () => {
                                 { label: '📚 Penerbitan', value: 'publishing' },
                                 { label: '🖨️ Pencetakan', value: 'printing' },
                             ]}
-                            onChange={v => setTypeFilter(v)} />
+                            onChange={v => { setTypeFilter(v); setPage(1); }} />
                         <Select placeholder="Semua Status" allowClear style={{ width: 180 }}
                             className="hover-glow"
                             options={ALL_STATUSES.map(s => ({ label: s.label, value: s.value }))}
-                            onChange={v => setStatusFilter(v)} />
+                            onChange={v => { setStatusFilter(v); setPage(1); }} />
                     </div>
                     <div style={{ height: 24, width: 1, background: '#e2e8f0', margin: '0 8px' }}></div>
-                    <Input placeholder="Cari judul, penulis, atau ISBN..."
-                        prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        style={{ width: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
+                    <Input.Search placeholder="Cari judul, penulis, atau ISBN..."
+                        allowClear
+                        onSearch={value => { setSearch(value); setPage(1); }}
+                        style={{ width: 320 }} />
                 </Space>
             </div>
 
@@ -300,7 +312,7 @@ const ManajemenBukuPage: React.FC = () => {
                 <Col xs={12} sm={6}>
                     <Card size="small" className="glass-card hover-glow" style={{ borderRadius: 16, border: 0 }}>
                         <Statistic title={<span style={{ fontWeight: 600, color: '#64748b' }}>Total Buku</span>}
-                            value={total}
+                            value={totalCount}
                             prefix={<div style={{ background: 'rgba(0, 139, 148, 0.1)', padding: 8, borderRadius: 8, marginRight: 8 }}><BookOutlined style={{ color: '#008B94' }} /></div>}
                             valueStyle={{ fontWeight: 800, color: '#1e293b' }} />
                     </Card>
@@ -308,7 +320,7 @@ const ManajemenBukuPage: React.FC = () => {
                 <Col xs={12} sm={6}>
                     <Card size="small" className="glass-card hover-glow" style={{ borderRadius: 16, border: 0 }}>
                         <Statistic title={<span style={{ fontWeight: 600, color: '#64748b' }}>Penerbitan</span>}
-                            value={publishingCount}
+                            value={pubCount}
                             prefix={<div style={{ background: 'rgba(0, 139, 148, 0.1)', padding: 8, borderRadius: 8, marginRight: 8 }}><FileTextOutlined style={{ color: '#008B94' }} /></div>}
                             valueStyle={{ fontWeight: 800, color: '#008B94' }} />
                     </Card>
@@ -316,7 +328,7 @@ const ManajemenBukuPage: React.FC = () => {
                 <Col xs={12} sm={6}>
                     <Card size="small" className="glass-card hover-glow" style={{ borderRadius: 16, border: 0 }}>
                         <Statistic title={<span style={{ fontWeight: 600, color: '#64748b' }}>Pencetakan</span>}
-                            value={printingCount}
+                            value={printCount}
                             prefix={<div style={{ background: 'rgba(250, 140, 22, 0.1)', padding: 8, borderRadius: 8, marginRight: 8 }}><PrinterOutlined style={{ color: '#fa8c16' }} /></div>}
                             valueStyle={{ fontWeight: 800, color: '#fa8c16' }} />
                     </Card>
@@ -324,7 +336,7 @@ const ManajemenBukuPage: React.FC = () => {
                 <Col xs={12} sm={6}>
                     <Card size="small" className="glass-card hover-glow" style={{ borderRadius: 16, border: 0 }}>
                         <Statistic title={<span style={{ fontWeight: 600, color: '#64748b' }}>Total Stok</span>}
-                            value={totalStock}
+                            value={tStock}
                             prefix={<div style={{ background: 'rgba(82, 196, 26, 0.1)', padding: 8, borderRadius: 8, marginRight: 8 }}><InboxOutlined style={{ color: '#52c41a' }} /></div>}
                             valueStyle={{ fontWeight: 800, color: '#52c41a' }} />
                     </Card>
@@ -338,7 +350,10 @@ const ManajemenBukuPage: React.FC = () => {
                     rowKey="id"
                     loading={loading}
                     pagination={{
-                        pageSize: 10,
+                        current: page,
+                        pageSize: perPage,
+                        total: totalCount,
+                        onChange: (p, s) => { setPage(p); setPerPage(s); },
                         showTotal: (t) => <span style={{ fontWeight: 700, color: '#64748b' }}>Total {t} buku terdaftar</span>,
                         position: ['bottomRight']
                     }}
@@ -453,12 +468,48 @@ const ManajemenBukuPage: React.FC = () => {
                             <Input placeholder="Cirebon" />
                         </Form.Item>
                     </div>
-                    <Form.Item name="cover_path" label="Path Cover (Storage)">
-                        <Input placeholder="books/7/cover_7.png" />
-                    </Form.Item>
-                    <Form.Item name="pdf_full_path" label="Path PDF Full (Storage)">
-                        <Input placeholder="books/7/pdf_7.pdf" />
-                    </Form.Item>
+                    {editingBook ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            <Form.Item label="Upload Cover">
+                                <Upload
+                                    action={`${API_V1_BASE}/admin/books/${editingBook.id}/upload-cover`}
+                                    headers={{ Authorization: `Bearer ${localStorage.getItem('token')}` }}
+                                    accept="image/*"
+                                    showUploadList={true}
+                                    onChange={(info) => {
+                                        if (info.file.status === 'done') {
+                                            message.success(`${info.file.name} berhasil diunggah.`);
+                                            fetchData();
+                                        } else if (info.file.status === 'error') {
+                                            message.error(`${info.file.name} gagal diunggah.`);
+                                        }
+                                    }}
+                                >
+                                    <Button icon={<UploadOutlined />}>Pilih File Cover</Button>
+                                </Upload>
+                            </Form.Item>
+                            <Form.Item label="Upload PDF Full">
+                                <Upload
+                                    action={`${API_V1_BASE}/admin/books/${editingBook.id}/upload-pdf`}
+                                    headers={{ Authorization: `Bearer ${localStorage.getItem('token')}` }}
+                                    accept="application/pdf"
+                                    showUploadList={true}
+                                    onChange={(info) => {
+                                        if (info.file.status === 'done') {
+                                            message.success(`${info.file.name} berhasil diunggah.`);
+                                            fetchData();
+                                        } else if (info.file.status === 'error') {
+                                            message.error(`${info.file.name} gagal diunggah.`);
+                                        }
+                                    }}
+                                >
+                                    <Button icon={<UploadOutlined />}>Pilih File PDF</Button>
+                                </Upload>
+                            </Form.Item>
+                        </div>
+                    ) : (
+                        <Alert message="Upload file Cover dan PDF dapat dilakukan setelah buku disimpan (Mode Edit)." type="info" showIcon style={{ marginBottom: 24 }} />
+                    )}
 
                     <Divider>Data Penulis</Divider>
                     <Form.Item name="author_name" label="Nama Penulis" rules={[{ required: true, message: 'Nama penulis wajib diisi' }]}>

@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════
    PORTAL PENULIS — Settings Page
    ───────────────────────────────────────────────
-   Teal: #008B95 | Glass Design
+   Teal: #E8642B | Glass Design
    ════════════════════════════════════════────────────────────── */
 
 .settings-header {
@@ -51,15 +51,15 @@
 }
 
 .settings-menu-item:hover {
-    background: rgba(0, 139, 149, 0.05);
-    color: #008B95;
+    background: rgba(232, 100, 43, 0.05);
+    color: #E8642B;
     transform: translateX(4px);
 }
 
 .settings-menu-item--active {
-    background: #008B95 !important;
+    background: #E8642B !important;
     color: #fff !important;
-    box-shadow: 0 8px 20px rgba(0, 139, 149, 0.2);
+    box-shadow: 0 8px 20px rgba(232, 100, 43, 0.2);
 }
 
 .settings-menu-item__icon {

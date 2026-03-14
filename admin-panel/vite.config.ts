@@ -13,7 +13,8 @@ export default defineConfig({
     include: ['pdfjs-dist'],
   },
   build: {
-    outDir: '../public/admin',
+    manifest: true,
+    outDir: '../public/build',
     emptyOutDir: true,
     chunkSizeWarningLimit: 950,
     rollupOptions: {
@@ -36,14 +37,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 4000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:9000',
         changeOrigin: true,
       },
       '/sanctum': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:9000',
         changeOrigin: true,
       },
     },

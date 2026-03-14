@@ -38,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
         ];
 
         $optionalObservers = [
+            ['App\Models\SalesImport', 'App\Observers\SalesImportObserver'],
+            ['App\Models\RoyaltyCalculation', 'App\Observers\RoyaltyCalculationObserver'],
+            ['App\Models\Accounting\Journal', 'App\Observers\Accounting\JournalObserver'],
         ];
 
         foreach ($observers as [$model, $observer]) {
@@ -82,7 +85,11 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
         });
 
-RateLimiter::for('pdf-read', function (Request $request) {
+        RateLimiter::for('purchases', function (Request $request) {
+            return Limit::perMinute(5)->by($request->user()->id);
+        });
+
+        RateLimiter::for('pdf-read', function (Request $request) {
             return Limit::perMinute(30)->by($request->user()->id);
         });
 
@@ -97,24 +104,20 @@ RateLimiter::for('pdf-read', function (Request $request) {
                         return;
                     }
 
-                    $properties = is_array($activity->properties) ? $activity->properties : [];
-                    $properties['request_meta'] = [
+                    $properties = collect($activity->properties ?? []);
+                    $properties->put('request_meta', [
                         'ip_address' => request()->ip(),
                         'method' => request()->method(),
                         'path' => request()->path(),
                         'route_name' => optional(request()->route())->getName(),
                         'user_agent' => str((string) request()->userAgent())->limit(500)->value(),
-                    ];
+                    ]);
                     $activity->properties = $properties;
                 });
             }
         } catch (\Throwable $e) {
             // Skip
         }
-
-        \Illuminate\Support\Facades\Route::bind('book', function ($value) {
-            return \App\Models\Book::where('id', $value)->orWhere('slug', $value)->firstOrFail();
-        });
     }
 
     private function validateEnvironment(): void

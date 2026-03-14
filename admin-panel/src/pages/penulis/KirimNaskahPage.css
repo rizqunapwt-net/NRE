@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════
    PORTAL PENULIS — Kirim Naskah Styles
    ───────────────────────────────────────────────
-   Teal: #008B95 | Multi-step Form | Glass Design
+   Teal: #E8642B | Multi-step Form | Glass Design
    ════════════════════════════════════════────────────────────── */
 
 .kn-page-container {
@@ -58,10 +58,10 @@
 }
 
 .kn-step--active .kn-step-num {
-    background: #008B95;
-    border-color: #008B95;
+    background: #E8642B;
+    border-color: #E8642B;
     color: #fff;
-    box-shadow: 0 0 0 5px rgba(0, 139, 149, 0.2);
+    box-shadow: 0 0 0 5px rgba(232, 100, 43, 0.2);
     transform: scale(1.1);
 }
 
@@ -81,7 +81,7 @@
 }
 
 .kn-step--active .kn-step-title {
-    color: #008B95;
+    color: #E8642B;
 }
 
 .kn-step-line {
@@ -94,7 +94,7 @@
 }
 
 .kn-step-line--done {
-    background: #008B95;
+    background: #E8642B;
 }
 
 /* ── Content Card ── */
@@ -122,12 +122,12 @@
 
 /* Profile Step */
 .kn-info-box {
-    background: rgba(0, 139, 149, 0.06);
+    background: rgba(232, 100, 43, 0.06);
     padding: 20px;
     border-radius: 16px;
     display: flex;
     gap: 16px;
-    border: 1px solid rgba(0, 139, 149, 0.1);
+    border: 1px solid rgba(232, 100, 43, 0.1);
 }
 
 .kn-info-icon {
@@ -136,7 +136,7 @@
 
 .kn-info-text {
     font-size: 0.88rem;
-    color: #00666E;
+    color: #C74E1A;
     margin: 0;
     line-height: 1.5;
 }
@@ -153,8 +153,8 @@
 }
 
 .kn-upload-zone:hover {
-    border-color: #008B95;
-    background: rgba(0, 139, 149, 0.03);
+    border-color: #E8642B;
+    background: rgba(232, 100, 43, 0.03);
     transform: translateY(-4px);
 }
 
@@ -224,7 +224,7 @@
     font-size: 5rem;
     margin-bottom: 24px;
     display: block;
-    filter: drop-shadow(0 10px 20px rgba(0, 139, 149, 0.2));
+    filter: drop-shadow(0 10px 20px rgba(232, 100, 43, 0.2));
 }
 
 .kn-success-title {

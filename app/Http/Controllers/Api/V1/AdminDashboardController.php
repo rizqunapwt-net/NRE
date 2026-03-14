@@ -31,8 +31,8 @@ class AdminDashboardController extends Controller
      */
     public function bookStats(): JsonResponse
     {
-        $summary = $this->dashboardService.getSummaryStats();
-        $salesTrend = $this->dashboardService.getSalesTrend(7);
+        $summary = $this->dashboardService->getSummaryStats();
+        $salesTrend = $this->dashboardService->getSalesTrend(7);
 
         // Process data for frontend compatibility (matches useDashboard.ts)
         return $this->success([

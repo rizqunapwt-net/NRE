@@ -45,6 +45,14 @@ class Author extends Model
         'language',
     ];
 
+    protected $appends = [
+        'published_books_count',
+        'active_contracts_count',
+        'total_royalties',
+        'paid_royalties',
+        'pending_royalties',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -124,14 +132,14 @@ class Author extends Model
 
     public function getTotalRoyaltiesAttribute(): float
     {
-        return $this->royalties()->sum('total_royalty');
+        return $this->royalties()->sum('total_amount');
     }
 
     public function getPaidRoyaltiesAttribute(): float
     {
         return $this->royalties()
             ->whereHas('payment', fn ($q) => $q->where('status', 'paid'))
-            ->sum('total_royalty');
+            ->sum('total_amount');
     }
 
     public function getPendingRoyaltiesAttribute(): float

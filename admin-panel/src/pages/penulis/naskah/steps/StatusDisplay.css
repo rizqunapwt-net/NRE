@@ -110,7 +110,7 @@
 .message-btn {
   margin-left: auto;
   padding: 8px 16px;
-  background: #008B95;
+  background: #E8642B;
   color: white;
   border: none;
   border-radius: 6px;
@@ -120,7 +120,7 @@
 }
 
 .message-btn:hover {
-  background: #00666E;
+  background: #C74E1A;
 }
 
 .progress-section {
@@ -157,12 +157,12 @@
 }
 
 .btn-primary {
-  background: #008B95;
+  background: #E8642B;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #00666E;
+  background: #C74E1A;
 }
 
 .btn-secondary {
@@ -181,8 +181,8 @@
 }
 
 .btn-outline:hover {
-  border-color: #008B95;
-  color: #008B95;
+  border-color: #E8642B;
+  color: #E8642B;
 }
 
 .design-options {
@@ -196,7 +196,7 @@
   border: 2px solid #E5E7EB;
 
   &.selected {
-    border-color: #008B95;
+    border-color: #E8642B;
     background: #EFF6FF;
   }
 
@@ -332,7 +332,7 @@
 
   &.active {
     background: #EFF6FF;
-    border-left: 3px solid #008B95;
+    border-left: 3px solid #E8642B;
   }
 }
 
@@ -393,7 +393,7 @@
 .book-cover-placeholder {
   width: 120px;
   height: 180px;
-  background: linear-gradient(135deg, #008B95, #00666E);
+  background: linear-gradient(135deg, #E8642B, #C74E1A);
   border-radius: 8px;
   display: flex;
   align-items: center;

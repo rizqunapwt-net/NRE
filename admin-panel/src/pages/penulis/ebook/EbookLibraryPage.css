@@ -36,13 +36,13 @@
 }
 
 .el-tabs__btn:hover {
-  border-color: #008B95;
-  color: #008B95;
+  border-color: #E8642B;
+  color: #E8642B;
 }
 
 .el-tabs__btn.is-active {
-  background: #008B95;
-  border-color: #008B95;
+  background: #E8642B;
+  border-color: #E8642B;
   color: #fff;
 }
 
@@ -54,7 +54,7 @@
 }
 
 .el-stat {
-  background: linear-gradient(135deg, #008B95 0%, #00666E 100%);
+  background: linear-gradient(135deg, #E8642B 0%, #C74E1A 100%);
   padding: 18px;
   border-radius: 12px;
   color: #fff;
@@ -243,7 +243,7 @@
 
 .el-card__stats {
   margin: 8px 0;
-  color: #0f766e;
+  color: #C74E1A;
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -271,8 +271,8 @@
 .el-load-more button:hover,
 .el-modal__actions button:hover,
 .el-sidebar button:hover {
-  border-color: #008B95;
-  color: #008B95;
+  border-color: #E8642B;
+  color: #E8642B;
 }
 
 .el-card__actions button:disabled,
@@ -337,8 +337,8 @@
 }
 
 .el-sidebar button.is-active {
-  border-color: #008B95;
-  color: #008B95;
+  border-color: #E8642B;
+  color: #E8642B;
 }
 
 .el-featured {

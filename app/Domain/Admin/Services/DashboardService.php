@@ -30,7 +30,7 @@ class DashboardService
 
             // Aggregate Author & Royalty Stats
             $authorStats = Author::count();
-            $royaltyStats = RoyaltyCalculation::sum('royalty_amount') ?? 0;
+            $royaltyStats = RoyaltyCalculation::sum('total_amount') ?? 0;
             
             // Workflow: Pending Manuscripts
             $pendingManuscripts = PublishingRequest::where('status', 'submitted')->count();
@@ -38,7 +38,7 @@ class DashboardService
             // Simple Sales Stats (Current month)
             $currentMonthSales = DB::table('sales')
                 ->whereMonth('created_at', now()->month)
-                ->sum('total_amount') ?? 0;
+                ->sum(DB::raw('quantity * net_price')) ?? 0;
 
             return [
                 'books' => [
@@ -70,7 +70,7 @@ class DashboardService
     {
         return Cache::remember("admin_dashboard_sales_trend_{$days}", 600, function () use ($days) {
             $trend = DB::table('sales')
-                ->selectRaw("DATE(created_at) as date, SUM(total_amount) as total")
+                ->selectRaw("DATE(created_at) as date, SUM(quantity * net_price) as total")
                 ->where('created_at', '>=', now()->subDays($days))
                 ->groupBy('date')
                 ->orderBy('date', 'asc')

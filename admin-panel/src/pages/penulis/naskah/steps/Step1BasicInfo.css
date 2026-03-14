@@ -98,8 +98,8 @@
 }
 
 .add-co-author-btn:hover {
-  border-color: #008B95;
-  color: #008B95;
+  border-color: #E8642B;
+  color: #E8642B;
   background: #EFF6FF;
 }
 
@@ -110,7 +110,7 @@
 
 .ant-upload-drag-icon .anticon {
   font-size: 48px !important;
-  color: #008B95 !important;
+  color: #E8642B !important;
 }
 
 .ant-upload-text {

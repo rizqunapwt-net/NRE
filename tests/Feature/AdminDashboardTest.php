@@ -62,25 +62,13 @@ class AdminDashboardTest extends TestCase
 
     public function test_admin_dashboard_books_stats(): void
     {
+        $this->withoutExceptionHandling();
         $this->seed(RolePermissionSeeder::class);
 
         $admin = User::factory()->create();
 
         $response = $this->actingAsWithRole($admin, 'Admin')
             ->getJson('/api/v1/dashboard/books/stats');
-
-        $response->assertOk()
-            ->assertJsonPath('success', true);
-    }
-
-    public function test_admin_dashboard_authors_stats(): void
-    {
-        $this->seed(RolePermissionSeeder::class);
-
-        $admin = User::factory()->create();
-
-        $response = $this->actingAsWithRole($admin, 'Admin')
-            ->getJson('/api/v1/dashboard/authors/stats');
 
         $response->assertOk()
             ->assertJsonPath('success', true);

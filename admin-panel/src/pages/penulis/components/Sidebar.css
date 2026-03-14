@@ -15,7 +15,7 @@
 }
 
 .sidebar-menu-item__content.active {
-  background: linear-gradient(135deg, #008B95, #008B95);
+  background: linear-gradient(135deg, #E8642B, #E8642B);
   color: white;
   font-weight: 600;
 }
@@ -83,14 +83,14 @@
   
   &:hover {
     background: #EFF6FF;
-    color: #008B95;
-    border-left-color: #008B95;
+    color: #E8642B;
+    border-left-color: #E8642B;
   }
   
   &.active {
     background: #DBEAFE;
-    color: #008B95;
-    border-left-color: #008B95;
+    color: #E8642B;
+    border-left-color: #E8642B;
     font-weight: 600;
   }
 }

@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════
    PORTAL PENULIS — E-Book Library Styles
    ───────────────────────────────────────────────
-   Teal: #008B95 | Glass Design
+   Teal: #E8642B | Glass Design
    ════════════════════════════════════════────────────────────── */
 
 .ebook-library {
@@ -18,7 +18,7 @@
   flex-wrap: wrap;
   gap: 20px;
   padding-bottom: 20px;
-  border-bottom: 2px dashed rgba(0, 139, 149, 0.1);
+  border-bottom: 2px dashed rgba(232, 100, 43, 0.1);
 }
 
 .ebook-title {
@@ -59,14 +59,14 @@
 }
 
 .ebook-tab:hover {
-  color: #008B95;
+  color: #E8642B;
   background: rgba(255, 255, 255, 0.5);
 }
 
 .ebook-tab--active {
-  background: linear-gradient(135deg, #008B95, #00A3AD);
+  background: linear-gradient(135deg, #E8642B, #FF7A42);
   color: white !important;
-  box-shadow: 0 4px 12px rgba(0, 139, 149, 0.25);
+  box-shadow: 0 4px 12px rgba(232, 100, 43, 0.25);
 }
 
 /* ── Search Bar ── */
@@ -89,8 +89,8 @@
 .ebook-search:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.95);
-  border-color: #008B95;
-  box-shadow: 0 8px 24px rgba(0, 139, 149, 0.08);
+  border-color: #E8642B;
+  box-shadow: 0 8px 24px rgba(232, 100, 43, 0.08);
   transform: translateY(-2px);
 }
 
@@ -119,8 +119,8 @@
 .ebook-card:hover {
   transform: translateY(-10px) scale(1.02);
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 8px 24px rgba(0, 139, 148, 0.08);
-  border-color: rgba(0, 139, 149, 0.2);
+  box-shadow: 0 8px 24px rgba(232, 100, 43, 0.08);
+  border-color: rgba(232, 100, 43, 0.2);
 }
 
 .ebook-cover {
@@ -150,7 +150,7 @@
   position: absolute;
   top: 15px;
   right: 15px;
-  background: linear-gradient(135deg, #008B95, #00A3AD);
+  background: linear-gradient(135deg, #E8642B, #FF7A42);
   color: white;
   padding: 6px 14px;
   border-radius: 10px;
@@ -187,7 +187,7 @@
 
 .ebook-author {
   font-size: 0.85rem;
-  color: #008B95;
+  color: #E8642B;
   margin: 0 0 12px 0;
   font-weight: 700;
 }
@@ -195,7 +195,7 @@
 .ebook-price {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #008B95;
+  color: #E8642B;
   margin-bottom: 16px;
 }
 
@@ -207,13 +207,13 @@
 }
 
 .ebook-tag {
-  background: rgba(0, 139, 149, 0.08);
-  color: #008B95;
+  background: rgba(232, 100, 43, 0.08);
+  color: #E8642B;
   padding: 4px 12px;
   border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 700;
-  border: 1px solid rgba(0, 139, 149, 0.1);
+  border: 1px solid rgba(232, 100, 43, 0.1);
 }
 
 /* ── Empty State ── */
@@ -223,14 +223,14 @@
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(10px);
   border-radius: 30px;
-  border: 2px dashed rgba(0, 139, 149, 0.2);
+  border: 2px dashed rgba(232, 100, 43, 0.2);
   margin-top: 40px;
 }
 
 .ebook-empty__icon {
   font-size: 5rem;
   margin-bottom: 24px;
-  filter: drop-shadow(0 0 20px rgba(0, 139, 149, 0.2));
+  filter: drop-shadow(0 0 20px rgba(232, 100, 43, 0.2));
 }
 
 .ebook-empty__text {

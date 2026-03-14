@@ -74,6 +74,11 @@ class Book extends Model
         'import_source',
         'file_checksum',
         'import_error',
+        // Google Drive integration
+        'google_drive_cover_id',
+        'google_drive_cover_url',
+        'google_drive_pdf_id',
+        'google_drive_pdf_url',
     ];
 
     protected static function booted(): void
@@ -91,6 +96,15 @@ class Book extends Model
         static::updating(function (self $book) {
             if ($book->isDirty('title') && ! $book->isDirty('slug')) {
                 $book->slug = static::generateUniqueSlug($book->title, $book->id);
+            }
+        });
+
+        // Auto-sync to Google Drive when cover or PDF changes (if enabled)
+        static::saved(function (self $book) {
+            if (config('google.drive.books_root_folder_id') && $book->is_published) {
+                // Queue sync job instead of syncing immediately
+                // This prevents blocking the main request
+                // SyncBooksToGoogleDrive::dispatch($book);
             }
         });
     }

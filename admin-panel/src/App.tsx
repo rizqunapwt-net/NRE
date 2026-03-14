@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { designTokens } from './theme/designTokens';
 
 // Auth & Context
 import { AuthProvider } from './contexts/AuthContext';
@@ -28,13 +29,12 @@ const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
 
 // Landing & Public
 const LandingPage = React.lazy(() => import('./pages/landing/LandingPage'));
-const ContactPage = React.lazy(() => import('./pages/landing/ContactPage'));
 const PublicLayout = React.lazy(() => import('./pages/landing/PublicLayout'));
 const EbookCatalogPage = React.lazy(() => import('./pages/catalog/EbookCatalogPage'));
 const BookDetailPage = React.lazy(() => import('./pages/landing/BookDetailPage'));
 const PdfReaderPage = React.lazy(() => import('./pages/landing/PdfReaderPage'));
-const RepositoryPage = React.lazy(() => import('./pages/landing/RepositoryPage'));
-const RepositoryDetailPage = React.lazy(() => import('./pages/landing/RepositoryDetailPage'));
+const SitasiPage = React.lazy(() => import('./pages/landing/SitasiPage'));
+const SitasiDetailPage = React.lazy(() => import('./pages/landing/SitasiDetailPage'));
 
 // Author Portal
 const PenulisLayout = React.lazy(() => import('./pages/penulis/PenulisLayout'));
@@ -86,10 +86,6 @@ const queryClient = new QueryClient({
   },
 });
 
-import { designTokens } from './theme/designTokens';
-
-// ... (previous imports)
-
 const App: React.FC = () => {
   return (
     <ConfigProvider
@@ -137,14 +133,18 @@ const App: React.FC = () => {
                   {/* PUBLIC ROUTES — all wrapped in PublicLayout (shared Navbar + Footer) */}
                   <Route element={<PublicLayout />}>
                     <Route path="/" element={<LandingPage />} />
-                    <Route path="/contact" element={<ContactPage />} />
                     <Route path="/katalog" element={<EbookCatalogPage />} />
                     <Route path="/katalog/:slug" element={<BookDetailPage />} />
                     <Route path="/ebooks" element={<EbookCatalogPage />} />
                     <Route path="/ebooks/:slug" element={<BookDetailPage />} />
                     <Route path="/catalog" element={<EbookCatalogPage />} />
-                    <Route path="/repository" element={<RepositoryPage />} />
-                    <Route path="/repository/:slug" element={<RepositoryDetailPage />} />
+                    <Route path="/buku" element={<EbookCatalogPage />} />
+                    <Route path="/buku/:slug" element={<BookDetailPage />} />
+                    <Route path="/sitasi" element={<SitasiPage />} />
+                    <Route path="/sitasi/:slug" element={<SitasiDetailPage />} />
+                    {/* Legacy routes - redirect to new URLs */}
+                    <Route path="/repository" element={<Navigate to="/sitasi" replace />} />
+                    <Route path="/repository/:slug" element={<Navigate to="/sitasi" replace />} />
                   </Route>
                   <Route path="/katalog/:slug/baca" element={<PdfReaderPage />} />
                   <Route path="/login" element={<LoginPage />} />

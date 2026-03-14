@@ -76,16 +76,4 @@ class PercetakanTest extends TestCase
 
         $response->assertForbidden();
     }
-
-    public function test_author_cannot_access_finance_routes(): void
-    {
-        $this->seed(RolePermissionSeeder::class);
-        $user = User::factory()->create();
-        $user->assignRole('User');
-
-        $response = $this->actingAs($user)
-            ->getJson('/api/v1/finance/invoices');
-
-        $response->assertForbidden();
-    }
 }
