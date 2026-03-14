@@ -64,41 +64,116 @@ class PublicSiteController extends Controller
      */
     public function catalog(Request $request): JsonResponse
     {
-        \Illuminate\Support\Facades\Log::info('Catalog Audit:', [
-            'db_connection' => \Illuminate\Support\Facades\DB::getDefaultConnection(),
-            'db_name' => \Illuminate\Support\Facades\DB::getDatabaseName(),
-            'published_count' => Book::where('status', 'published')->count(),
-        ]);
+        $cacheKey = 'catalog_' . md5(json_encode($request->all()));
 
-        $query = Book::with(['author', 'preview', 'category'])
-            ->where('status', 'published')
-            ->orderBy('created_at', 'desc');
+        $response = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($request) {
+            $query = Book::with(['author', 'preview', 'category'])
+                ->where('status', 'published');
 
-        if ($request->has('category')) {
-            $categorySlug = $request->category;
-            $query->whereHas('category', function ($q) use ($categorySlug) {
-                $q->where('slug', $categorySlug);
+            // Full-text Search
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('isbn', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('author', function ($a) use ($search) {
+                            $a->where('name', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Multi-category Filter
+            if ($request->has('categories')) {
+                $categorySlugs = (array) $request->categories;
+                $query->whereHas('category', function ($q) use ($categorySlugs) {
+                    $q->whereIn('slug', $categorySlugs);
+                });
+            } elseif ($request->has('category')) {
+                $categorySlug = $request->category;
+                $query->whereHas('category', function ($q) use ($categorySlug) {
+                    $q->where('slug', $categorySlug);
+                });
+            }
+
+            // Price Range
+            if ($request->has('min_price')) {
+                $query->where('price', '>=', $request->min_price);
+            }
+            if ($request->has('max_price')) {
+                $query->where('price', '<=', $request->max_price);
+            }
+
+            // Published Year
+            if ($request->has('year')) {
+                $query->where('published_year', $request->year);
+            }
+
+            // Author Filter
+            if ($request->has('author_id')) {
+                $query->where('author_id', $request->author_id);
+            }
+
+            // Type Filter (Physical vs Digital)
+            if ($request->has('is_digital')) {
+                $query->where('is_digital', $request->boolean('is_digital'));
+            }
+
+            // Rating Filter
+            if ($request->has('min_rating')) {
+                $query->where('rating', '>=', $request->min_rating);
+            }
+
+            // Sorting
+            $sort = $request->input('sort', 'newest');
+            switch ($sort) {
+                case 'popular':
+                    $query->orderByDesc('sales_count');
+                    break;
+                case 'bestseller':
+                    $query->orderByDesc('is_bestseller')->orderByDesc('sales_count');
+                    break;
+                case 'price_low':
+                    $query->orderBy('price', 'asc');
+                    break;
+                case 'price_high':
+                    $query->orderBy('price', 'desc');
+                    break;
+                case 'rating':
+                    $query->orderByDesc('rating');
+                    break;
+                case 'newest':
+                default:
+                    $query->orderByDesc('created_at');
+                    break;
+            }
+
+            $books = $query->paginate($request->input('per_page', 12));
+
+            // Suggestions for "Did you mean?" if results are empty
+            $suggestion = null;
+            if ($books->isEmpty() && $request->has('search')) {
+                $search = $request->search;
+                // Basic logic for suggestion: find a book that matches partially
+                $suggestedBook = Book::where('status', 'published')
+                    ->where('title', 'like', substr($search, 0, 3) . '%')
+                    ->first();
+                if ($suggestedBook) {
+                    $suggestion = $suggestedBook->title;
+                }
+            }
+
+            // Transform each book to include cover_url
+            $books->getCollection()->transform(function ($book) {
+                return $this->transformBook($book);
             });
-        }
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhereHas('author', function ($a) use ($search) {
-                        $a->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        $books = $query->paginate($request->input('per_page', 12));
-
-        // Transform each book to include cover_url
-        $books->getCollection()->transform(function ($book) {
-            return $this->transformBook($book);
+            $res = $books->toArray();
+            $res['suggestion'] = $suggestion;
+            return $res;
         });
 
-        return response()->json($books);
+        return response()->json($response);
     }
 
     /**
@@ -207,12 +282,16 @@ class PublicSiteController extends Controller
      */
     public function stats(): JsonResponse
     {
-        return response()->json([
-            'data' => [
+        $stats = \Illuminate\Support\Facades\Cache::remember('public_stats', 3600, function () {
+            return [
                 'total_books' => Book::where('status', 'published')->count(),
                 'total_authors' => Author::has('books')->count(),
                 'years_active' => max(1, now()->year - 2020),
-            ],
+            ];
+        });
+
+        return response()->json([
+            'data' => $stats,
         ]);
     }
 

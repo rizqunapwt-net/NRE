@@ -68,7 +68,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     const fetchProfile = useCallback(async () => {
-        const token = localStorage.getItem('token');
+        // Check for token in localStorage (remember me) or sessionStorage (session only)
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (!token) {
             setLoading(false);
             return;
@@ -101,7 +102,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 },
             });
         } catch {
+            // Token invalid or expired, clear both storages
             localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('refresh_token');
             setUser(null);
         } finally {
             setLoading(false);
@@ -129,16 +134,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isPenulis = () => Boolean(user?.is_verified_author);
     const mustChangePassword = () => user?.must_change_password ?? false;
 
-    const login = async (email: string, password: string) => {
-        const response = await api.post('/auth/login', { email, password });
+    const login = async (email: string, password: string, remember: boolean = false) => {
+        const response = await api.post('/auth/login', { email, password, remember });
         const data = response.data.success ? response.data.data : response.data;
         const token = data.token;
+        const refreshToken = data.refresh_token;
         const userData = data.user || data;
-        loginWithToken(token, userData);
+        loginWithToken(token, userData, refreshToken, remember);
     };
 
-    const loginWithToken = (token: string, userData: Partial<UserProfile> & { roles?: string[] }) => {
-        localStorage.setItem('token', token);
+    const loginWithToken = (token: string, userData: Partial<UserProfile> & { roles?: string[] }, refreshToken?: string, remember: boolean = false) => {
+        // Store tokens based on remember me preference
+        if (remember) {
+            localStorage.setItem('token', token);
+            if (refreshToken) {
+                localStorage.setItem('refresh_token', refreshToken);
+            }
+            // Store login timestamp for session management
+            localStorage.setItem('login_timestamp', Date.now().toString());
+        } else {
+            // Session-only storage (cleared when browser closes)
+            sessionStorage.setItem('token', token);
+            if (refreshToken) {
+                sessionStorage.setItem('refresh_token', refreshToken);
+            }
+        }
+
         const spatieRole = (userData.roles?.[0] || userData.role || '').toUpperCase();
         const permissions = ROLE_PERMISSIONS[spatieRole] || [];
         setUser({
@@ -164,7 +185,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch {
             // Token may already be expired
         }
+        // Clear all storage
         localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('login_timestamp');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('refresh_token');
         setUser(null);
         window.location.href = '/login';
     };

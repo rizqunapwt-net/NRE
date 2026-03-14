@@ -1,0 +1,71 @@
+{
+  "common": {
+    "all": "All",
+    "see_details": "See Details",
+    "register": "Register",
+    "login": "Login",
+    "back_to_home": "Back to Home",
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "navbar": {
+    "home": "Home",
+    "books": "Books",
+    "citation": "Citation",
+    "start_publishing": "START PUBLISHING"
+  },
+  "hero": {
+    "badge": "IKAPI Central Java No. 199/JTE/2020",
+    "title": "Realize Your {{highlight}} With Us",
+    "title_highlight": "Best Work",
+    "subtitle": "CV. New Rizquna Elfath is a professional publisher and printer in Purwokerto. We are ready to help you from manuscript to published book — official ISBN, guaranteed Intellectual Property Rights, national distribution.",
+    "cta_primary": "START PUBLISHING →",
+    "cta_secondary": "LOGIN",
+    "rating_label": "Author Rating",
+    "trusted_by": "Trusted by hundreds of authors and academic institutions",
+    "stat_authors": "Registered Authors",
+    "stat_books": "Published Books"
+  },
+  "features": {
+    "label": "OUR SERVICES",
+    "title": "Complete Publishing Solution",
+    "subtitle": "From raw manuscript to market-ready book, we handle it all",
+    "item1_title": "Book Publishing",
+    "item1_desc": "Professional publishing services with official ISBN from the National Library. Your manuscript will go through editing, layout, and cover design by our expert team.",
+    "item2_title": "Quality Printing",
+    "item2_desc": "Modern printing facilities for Print on Demand or mass printing (offset). Sharp print results with choice paper materials and sturdy binding.",
+    "item3_title": "ISBN & IPR",
+    "item3_desc": "Processing official ISBN from the National Library and registration of Intellectual Property Rights (IPR) to protect your intellectual work legally."
+  },
+  "about": {
+    "label": "ABOUT US",
+    "title": "Quality Book {{highlight}} Partner",
+    "title_highlight": "Print & Publish",
+    "subtitle": "CV. New Rizquna Elfath is an official IKAPI member publisher located in Purwokerto, Central Java. Since 2020, we have helped hundreds of authors — lecturers, researchers, and practitioners — publish their best work.",
+    "check1": "Official Member of IKAPI Central Java",
+    "check2": "Guaranteed Official ISBN & IPR",
+    "check3": "Professional Editor & Designer Team",
+    "check4": "National Distribution throughout Indonesia",
+    "cta": "REGISTER NOW →",
+    "exp_label": "Years of Experience"
+  },
+  "catalog": {
+    "label": "PUBLICATION CATALOG",
+    "title": "Our Published Books",
+    "subtitle": "Collection of scientific and academic works from Indonesia's best authors",
+    "filter_all": "All Books",
+    "meta_pages": "Pages",
+    "meta_readers": "Readers",
+    "price_free": "Free / Open Access",
+    "search_placeholder": "Search title, author, or ISBN...",
+    "no_results": "Books not found"
+  },
+  "footer": {
+    "address_title": "Head Office",
+    "address": "Jl. Sunan Kalijaga, Purwokerto, Central Java",
+    "links_title": "Quick Links",
+    "contact_title": "Contact Us"
+  }
+}

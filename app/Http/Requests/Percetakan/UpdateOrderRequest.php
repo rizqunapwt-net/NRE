@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Percetakan;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateOrderRequest extends FormRequest
 {
@@ -34,6 +35,69 @@ class UpdateOrderRequest extends FormRequest
             'deposit_paid' => ['nullable', 'numeric', 'min:0'],
             'production_notes' => ['nullable', 'string'],
             'customer_notes' => ['nullable', 'string'],
+        ];
+    }
+
+    public function bodyParameters(): array
+    {
+        return [
+            'customer_id' => [
+                'description' => 'ID customer baru jika order dipindahkan.',
+                'example' => 2,
+            ],
+            'product_id' => [
+                'description' => 'ID produk percetakan baru.',
+                'example' => 3,
+            ],
+            'quantity' => [
+                'description' => 'Jumlah unit yang diperbarui.',
+                'example' => 1500,
+            ],
+            'status' => [
+                'description' => 'Status order percetakan.',
+                'example' => 'confirmed',
+            ],
+            'deadline' => [
+                'description' => 'Deadline produksi yang baru.',
+                'example' => now()->addDays(10)->toDateString(),
+            ],
+            'priority' => [
+                'description' => 'Prioritas produksi.',
+                'example' => 'urgent',
+            ],
+            'unit_price' => [
+                'description' => 'Harga satuan baru.',
+                'example' => 17500,
+            ],
+            'discount_amount' => [
+                'description' => 'Nominal diskon baru.',
+                'example' => 75000,
+            ],
+            'deposit_percentage' => [
+                'description' => 'Persentase DP baru.',
+                'example' => 60,
+            ],
+            'specifications' => [
+                'description' => 'Objek spesifikasi cetak yang diperbarui.',
+                'example' => [
+                    'size' => 'B5',
+                    'paper_type' => 'HVS',
+                    'paper_weight' => '80 gsm',
+                    'colors_inside' => '1/1',
+                    'colors_outside' => '4/4',
+                    'binding_type' => 'staple',
+                    'finishing' => 'none',
+                    'pages_count' => 64,
+                ],
+            ],
+            'production_notes' => [
+                'description' => 'Catatan internal produksi.',
+                'example' => 'Ubah jadwal mesin ke batch malam.',
+            ],
+            'customer_notes' => [
+                'description' => 'Catatan customer terbaru.',
+                'example' => 'Tambahkan packing kardus tebal.',
+            ],
         ];
     }
 }

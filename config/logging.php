@@ -73,6 +73,20 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'production' => [
+            'driver' => 'custom',
+            'via' => App\Logging\JsonLogger::class,
+            'days' => env('LOG_DAILY_DAYS', 30),
+            'level' => env('LOG_LEVEL', 'info'),
+        ],
+
+        'sentry' => [
+            'driver' => 'monolog',
+            'path' => storage_path('logs/sentry.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'bubble' => false,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

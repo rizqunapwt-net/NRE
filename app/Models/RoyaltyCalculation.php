@@ -23,6 +23,7 @@ class RoyaltyCalculation extends Model
         'author_id',
         'total_amount',
         'status',
+        'notes',
         'calculated_by',
         'calculated_at',
         'finalized_by',

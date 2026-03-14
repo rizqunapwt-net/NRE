@@ -8,6 +8,19 @@ trait ApiResponse
 {
     protected function success(mixed $data, int $status = 200, array $meta = []): JsonResponse
     {
+        if ($data instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $pagination = [
+                'current_page' => $data->currentPage(),
+                'last_page'    => $data->lastPage(),
+                'per_page'     => $data->perPage(),
+                'total'        => $data->total(),
+                'from'         => $data->firstItem(),
+                'to'           => $data->lastItem(),
+            ];
+            $meta = array_merge($meta, $pagination);
+            $data = $data->items();
+        }
+
         return response()->json([
             'success' => true,
             'data' => $data,

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\AdminDashboardController;
 use App\Http\Controllers\Api\V1\AuthorAccountController;
 use App\Http\Controllers\Api\V1\AuthorCrudController;
+use App\Http\Controllers\Api\V1\AuthorPortalApiController;
 use App\Http\Controllers\Api\V1\AuthorPortalController;
 use App\Http\Controllers\Api\V1\AuthorRegisterController;
 use App\Http\Controllers\Api\V1\BookOrderController;
@@ -123,6 +124,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
     Route::post('/books/{book}/purchase', [\App\Http\Controllers\Api\V1\BookPurchaseController::class, 'store']);
     Route::get('/purchases/{transactionId}/status', [\App\Http\Controllers\Api\V1\BookPurchaseController::class, 'status']);
 
+    // Saved Searches
+    Route::get('/user/saved-searches', [\App\Http\Controllers\Api\V1\SavedSearchController::class, 'index']);
+    Route::post('/user/saved-searches', [\App\Http\Controllers\Api\V1\SavedSearchController::class, 'store']);
+    Route::delete('/user/saved-searches/{savedSearch}', [\App\Http\Controllers\Api\V1\SavedSearchController::class, 'destroy']);
+
     // ══════════════════════════════════════════════════════════════════════
     // ADMIN PANEL — All Admin-Only Endpoints
     // ══════════════════════════════════════════════════════════════════════
@@ -163,11 +169,48 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
         Route::get('/books/{id}', [PublishingController::class, 'bookDetail']);
         Route::post('/books', [PublishingController::class, 'storeBook']);
         Route::patch('/books/{id}', [PublishingController::class, 'updateBook']);
+        Route::delete('/books/{id}', [PublishingController::class, 'deleteBook']);
+        Route::post('/books/{id}/restore', [PublishingController::class, 'restoreBook']);
         Route::patch('/books/{id}/status', [PublishingController::class, 'updateBookStatus']);
         Route::get('/books/{id}/files', [PublishingController::class, 'bookFiles']);
         Route::post('/books/{id}/files', [PublishingController::class, 'uploadBookFile'])->middleware('throttle:20,1');
         Route::post('/admin/books/{id}/parse', [PublishingController::class, 'triggerParse']);
         Route::get('/books/{id}/logs', [PublishingController::class, 'bookStatusLogs']);
+
+        // ── Settings ──
+        Route::prefix('settings')->group(function () {
+            // General Settings
+            Route::get('/general', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'getGeneral']);
+            Route::put('/general', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'updateGeneral']);
+            
+            // Publish Settings
+            Route::get('/publish', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'getPublish']);
+            Route::put('/publish', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'updatePublish']);
+            
+            // FAQs
+            Route::get('/faqs', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'listFaqs']);
+            Route::post('/faqs', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'createFaq']);
+            Route::put('/faqs/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'updateFaq']);
+            Route::delete('/faqs/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'deleteFaq']);
+            
+            // Testimonials
+            Route::get('/testimonials', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'listTestimonials']);
+            Route::post('/testimonials', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'createTestimonial']);
+            Route::put('/testimonials/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'updateTestimonial']);
+            Route::delete('/testimonials/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'deleteTestimonial']);
+            
+            // Homepage Banners
+            Route::get('/banners', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'listBanners']);
+            Route::post('/banners', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'createBanner']);
+            Route::put('/banners/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'updateBanner']);
+            Route::delete('/banners/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'deleteBanner']);
+            
+            // Email Templates
+            Route::get('/email-templates', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'listEmailTemplates']);
+            Route::get('/email-templates/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'getEmailTemplate']);
+            Route::put('/email-templates/{id}', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'updateEmailTemplate']);
+            Route::post('/email-templates/{id}/test', [\App\Http\Controllers\Api\V1\Admin\SettingsController::class, 'sendTestEmail']);
+        });
         Route::get('/book-statuses', [PublishingController::class, 'statusList']);
 
         // ── Publishing Requests (Naskah Masuk) ──
@@ -183,6 +226,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
 
         // ── Authors (Legacy — keep for backward compat) ──
         Route::get('/authors', [PublishingController::class, 'authors']);
+        Route::get('/marketplaces', [PublishingController::class, 'marketplaces']);
         Route::post('/authors', [PublishingController::class, 'storeAuthor']);
 
         // ── Contracts ──
@@ -235,6 +279,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
     // ── Royalties & Payments ──
     Route::get('/royalties', [RoyaltyCalculationController::class, 'index'])->middleware('admin');
     Route::get('/royalties/{royaltyCalculation}', [RoyaltyCalculationController::class, 'show'])->middleware('admin');
+    Route::put('/royalties/{royaltyCalculation}', [RoyaltyCalculationController::class, 'update'])->middleware('admin');
     Route::post('/royalties/calculate', [RoyaltyCalculationController::class, 'calculate'])->middleware('admin');
     Route::put('/royalties/{royaltyCalculation}/finalize', [RoyaltyCalculationController::class, 'finalize'])->middleware('admin');
     Route::post('/royalties/{royaltyCalculation}/invoice', [RoyaltyCalculationController::class, 'invoice'])->middleware('admin');
@@ -245,13 +290,25 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
         Route::get('/books', [AdminDashboardController::class, 'books']);
         Route::get('/books/stats', [AdminDashboardController::class, 'bookStats']);
         Route::get('/authors', [AdminDashboardController::class, 'authors']);
-    }
-    );
+    });
 
     // ══════════════════════════════════════════════════════════════════════
     // USER PORTAL — Verified-User Endpoints
     // ══════════════════════════════════════════════════════════════════════
-    Route::middleware(['user.portal', 'password.changed'])->group(function () {
+    Route::group(['middleware' => ['user.portal', 'password.changed']], function () {
+        Route::group(['prefix' => 'author'], function () {
+            Route::get('/dashboard', [AuthorPortalApiController::class, 'dashboard']);
+            Route::get('/manuscripts', [AuthorPortalApiController::class, 'manuscripts']);
+            Route::post('/manuscripts', [AuthorPortalApiController::class, 'storeManuscript']);
+            Route::get('/manuscripts/{id}', [AuthorPortalApiController::class, 'showManuscript']);
+            Route::put('/manuscripts/{id}', [AuthorPortalApiController::class, 'updateManuscript']);
+            Route::delete('/manuscripts/{id}', [AuthorPortalApiController::class, 'deleteManuscript']);
+            Route::get('/royalties', [AuthorPortalApiController::class, 'royalties']);
+            Route::get('/royalties/{id}', [AuthorPortalApiController::class, 'showRoyalty']);
+            Route::get('/profile', [AuthorPortalApiController::class, 'profile']);
+            Route::put('/profile', [AuthorPortalApiController::class, 'updateProfile']);
+        });
+
         Route::get('/user/dashboard', [AuthorPortalController::class, 'dashboard']);
         Route::get('/user/profile', [AuthorPortalController::class, 'profile']);
         Route::patch('/user/profile', [AuthorPortalController::class, 'updateProfile']);

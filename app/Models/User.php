@@ -88,6 +88,11 @@ class User extends Authenticatable
             ->withPivot(['access_level', 'granted_by', 'granted_at', 'expires_at']);
     }
 
+    public function savedSearches(): HasMany
+    {
+        return $this->hasMany(SavedSearch::class);
+    }
+
     // ─── Role Helpers ───
 
     public function isAdmin(): bool

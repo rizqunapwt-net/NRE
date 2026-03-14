@@ -22,7 +22,7 @@ class PublishingController extends Controller
 
     public function books(Request $request): JsonResponse
     {
-        $query = Book::with('author:id,name');
+        $query = Book::with(['author:id,name', 'category', 'assignments']);
 
         if ($type = $request->query('type')) {
             $query->where('type', $type);
@@ -32,7 +32,10 @@ class PublishingController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('isbn', 'like', "%{$search}%")
-                    ->orWhere('tracking_code', 'like', "%{$search}%");
+                    ->orWhere('tracking_code', 'like', "%{$search}%")
+                    ->orWhereHas('author', function($aq) use ($search) {
+                        $aq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -40,7 +43,24 @@ class PublishingController extends Controller
             $query->where('status', '=', $status);
         }
 
-        $books = $query->withCount(['files', 'printOrders'])->orderByDesc('created_at')->get()->map(fn (Book $book) => $this->formatBook($book));
+        if ($categoryId = $request->query('category_id')) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($startDate = $request->query('start_date')) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+
+        if ($endDate = $request->query('end_date')) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $perPage = $request->query('per_page', 15);
+        $books = $query->withCount(['files', 'printOrders'])
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        $books->getCollection()->transform(fn (Book $book) => $this->formatBook($book));
 
         return $this->success($books);
     }
@@ -86,10 +106,20 @@ class PublishingController extends Controller
             'stock' => $book->stock,
             'status' => $book->status?->value ?? $book->status,
             'status_label' => $book->getStatusLabel(),
+            'category_id' => $book->category_id,
+            'category_name' => $book->category?->name,
+            'is_featured' => $book->is_featured,
+            'is_digital' => $book->is_digital,
+            'published_at' => $book->published_at,
             'cover_path' => $book->cover_path,
+            'cover_url' => $book->cover_url,
             'progress' => $book->getProgressPercentage(),
             'files_count' => $book->files_count ?? 0,
             'print_orders_count' => $book->print_orders_count ?? 0,
+            'marketplace_links' => $book->assignments->map(fn($a) => [
+                'marketplace_id' => $a->marketplace_id,
+                'product_url' => $a->product_url,
+            ]),
             'allowed_transitions' => $book->getAllowedTransitions(),
             'created_at' => $book->created_at,
             'updated_at' => $book->updated_at,
@@ -98,7 +128,7 @@ class PublishingController extends Controller
 
     public function bookDetail(int $id): JsonResponse
     {
-        $book = Book::with(['author', 'files', 'statusLogs.changer', 'printOrders'])->findOrFail($id);
+        $book = Book::with(['author', 'category', 'assignments.marketplace', 'files', 'statusLogs.changer', 'printOrders'])->findOrFail($id);
 
         return $this->success([
             'id' => $book->id,
@@ -114,6 +144,7 @@ class PublishingController extends Controller
             'status_label' => $book->getStatusLabel(),
             'progress' => $book->getProgressPercentage(),
             'cover_path' => $book->cover_path,
+            'cover_url' => $book->cover_url,
             'cover_file_path' => $book->cover_file_path,
             'gdrive_link' => $book->gdrive_link,
             'surat_scan_path' => $book->surat_scan_path,
@@ -122,6 +153,15 @@ class PublishingController extends Controller
             'page_count' => $book->page_count,
             'size' => $book->size,
             'published_year' => $book->published_year,
+            'published_at' => $book->published_at,
+            'category_id' => $book->category_id,
+            'is_featured' => $book->is_featured,
+            'is_digital' => $book->is_digital,
+            'marketplace_links' => $book->assignments->map(fn($a) => [
+                'marketplace_id' => $a->marketplace_id,
+                'product_url' => $a->product_url,
+                'marketplace_name' => $a->marketplace?->name,
+            ]),
             'allowed_transitions' => $book->getAllowedTransitions(),
             'files' => $book->files->map(fn (BookFile $f) => [
                 'id' => $f->id,
@@ -163,20 +203,28 @@ class PublishingController extends Controller
 
         $rules = [
             'title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:books,slug',
             'type' => 'nullable|string|in:publishing,printing',
             'description' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
             'price' => 'nullable|numeric|min:0',
             'stock' => 'nullable|integer|min:0',
+            'page_count' => 'nullable|integer|min:0',
+            'published_at' => 'nullable|date',
+            'published_year' => 'nullable|integer',
             'status' => 'nullable|string',
+            'is_featured' => 'nullable|boolean',
+            'is_digital' => 'nullable|boolean',
+            'isbn' => 'nullable|string|max:50|unique:books,isbn',
+            'marketplace_links' => 'nullable|array',
+            'marketplace_links.*.marketplace_id' => 'exists:marketplaces,id',
+            'marketplace_links.*.product_url' => 'nullable|url',
         ];
 
-        // author_id required for publishing, optional for printing
         if ($type === 'publishing') {
             $rules['author_id'] = 'required|exists:authors,id';
-            $rules['isbn'] = 'nullable|string|max:50';
         } else {
             $rules['author_id'] = 'nullable|exists:authors,id';
-            $rules['isbn'] = 'nullable|string|max:50';
         }
 
         $data = $request->validate($rules);
@@ -186,7 +234,28 @@ class PublishingController extends Controller
         $data['price'] = $data['price'] ?? 0;
         $data['status'] = $data['status'] ?? 'incoming';
 
+        $marketplaceLinks = $data['marketplace_links'] ?? null;
+        unset($data['marketplace_links']);
+
         $book = Book::create($data);
+
+        // Sync marketplace links
+        if ($marketplaceLinks !== null) {
+            foreach ($marketplaceLinks as $link) {
+                if (!empty($link['marketplace_id'])) {
+                    try {
+                        $book->assignments()->create([
+                            'marketplace_id' => $link['marketplace_id'],
+                            'product_url' => $link['product_url'] ?? '',
+                            'posting_status' => 'published',
+                        ]);
+                    } catch (\Exception $e) {
+                        // ignore validation errors for assignments during manual create
+                        \Illuminate\Support\Facades\Log::warning("Could not create assignment for book {$book->id}: " . $e->getMessage());
+                    }
+                }
+            }
+        }
 
         BookStatusLog::create([
             'book_id' => $book->id,
@@ -196,29 +265,62 @@ class PublishingController extends Controller
             'notes' => $type === 'printing' ? 'Naskah cetak baru' : 'Buku baru dibuat',
         ]);
 
-        return $this->success($book->load('author'), 201, ['message' => 'Buku berhasil ditambahkan']);
+        return $this->success($book->load(['author', 'category', 'assignments']), 201, ['message' => 'Buku berhasil ditambahkan']);
     }
 
     public function updateBook(Request $request, int $id): JsonResponse
     {
         $book = Book::findOrFail($id);
-        $data = $request->validate([
+        $rules = [
             'title' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|max:255|unique:books,slug,' . $id,
             'author_id' => 'sometimes|exists:authors,id',
-            'isbn' => 'nullable|string|max:50',
+            'category_id' => 'nullable|exists:categories,id',
+            'isbn' => 'nullable|string|max:50|unique:books,isbn,' . $id,
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'stock' => 'sometimes|integer|min:0',
+            'page_count' => 'nullable|integer|min:0',
+            'published_at' => 'nullable|date',
+            'published_year' => 'nullable|integer',
             'publisher' => 'nullable|string|max:255',
             'publisher_city' => 'nullable|string|max:255',
-            'published_year' => 'nullable|integer',
+            'is_featured' => 'nullable|boolean',
+            'is_digital' => 'nullable|boolean',
+            'status' => 'sometimes|string',
             'cover_path' => 'nullable|string|max:255',
             'pdf_full_path' => 'nullable|string|max:255',
-        ]);
+            'marketplace_links' => 'nullable|array',
+            'marketplace_links.*.marketplace_id' => 'exists:marketplaces,id',
+            'marketplace_links.*.product_url' => 'nullable|url',
+        ];
+
+        $data = $request->validate($rules);
+
+        $marketplaceLinks = isset($data['marketplace_links']) ? $data['marketplace_links'] : null;
+        unset($data['marketplace_links']);
 
         $book->update($data);
 
-        return $this->success($book->load('author'), 200, ['message' => 'Buku berhasil diperbarui']);
+        // Sync marketplace links
+        if ($marketplaceLinks !== null) {
+            $book->assignments()->delete();
+            foreach ($marketplaceLinks as $link) {
+                if (!empty($link['marketplace_id'])) {
+                    try {
+                        $book->assignments()->create([
+                            'marketplace_id' => $link['marketplace_id'],
+                            'product_url' => $link['product_url'] ?? '',
+                            'posting_status' => 'published',
+                        ]);
+                    } catch (\Exception $e) {
+                         \Illuminate\Support\Facades\Log::warning("Could not update assignment for book {$book->id}: " . $e->getMessage());
+                    }
+                }
+            }
+        }
+
+        return $this->success($book->load(['author', 'category', 'assignments']), 200, ['message' => 'Buku berhasil diperbarui']);
     }
 
     public function updateBookStatus(Request $request, int $id): JsonResponse
@@ -613,6 +715,22 @@ class PublishingController extends Controller
 
     // ── Status Reference ──
 
+    public function deleteBook(int $id): JsonResponse
+    {
+        $book = \App\Models\Book::findOrFail($id);
+        $book->delete();
+
+        return $this->success(null, 200, ['message' => 'Buku berhasil dihapus']);
+    }
+
+    public function restoreBook(int $id): JsonResponse
+    {
+        $book = \App\Models\Book::onlyTrashed()->findOrFail($id);
+        $book->restore();
+
+        return $this->success($book, 200, ['message' => 'Buku berhasil dipulihkan']);
+    }
+
     public function statusList(Request $request): JsonResponse
     {
         $type = $request->query('type', 'publishing');
@@ -634,6 +752,13 @@ class PublishingController extends Controller
         }
 
         return $this->success($statuses);
+    }
+
+    public function marketplaces(): JsonResponse
+    {
+        $marketplaces = \App\Models\Marketplace::where('is_active', true)->orderBy('name')->get();
+
+        return $this->success($marketplaces);
     }
 
     // ── Legal Deposit ──

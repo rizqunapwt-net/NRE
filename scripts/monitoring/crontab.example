@@ -1,0 +1,32 @@
+# NRE Production Monitoring - Crontab Configuration
+# Add these entries to your crontab: crontab -e
+
+# ════════════════════════════════════════════════════════════════════════════
+# Uptime Monitoring (every 5 minutes)
+# ════════════════════════════════════════════════════════════════════════════
+*/5 * * * * /var/www/html/scripts/monitoring/uptime-monitor.sh run >> /var/log/nre-uptime-monitor.log 2>&1
+
+# ════════════════════════════════════════════════════════════════════════════
+# Database Backup (daily at 2:00 AM)
+# ════════════════════════════════════════════════════════════════════════════
+0 2 * * * /var/www/html/scripts/monitoring/backup-database.sh backup >> /var/log/nre-backup.log 2>&1
+
+# ════════════════════════════════════════════════════════════════════════════
+# Performance Metrics Collection (every 15 minutes)
+# ════════════════════════════════════════════════════════════════════════════
+*/15 * * * * cd /var/www/html && php artisan monitor:performance --json >> /var/log/nre-performance.log 2>&1
+
+# ════════════════════════════════════════════════════════════════════════════
+# Log Rotation (daily)
+# ════════════════════════════════════════════════════════════════════════════
+0 0 * * * find /var/www/html/storage/logs -name "*.log" -mtime +30 -delete
+
+# ════════════════════════════════════════════════════════════════════════════
+# Cleanup Old Backups (weekly on Sunday at 3:00 AM)
+# ════════════════════════════════════════════════════════════════════════════
+0 3 * * 0 find /var/backups/nre -name "*.sql*" -mtime +30 -delete
+
+# ════════════════════════════════════════════════════════════════════════════
+# Health Check for Webhooks (every minute for critical alerts)
+# ════════════════════════════════════════════════════════════════════════════
+* * * * * curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/api/v1/public/stats | grep -q "200" || echo "Health check failed at $(date)" | mail -s "NRE Health Alert" admin@rizquna.id

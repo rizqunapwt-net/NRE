@@ -62,6 +62,32 @@ class RoyaltyCalculationController extends Controller
         return $this->success($royaltyCalculation->load('author'));
     }
 
+    public function update(Request $request, RoyaltyCalculation $royaltyCalculation): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:royalty_items,id',
+            'items.*.royalty_percentage' => 'required|numeric|min:0|max:100',
+            'notes' => 'nullable|string',
+        ]);
+
+        try {
+            $royaltyCalculation = $this->royaltyCalculationService->updateItems(
+                $royaltyCalculation, 
+                $validated['items']
+            );
+            
+            if ($request->has('notes')) {
+                $royaltyCalculation->update(['notes' => $validated['notes']]);
+            }
+
+        } catch (ConflictHttpException $exception) {
+            return $this->error($exception->getMessage(), 409);
+        }
+
+        return $this->success($royaltyCalculation);
+    }
+
     public function invoice(RoyaltyCalculation $royaltyCalculation): JsonResponse
     {
         try {

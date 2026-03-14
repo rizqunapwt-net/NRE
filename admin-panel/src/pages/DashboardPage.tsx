@@ -20,6 +20,7 @@ import {
   Bar,
 } from 'recharts';
 import api from '../api';
+import { DashboardStatsSkeleton, TableSkeleton } from '../components/SkeletonLoaders';
 import './DashboardPage.css';
 
 const { Title, Text } = Typography;
@@ -37,7 +38,8 @@ const DashboardPage: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      // Small delay for skeleton visibility
+      // setLoading(true); 
       const [statsRes, chartRes, recentBooksRes, activeAuthorsRes] = await Promise.all([
         api.get('/admin/dashboard-stats'),
         api.get('/dashboard/books'),
@@ -56,10 +58,18 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading && !stats) {
     return (
-      <div className="dashboard-loading">
-        <Spin size="large" tip="Memuat dashboard..." />
+      <div className="dashboard-page" style={{ padding: '24px' }}>
+        <DashboardStatsSkeleton />
+        <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+          <Col xs={24} lg={16}>
+            <TableSkeleton rows={8} />
+          </Col>
+          <Col xs={24} lg={8}>
+            <TableSkeleton rows={8} />
+          </Col>
+        </Row>
       </div>
     );
   }

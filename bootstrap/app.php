@@ -49,6 +49,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->reportable(function (Throwable $e) {
+            if (app()->bound('sentry')) {
+                \Sentry\Laravel\Integration::captureUnhandledException($e);
+            }
+        });
+
         $exceptions->render(function (ValidationException $exception, Request $request) {
             if (! $request->expectsJson()) {
                 return null;

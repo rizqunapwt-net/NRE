@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import logoHorizontal from '../../../assets/logo/logo_horizontal.png';
 
 const Navbar: React.FC = () => {
+    const { t, i18n } = useTranslation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
@@ -14,9 +16,9 @@ const Navbar: React.FC = () => {
     }, []);
 
     const links = [
-        { label: 'Home', href: '/' },
-        { label: 'Buku', href: '/buku' },
-        { label: 'Sitasi', href: '/sitasi' },
+        { label: t('navbar.home'), href: '/' },
+        { label: t('navbar.books'), href: '/buku' },
+        { label: t('navbar.citation'), href: '/sitasi' },
     ];
 
     const isActive = (href: string) => {
@@ -42,6 +44,34 @@ const Navbar: React.FC = () => {
                 </div>
 
                 <div className="header-actions navbar-glass__actions">
+                    <div className="language-selector" style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                            onClick={() => i18n.changeLanguage('id')}
+                            style={{ 
+                                background: i18n.language.startsWith('id') ? '#008B94' : 'transparent',
+                                color: i18n.language.startsWith('id') ? 'white' : '#1A1F2E',
+                                border: '1px solid #008B94',
+                                borderRadius: '4px',
+                                padding: '2px 8px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: 'bold'
+                            }}
+                        >ID</button>
+                        <button 
+                            onClick={() => i18n.changeLanguage('en')}
+                            style={{ 
+                                background: i18n.language.startsWith('en') ? '#008B94' : 'transparent',
+                                color: i18n.language.startsWith('en') ? 'white' : '#1A1F2E',
+                                border: '1px solid #008B94',
+                                borderRadius: '4px',
+                                padding: '2px 8px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: 'bold'
+                            }}
+                        >EN</button>
+                    </div>
                 </div>
 
                 <button

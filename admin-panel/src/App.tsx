@@ -1,12 +1,13 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme as antdTheme } from 'antd';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HelmetProvider } from 'react-helmet-async';
 import { designTokens } from './theme/designTokens';
 
 // Auth & Context
 import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 // Components
 import PageLoader from './components/PageLoader';
@@ -56,6 +57,9 @@ const KontrakPage = React.lazy(() => import('./pages/nre/KontrakPage'));
 const PenjualanBukuPage = React.lazy(() => import('./pages/nre/PenjualanBukuPage'));
 const OrderCetakPage = React.lazy(() => import('./pages/nre/OrderCetakPage'));
 const RoyaltyCalculationPage = React.lazy(() => import('./pages/nre/RoyaltyCalculationPage'));
+const RoyaltyListPage = React.lazy(() => import('./pages/admin/royalties/RoyaltyListPage'));
+const RoyaltyDetailPage = React.lazy(() => import('./pages/admin/royalties/RoyaltyDetailPage'));
+const RoyaltyEditPage = React.lazy(() => import('./pages/admin/royalties/RoyaltyEditPage'));
 
 // Website CMS
 const KelolaHero = React.lazy(() => import('./pages/admin/website/KelolaHero'));
@@ -66,6 +70,7 @@ const KelolaMarketplace = React.lazy(() => import('./pages/admin/website/KelolaM
 const KelolaFaq = React.lazy(() => import('./pages/admin/website/KelolaFaq'));
 const KelolaTestimoni = React.lazy(() => import('./pages/admin/website/KelolaTestimoni'));
 const KelolaBlog = React.lazy(() => import('./pages/admin/website/KelolaBlog'));
+const SettingsPage = React.lazy(() => import('./pages/admin/SettingsPage'));
 
 // Percetakan
 const OrderEntryPage = React.lazy(() => import('./pages/percetakan/OrderEntryPage'));
@@ -86,10 +91,14 @@ const queryClient = new QueryClient({
   },
 });
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
   return (
     <ConfigProvider
       theme={{
+        algorithm: isDarkMode ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
           colorPrimary: designTokens.colors.primary[500],
           colorLink: designTokens.colors.primary[500],
@@ -98,10 +107,11 @@ const App: React.FC = () => {
           colorSuccess: designTokens.colors.success.main,
           colorWarning: designTokens.colors.warning.main,
           colorError: designTokens.colors.error.main,
-          colorText: designTokens.colors.gray[800],
-          colorTextSecondary: designTokens.colors.gray[500],
+          colorText: isDarkMode ? designTokens.colors.gray[100] : designTokens.colors.gray[800],
+          colorTextSecondary: isDarkMode ? designTokens.colors.gray[400] : designTokens.colors.gray[500],
           fontFamily: designTokens.typography.fontFamily.primary,
           borderRadius: parseInt(designTokens.borderRadius.md.replace('px', ''), 10),
+          colorBgContainer: isDarkMode ? '#141414' : '#ffffff',
         },
         components: {
           Button: {
@@ -110,11 +120,12 @@ const App: React.FC = () => {
           },
           Card: {
             borderRadiusLG: parseInt(designTokens.borderRadius.lg.replace('px', ''), 10),
+            colorBgContainer: isDarkMode ? '#1f1f1f' : '#ffffff',
           },
           Menu: {
-            itemSelectedBg: designTokens.colors.primary[50],
+            itemSelectedBg: isDarkMode ? designTokens.colors.primary[900] : designTokens.colors.primary[50],
             itemSelectedColor: designTokens.colors.primary[500],
-            itemActiveBg: designTokens.colors.primary[50],
+            itemActiveBg: isDarkMode ? designTokens.colors.primary[900] : designTokens.colors.primary[50],
           },
           Tabs: {
             inkBarColor: designTokens.colors.primary[500],
@@ -125,8 +136,8 @@ const App: React.FC = () => {
       }}
     >
       <QueryClientProvider client={queryClient}>
-        <Router>
-          <ThemeProvider>
+        <HelmetProvider>
+          <Router>
             <AuthProvider>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -183,7 +194,10 @@ const App: React.FC = () => {
                           <Route path="/publishing/isbn" element={<ProsesISBNPage />} />
                           <Route path="/publishing/legal-deposit" element={<LegalDepositPage />} />
                           <Route path="/publishing/sales" element={<PenjualanBukuPage />} />
-                          <Route path="/publishing/royalties" element={<RoyaltyCalculationPage />} />
+                          <Route path="/publishing/royalties" element={<RoyaltyListPage />} />
+                          <Route path="/admin/royalties" element={<RoyaltyListPage />} />
+                          <Route path="/admin/royalties/:id" element={<RoyaltyDetailPage />} />
+                          <Route path="/admin/royalties/:id/edit" element={<RoyaltyEditPage />} />
                           <Route path="/printing/manuscripts" element={<NaskahCetakPage />} />
                           <Route path="/printing/orders" element={<OrderCetakPage />} />
 
@@ -204,6 +218,9 @@ const App: React.FC = () => {
                           <Route path="/website/faq" element={<KelolaFaq />} />
                           <Route path="/website/testimoni" element={<KelolaTestimoni />} />
                           <Route path="/website/blog" element={<KelolaBlog />} />
+                          
+                          {/* Settings */}
+                          <Route path="/admin/settings" element={<SettingsPage />} />
 
                           {/* 404 */}
                           <Route path="*" element={<NotFoundPage />} />
@@ -214,10 +231,18 @@ const App: React.FC = () => {
                 </Routes>
               </Suspense>
             </AuthProvider>
-          </ThemeProvider>
         </Router>
-      </QueryClientProvider>
-    </ConfigProvider>
+      </HelmetProvider>
+    </QueryClientProvider>
+  </ConfigProvider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 };
 

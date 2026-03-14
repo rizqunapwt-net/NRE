@@ -15,9 +15,12 @@ import {
   DollarOutlined,
   QuestionCircleOutlined,
   CommentOutlined,
+  BulbOutlined,
+  BulbFilled,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import './MainLayout.css';
 
 const { Header, Content, Sider } = Layout;
@@ -26,6 +29,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [collapsed, setCollapsed] = React.useState(false);
 
   const menuItems = [
@@ -78,6 +82,11 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           key: '/website/testimoni',
           icon: <CommentOutlined />,
           label: 'Kelola Testimoni',
+        },
+        {
+          key: '/admin/settings',
+          icon: <SettingOutlined />,
+          label: 'Settings',
         },
       ]
     },
@@ -140,6 +149,14 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           />
 
           <div className="header-right">
+            <Button
+              type="text"
+              icon={theme === 'dark' ? <BulbFilled style={{ color: '#fadb14' }} /> : <BulbOutlined />}
+              onClick={() => setTheme(theme === 'dark' ? 'bokify' : 'dark')}
+              className="header-icon"
+              title={theme === 'dark' ? 'Ganti ke Light Mode' : 'Ganti ke Dark Mode'}
+            />
+
             <Badge count={3} size="small">
               <BellOutlined className="header-icon" />
             </Badge>

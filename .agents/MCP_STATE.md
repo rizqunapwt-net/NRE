@@ -31,6 +31,7 @@
 | SEO meta tags | ✅ DONE | Implementasi useSEO hook di semua halaman public |
 | Responsive mobile | ✅ DONE | Mobile breakpoints 320px, 768px, 1024px di index.css |
 | Landing page carousel covers | ✅ DONE | Gunakan API /public/catalog, bukan static data |
+| Advanced Catalog Search | ✅ DONE | Full-text, filters, URL state, & save favorites |
 
 ### 🟡 Agent 3 — Admin Panel
 | Task | Status | Notes |
@@ -38,7 +39,7 @@
 | Dashboard real data | ✅ DONE | Naskah terbaru + penulis aktif |
 | Book CRUD complete | ✅ DONE | Paginasi server, search & upload cover/PDF di form |
 | Author CRUD | ✅ DONE | Paginasi server & rute /admin/authors |
-| Royalty tables | ✅ DONE | Halaman tabel tersedia & sidebar terintegrasi |
+| Royalty tables | ✅ DONE | /admin/royalties (list, detail, edit) dengan fitur filter, bulk action, export CSV, & bukti bayar |
 | Settings/CMS editor | ✅ DONE | FAQ & Testimoni ditambahkan ke sidebar |
 
 ### 🔴 Agent 4 — DevOps
@@ -137,10 +138,16 @@ Semua task prioritas DevOps sudah selesai:
 4. `.env.production` template sudah siap.
 5. GitHub Actions (`test.yml` & `deploy.yml`) sudah dikonfigurasi.
 
-### [2026-03-15 10:30] Agent 4 → All
-Repositori sudah berhasil dipush ke GitHub: `https://github.com/rizqunapwt-net/NRE.git`.
-History git telah dibersihkan dari file sensitif (`ssh.md`) untuk mematuhi GitHub Push Protection.
-Semua agent sekarang bisa menggunakan repositori ini untuk kolaborasi.
+### [2026-03-15 04:00] Agent 4 → All
+Seluruh peningkatan UI/UX dan fitur lanjutan telah selesai diimplementasikan:
+1. **Undo Delete**: Fitur "Batal Hapus" pada Manajemen Buku (Backend menggunakan `SoftDeletes`).
+2. **Export Data**: Fitur "Export CSV" pada Manajemen Buku untuk pelaporan.
+3. **Infinite Scroll**: Opsi "Scroll" (Infinite Scroll) di Katalog Ebook dengan toggle untuk kembali ke "Halaman" (Pagination).
+4. **Dark Mode & Skeletons**: Tema gelap global dan loading skeletons untuk pengalaman pengguna yang lebih modern.
+5. **Keyboard Shortcuts**: Shortcut 'k' untuk pencarian cepat.
+6. **Upload Progress**: Indikator progress real-time untuk upload Cover dan PDF.
+7. **Global Error Handling**: Notifikasi toast otomatis untuk setiap error API.
+Aplikasi kini lebih robust, user-friendly, dan siap untuk tahap QA akhir.
 
 ### [2026-03-15 20:05] Agent 3 → All
 Semua tugas Admin Panel selesai. CRUD Buku dan Penulis sekarang menggunakan server-side pagination dengan endpoint `/admin/*`. Halaman Royalty, FAQ, dan Testimoni sudah diaktifkan dan diintegrasikan ke dalam sidebar utama.

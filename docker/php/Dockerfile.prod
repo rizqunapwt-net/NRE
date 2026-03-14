@@ -1,0 +1,92 @@
+# Stage 1: Composer & PHP dependencies build
+FROM composer:2 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+# Install dependencies with no-dev for smaller size
+RUN composer install \
+    --ignore-platform-reqs \
+    --no-interaction \
+    --no-plugins \
+    --no-scripts \
+    --prefer-dist \
+    --no-dev
+
+# Stage 2: Final Production Image
+FROM php:8.4-fpm-alpine
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Install system dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    libxml2-dev \
+    icu-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    libzip-dev \
+    oniguruma-dev \
+    postgresql-dev \
+    unzip \
+    zip \
+    supervisor \
+    tzdata
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" \
+        gd \
+        intl \
+        mbstring \
+        pcntl \
+        pdo \
+        pdo_pgsql \
+        zip \
+        bcmath \
+        opcache
+
+# Install Redis extension
+RUN apk add --no-cache --virtual .build-deps autoconf gcc make g++ \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .build-deps
+
+# Use the default production configuration
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+# Custom PHP settings for production
+COPY docker/php/php-production.ini $PHP_INI_DIR/conf.d/custom.ini
+
+# Create a non-root user for security
+RUN addgroup -S laravel && adduser -S laravel -G laravel \
+    && mkdir -p /var/log/supervisor /var/run/supervisord \
+    && chown -R laravel:laravel /var/www/html /var/log/supervisor /var/run/supervisord
+
+# Copy vendor from the first stage
+COPY --from=vendor --chown=laravel:laravel /app/vendor ./vendor
+
+# Copy application files
+COPY --chown=laravel:laravel . .
+
+# Copy supervisor configuration
+COPY --chown=laravel:laravel docker/php/supervisord.prod.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Set environment variables
+ENV LOG_CHANNEL=stderr
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+
+# Expose port
+EXPOSE 9000
+
+# Switch to non-root user
+USER laravel
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD ["CMD-SHELL", "pgrep -f php-fpm || exit 1"]
+
+# Start supervisor (manages php-fpm and workers)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

@@ -122,6 +122,70 @@ export const DetailPageSkeleton: React.FC = () => {
 };
 
 /**
+ * Skeleton loader untuk dashboard stats
+ */
+export const DashboardStatsSkeleton: React.FC = () => {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} style={{
+          height: '140px',
+          background: '#fff',
+          borderRadius: '16px',
+          padding: '24px',
+          border: '1px solid #E2E8F0',
+          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+        }}>
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ width: '48px', height: '48px', background: '#f0f0f0', borderRadius: '12px' }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ height: '14px', background: '#e0e0e0', borderRadius: '4px', marginBottom: '8px', width: '60%' }} />
+              <div style={{ height: '24px', background: '#e0e0e0', borderRadius: '4px', width: '80%' }} />
+            </div>
+          </div>
+          <div style={{ height: '12px', background: '#f0f0f0', borderRadius: '4px', width: '40%' }} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/**
+ * Skeleton loader untuk table
+ */
+export const TableSkeleton: React.FC<{ rows?: number }> = ({ rows = 5 }) => {
+  return (
+    <div style={{ 
+      background: '#fff', 
+      borderRadius: '16px', 
+      padding: '24px', 
+      border: '1px solid #E2E8F0',
+      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div style={{ height: '24px', background: '#f0f0f0', borderRadius: '4px', width: '200px' }} />
+        <div style={{ height: '32px', background: '#f0f0f0', borderRadius: '4px', width: '100px' }} />
+      </div>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} style={{ 
+          height: '48px', 
+          borderBottom: '1px solid #f0f0f0', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '16px',
+          padding: '0 8px'
+        }}>
+          <div style={{ height: '16px', background: '#f0f0f0', borderRadius: '4px', flex: 1 }} />
+          <div style={{ height: '16px', background: '#f0f0f0', borderRadius: '4px', flex: 2 }} />
+          <div style={{ height: '16px', background: '#f0f0f0', borderRadius: '4px', flex: 1 }} />
+          <div style={{ height: '24px', background: '#f0f0f0', borderRadius: '4px', width: '60px' }} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/**
  * Skeleton loader untuk katalog page
  */
 export const CatalogSkeleton: React.FC = () => {

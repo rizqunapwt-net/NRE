@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Docs\ApiDocsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -10,6 +11,11 @@ use Illuminate\Support\Facades\Route;
  | API routes handled by routes/api.php via RouteServiceProvider
  |--------------------------------------------------------------------------
  */
+
+Route::get('/docs/swagger', [ApiDocsController::class, 'swagger']);
+Route::get('/docs/redoc', [ApiDocsController::class, 'redoc']);
+Route::get('/docs/openapi.json', [ApiDocsController::class, 'openApi']);
+Route::get('/docs/pdf', [ApiDocsController::class, 'pdf']);
 
 // SPA fallback — catch all non-API routes
 Route::get('/{any}', function () {
@@ -26,4 +32,4 @@ Route::get('/{any}', function () {
     }
 
     return response('App not built yet. Run: cd admin-panel && npm run build', 200);
-})->where('any', '^(?!api|assets|images|favicon).*$');
+})->where('any', '^(?!api|assets|images|favicon|docs).*$');

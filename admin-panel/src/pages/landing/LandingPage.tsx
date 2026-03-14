@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../../api';
 import { useSEO } from '../../hooks/useSEO';
+import SEOHelmet from '../../components/SEOHelmet';
+import LazyImage from '../../components/LazyImage';
 import './LandingPage_Bokify.css';
 
 /* ── Scroll Reveal Hook ── */
@@ -90,6 +93,7 @@ const BLOG_POSTS = [
 const PARTNERS = ['IKAPI', 'Perpusnas', 'Google Scholar', 'Crossref', 'DOI', 'Gramedia'];
 
 const LandingPage: React.FC = () => {
+  const { t } = useTranslation();
   const revealRef = useScrollReveal();
   const [activeFilter, setActiveFilter] = useState('Semua');
 
@@ -158,6 +162,10 @@ const LandingPage: React.FC = () => {
 
   return (
     <div ref={revealRef}>
+      <SEOHelmet 
+        title={t('hero.title').replace('{{highlight}}', t('hero.title_highlight'))}
+        description={t('hero.subtitle')}
+      />
       {/* ═══ 1. HERO ═══ */}
       <section id="home" className="hero-section">
         {/* 3D Decorative Elements */}
@@ -330,7 +338,7 @@ const LandingPage: React.FC = () => {
               filteredBooks.map((book, i) => (
                 <div className={`book-card reveal reveal-delay-${(i % 3) + 1}`} key={book.id}>
                   <div className="book-card-image">
-                  <img src={book.image} alt={book.title} />
+                  <LazyImage src={book.image} alt={book.title} />
                   <span className="book-card-category">{book.category}</span>
                 </div>
                 <div className="book-card-body">

@@ -47,16 +47,27 @@ class PaymentService
         ]);
     }
 
-    public function markPaid(Payment $payment, User $user, ?string $paymentReference = null, ?string $paidAt = null): Payment
-    {
+    public function markPaid(
+        Payment $payment, 
+        User $user, 
+        ?string $paymentReference = null, 
+        ?string $paidAt = null,
+        $paymentProof = null
+    ): Payment {
         if ($payment->status === PaymentStatus::Paid) {
             return $payment;
+        }
+
+        $proofPath = null;
+        if ($paymentProof) {
+            $proofPath = $paymentProof->store('payment_proofs', 'public');
         }
 
         $payment->update([
             'status' => PaymentStatus::Paid,
             'paid_at' => $paidAt ?? now(),
             'payment_reference' => $paymentReference,
+            'payment_proof_path' => $proofPath,
         ]);
 
         $payment->calculation()->update([

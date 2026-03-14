@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -17,7 +18,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Book extends Model
 {
     /** @use HasFactory<\Database\Factories\BookFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     use LogsActivity;
 
@@ -69,6 +70,11 @@ class Book extends Model
         'language',
         'dimension',
         'category_id',
+        'is_featured',
+        'is_bestseller',
+        'rating',
+        'review_count',
+        'sales_count',
         // Phase 3-6 — Import tracking
         'import_batch_id',
         'import_source',
@@ -256,7 +262,13 @@ class Book extends Model
             return $path;
         }
 
-        return asset('storage/' . $path);
+        // Check if it's already in public storage
+        if (str_starts_with($path, 'covers/') || \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+             return asset('storage/' . $path);
+        }
+
+        // Fallback: Use the streaming endpoint to handle private disks (S3/MinIO)
+        return url("/api/v1/public/books/{$this->id}/cover-image");
     }
 
     public function getStatusAttribute(mixed $value): BookStatus|PrintingBookStatus|string|null

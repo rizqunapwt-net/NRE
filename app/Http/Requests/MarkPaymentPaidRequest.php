@@ -16,6 +16,7 @@ class MarkPaymentPaidRequest extends FormRequest
         return [
             'payment_reference' => ['nullable', 'string', 'max:255'],
             'paid_at' => ['nullable', 'date'],
+            'payment_proof' => ['nullable', 'file', 'image', 'max:2048'],
         ];
     }
 }

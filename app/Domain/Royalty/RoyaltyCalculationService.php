@@ -125,4 +125,32 @@ class RoyaltyCalculationService
 
         return $calculation->refresh();
     }
+
+    public function updateItems(RoyaltyCalculation $calculation, array $itemsData): RoyaltyCalculation
+    {
+        if ($calculation->status !== RoyaltyStatus::Draft) {
+            throw new ConflictHttpException('Hanya perhitungan royalti berstatus draft yang dapat diubah.');
+        }
+
+        return DB::transaction(function () use ($calculation, $itemsData) {
+            $totalAmount = 0;
+
+            foreach ($itemsData as $itemData) {
+                $item = $calculation->items()->find($itemData['id']);
+                if ($item) {
+                    $item->update([
+                        'royalty_percentage' => $itemData['royalty_percentage'],
+                        'amount' => round((float) $item->quantity * (float) $item->net_price * ((float) $itemData['royalty_percentage'] / 100), 2),
+                    ]);
+                    $totalAmount += $item->amount;
+                }
+            }
+
+            $calculation->update([
+                'total_amount' => $totalAmount,
+            ]);
+
+            return $calculation->fresh(['author', 'items.book']);
+        });
+    }
 }

@@ -59,6 +59,69 @@ class StoreOrderRequest extends FormRequest
         ];
     }
 
+    public function bodyParameters(): array
+    {
+        return [
+            'customer_id' => [
+                'description' => 'ID customer percetakan.',
+                'example' => 1,
+            ],
+            'product_id' => [
+                'description' => 'ID produk percetakan yang dipesan.',
+                'example' => 1,
+            ],
+            'quantity' => [
+                'description' => 'Jumlah unit yang dipesan.',
+                'example' => 1000,
+            ],
+            'deadline' => [
+                'description' => 'Tanggal deadline produksi.',
+                'example' => now()->addWeek()->toDateString(),
+            ],
+            'priority' => [
+                'description' => 'Prioritas pengerjaan.',
+                'example' => 'high',
+            ],
+            'is_rush_order' => [
+                'description' => 'Apakah order termasuk rush order.',
+                'example' => false,
+            ],
+            'unit_price' => [
+                'description' => 'Harga satuan per unit.',
+                'example' => 15000,
+            ],
+            'discount_amount' => [
+                'description' => 'Nominal diskon order.',
+                'example' => 50000,
+            ],
+            'deposit_percentage' => [
+                'description' => 'Persentase DP order.',
+                'example' => 50,
+            ],
+            'production_notes' => [
+                'description' => 'Catatan internal untuk produksi.',
+                'example' => 'Prioritaskan finishing glossy.',
+            ],
+            'customer_notes' => [
+                'description' => 'Catatan dari customer.',
+                'example' => 'Kirim sebelum akhir bulan.',
+            ],
+            'specifications' => [
+                'description' => 'Objek spesifikasi cetak.',
+                'example' => [
+                    'size' => 'A4',
+                    'paper_type' => 'Art Paper',
+                    'paper_weight' => '150 gsm',
+                    'colors_inside' => '4/4',
+                    'colors_outside' => '4/4',
+                    'binding_type' => 'perfect binding',
+                    'finishing' => 'glossy lamination',
+                    'pages_count' => 120,
+                ],
+            ],
+        ];
+    }
+
     /**
      * Get custom messages for validator errors.
      */

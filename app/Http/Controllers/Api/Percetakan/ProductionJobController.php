@@ -131,6 +131,26 @@ class ProductionJobController extends Controller
     }
 
     /**
+     * Remove the specified production job.
+     */
+    public function destroy(ProductionJob $productionJob): JsonResponse
+    {
+        if ($productionJob->isInProgress()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Production job yang sedang berjalan tidak dapat dihapus.',
+            ], 422);
+        }
+
+        $productionJob->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Production job berhasil dihapus.',
+        ]);
+    }
+
+    /**
      * Get production statistics.
      */
     public function statistics(): JsonResponse

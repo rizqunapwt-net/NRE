@@ -20,9 +20,9 @@ const LoginPage: React.FC = () => {
   const handleLogin = async (values: any) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      await login(values.email, values.password);
+      await login(values.email, values.password, values.remember);
       navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message || 'Login gagal. Periksa email dan password Anda.');

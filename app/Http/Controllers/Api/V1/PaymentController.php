@@ -38,6 +38,7 @@ class PaymentController extends Controller
             user: $request->user(),
             paymentReference: $request->validated('payment_reference'),
             paidAt: $request->validated('paid_at'),
+            paymentProof: $request->file('payment_proof'),
         );
 
         return $this->success($payment);

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Card, Typography, message, Select, Input, Space, Statistic, Row, Col, Drawer, Descriptions, Progress, Timeline, Modal, Form, InputNumber, Popconfirm, Divider, Upload, Alert } from 'antd';
-import { ReloadOutlined, SearchOutlined, EyeOutlined, FileTextOutlined, PrinterOutlined, BookOutlined, InboxOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Card, Typography, message, Select, Input, Space, Statistic, Row, Col, Drawer, Descriptions, Progress, Timeline, Form, Popconfirm, Alert, Tabs, DatePicker, notification } from 'antd';
+import { ReloadOutlined, EyeOutlined, FileTextOutlined, PrinterOutlined, BookOutlined, InboxOutlined, PlusOutlined, EditOutlined, DeleteOutlined, LinkOutlined, SearchOutlined, DownloadOutlined, UndoOutlined } from '@ant-design/icons';
 import api from '../../api';
+import { TableSkeleton } from '../../components/SkeletonLoaders';
 import { API_V1_BASE } from '../../api/base';
 import dayjs from 'dayjs';
+import BookFormModal from './components/BookFormModal';
 
 const { Title, Text } = Typography;
 
@@ -32,6 +34,8 @@ interface BookRecord {
     publisher?: string;
     publisher_city?: string;
     pdf_full_path?: string;
+    cover_url?: string;
+    is_digital?: boolean;
     files?: { id: number; file_type: string; file_path: string; original_name: string; created_at?: string }[];
     status_logs?: { id: number; from_status: string; to_status: string; changed_by?: string; notes?: string; created_at?: string }[];
     created_at?: string;
@@ -65,10 +69,13 @@ const TYPE_MAP: Record<string, { label: string; color: string }> = {
 
 const ManajemenBukuPage: React.FC = () => {
     const [data, setData] = useState<BookRecord[]>([]);
+    const [categories, setCategories] = useState<{ id: number, name: string }[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+    const [categoryFilter, setCategoryFilter] = useState<number | undefined>(undefined);
+    const [dateRange, setDateRange] = useState<[string, string] | undefined>(undefined);
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [total, setTotal] = useState(0);
@@ -80,6 +87,23 @@ const ManajemenBukuPage: React.FC = () => {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingBook, setEditingBook] = useState<BookRecord | null>(null);
     const [form] = Form.useForm();
+    const searchInputRef = React.useRef<any>(null);
+
+    // Keyboard shortcut for search
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Shortcut 'k' or '/' to focus search
+            if ((e.key === 'k' || e.key === '/') && 
+                document.activeElement?.tagName !== 'INPUT' && 
+                document.activeElement?.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const fetchData = async () => {
         setLoading(true);
@@ -91,12 +115,19 @@ const ManajemenBukuPage: React.FC = () => {
             if (search) params.search = search;
             if (typeFilter) params.type = typeFilter;
             if (statusFilter) params.status = statusFilter;
+            if (categoryFilter) params.category_id = categoryFilter;
+            if (dateRange) {
+                params.start_date = dateRange[0];
+                params.end_date = dateRange[1];
+            }
             const res = await api.get('/books', { params });
             const list = res.data.data || res.data || [];
             setData(Array.isArray(list) ? list : []);
-            setTotal(res.data.total || list.length);
+            setTotal(res.data.total || (Array.isArray(list) ? list.length : 0));
             
-            // Fetch stats if available, otherwise just approximate
+            // Update stats if available in meta or data root
+            const meta = res.data.meta || {};
+            if (meta.total !== undefined) setTotal(meta.total);
             if (res.data.publishing_count !== undefined) {
                 setPublishingCount(res.data.publishing_count);
                 setPrintingCount(res.data.printing_count);
@@ -110,7 +141,17 @@ const ManajemenBukuPage: React.FC = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, [page, perPage, typeFilter, statusFilter, search]);
+    const fetchCategories = async () => {
+        try {
+            const res = await api.get('/public/categories');
+            setCategories(res.data.data || []);
+        } catch { /* ignore */ }
+    };
+
+    useEffect(() => { 
+        fetchData(); 
+        if (categories.length === 0) fetchCategories();
+    }, [page, perPage, typeFilter, statusFilter, categoryFilter, dateRange, search]);
 
     const loadDetail = async (id: number) => {
         try {
@@ -152,41 +193,72 @@ const ManajemenBukuPage: React.FC = () => {
         setEditModalOpen(true);
     };
 
-    const handleSave = async () => {
-        try {
-            const values = await form.validateFields();
-            if (editingBook) {
-                try {
-                    await api.patch(`/books/${editingBook.id}`, values);
-                    message.success(`Buku "${values.title}" berhasil diperbarui`);
-                } catch {
-                    setData(prev => prev.map(b => b.id === editingBook.id ? { ...b, ...values, author_name: values.author_name } : b));
-                    message.success(`Buku "${values.title}" diperbarui (lokal)`);
-                }
-            } else {
-                try {
-                    await api.post('/books', values);
-                    message.success(`Buku "${values.title}" berhasil ditambahkan`);
-                } catch {
-                    setData(prev => [...prev, { id: Date.now(), type: 'publishing', status: 'draft', ...values, author: { id: 0, name: values.author_name } }]);
-                    message.success(`Buku "${values.title}" ditambahkan (lokal)`);
-                }
-            }
-            setEditModalOpen(false);
-            form.resetFields();
-            fetchData();
-        } catch { /* validation failed */ }
-    };
-
     const handleDelete = async (book: BookRecord) => {
         try {
             await api.delete(`/books/${book.id}`);
-            message.success(`Buku "${book.title}" dihapus`);
+            
+            // Notification with Undo
+            const key = `delete_${book.id}`;
+            notification.success({
+                key,
+                message: 'Buku Berhasil Dihapus',
+                description: `Buku "${book.title}" telah dihapus.`,
+                duration: 5,
+                btn: (
+                    <Button 
+                        type="primary" 
+                        size="small" 
+                        icon={<UndoOutlined />}
+                        onClick={async () => {
+                            try {
+                                await api.post(`/books/${book.id}/restore`);
+                                message.success(`Buku "${book.title}" dipulihkan`);
+                                fetchData();
+                                notification.destroy(key);
+                            } catch {
+                                message.error('Gagal memulihkan buku');
+                            }
+                        }}
+                    >
+                        Batalkan (Undo)
+                    </Button>
+                ),
+            });
+            
             fetchData();
         } catch {
-            setData(prev => prev.filter(b => b.id !== book.id));
-            message.success(`Buku "${book.title}" dihapus (lokal)`);
+            message.error(`Gagal menghapus buku "${book.title}"`);
         }
+    };
+
+    const handleExportCSV = () => {
+        if (data.length === 0) return;
+        
+        const headers = ['ID', 'Tracking Code', 'Title', 'Author', 'ISBN', 'Status', 'Stock', 'Price', 'Type'];
+        const csvRows = [
+            headers.join(','),
+            ...data.map(r => [
+                r.id,
+                `"${r.tracking_code || ''}"`,
+                `"${r.title.replace(/"/g, '""')}"`,
+                `"${getAuthorName(r).replace(/"/g, '""')}"`,
+                `"${r.isbn || ''}"`,
+                `"${r.status_label || r.status}"`,
+                r.stock || 0,
+                r.price || 0,
+                r.type || 'publishing'
+            ].join(','))
+        ];
+
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `katalog_buku_${dayjs().format('YYYY-MM-DD')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const getAuthorName = (r: BookRecord) => r.author?.name || r.author_name || '-';
@@ -266,6 +338,14 @@ const ManajemenBukuPage: React.FC = () => {
                     </Title>
                     <Space size="middle">
                         <Button
+                            icon={<DownloadOutlined />}
+                            onClick={handleExportCSV}
+                            disabled={data.length === 0}
+                            style={{ borderRadius: 10 }}
+                        >
+                            Export CSV
+                        </Button>
+                        <Button
                             className="hover-glow"
                             icon={<ReloadOutlined />}
                             onClick={fetchData}
@@ -299,12 +379,35 @@ const ManajemenBukuPage: React.FC = () => {
                             className="hover-glow"
                             options={ALL_STATUSES.map(s => ({ label: s.label, value: s.value }))}
                             onChange={v => { setStatusFilter(v); setPage(1); }} />
+                        <Select placeholder="Semua Kategori" allowClear style={{ width: 160 }}
+                            className="hover-glow"
+                            options={categories.map(c => ({ label: c.name, value: c.id }))}
+                            onChange={v => { setCategoryFilter(v); setPage(1); }} />
+                        <DatePicker.RangePicker 
+                            style={{ width: 240 }}
+                            className="hover-glow"
+                            onChange={(dates) => {
+                                if (dates) {
+                                    setDateRange([dates[0]!.format('YYYY-MM-DD'), dates[1]!.format('YYYY-MM-DD')]);
+                                } else {
+                                    setDateRange(undefined);
+                                }
+                                setPage(1);
+                            }}
+                        />
                     </div>
                     <div style={{ height: 24, width: 1, background: '#e2e8f0', margin: '0 8px' }}></div>
-                    <Input.Search placeholder="Cari judul, penulis, atau ISBN..."
+                    <Input
+                        ref={searchInputRef}
+                        placeholder="Cari judul, penulis, atau ISBN... (Tekan 'k' untuk fokus)"
                         allowClear
-                        onSearch={value => { setSearch(value); setPage(1); }}
-                        style={{ width: 320 }} />
+                        prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+                        onPressEnter={e => { setSearch((e.target as any).value); setPage(1); }}
+                        style={{ width: 320 }} 
+                        suffix={
+                            <Tag color="default" style={{ margin: 0, opacity: 0.6 }}>K</Tag>
+                        }
+                    />
                 </Space>
             </div>
 
@@ -343,188 +446,145 @@ const ManajemenBukuPage: React.FC = () => {
                 </Col>
             </Row>
 
-            <Card className="glass-card" style={{ borderRadius: 16, border: 0, padding: 0, overflow: 'hidden' }}>
-                <Table
-                    columns={columns}
-                    dataSource={filtered}
-                    rowKey="id"
-                    loading={loading}
-                    pagination={{
-                        current: page,
-                        pageSize: perPage,
-                        total: totalCount,
-                        onChange: (p, s) => { setPage(p); setPerPage(s); },
-                        showTotal: (t) => <span style={{ fontWeight: 700, color: '#64748b' }}>Total {t} buku terdaftar</span>,
-                        position: ['bottomRight']
-                    }}
-                    scroll={{ x: 1000 }}
-                    rowClassName="hover-row"
-                    onRow={(record) => ({
-                        onClick: () => openDetail(record),
-                        style: { cursor: 'pointer' }
-                    })}
-                />
-            </Card>
+            {loading && data.length === 0 ? (
+                <TableSkeleton rows={10} />
+            ) : (
+                <Card className="glass-card" style={{ borderRadius: 16, border: 0, padding: 0, overflow: 'hidden' }}>
+                    <Table
+                        columns={columns}
+                        dataSource={filtered}
+                        rowKey="id"
+                        loading={loading}
+                        pagination={{
+                            current: page,
+                            pageSize: perPage,
+                            total: totalCount,
+                            onChange: (p, s) => { setPage(p); setPerPage(s); },
+                            showTotal: (t) => <span style={{ fontWeight: 700, color: '#64748b' }}>Total {t} buku terdaftar</span>,
+                            position: ['bottomRight']
+                        }}
+                        scroll={{ x: 1000 }}
+                        rowClassName="hover-row"
+                        onRow={(record) => ({
+                            onClick: () => openDetail(record),
+                            style: { cursor: 'pointer' }
+                        })}
+                    />
+                </Card>
+            )}
 
-            {/* Detail Drawer (read-only) */}
+            {/* Improved Detail Drawer (read-only) */}
             <Drawer title={detailData?.title || 'Detail Buku'} open={detailDrawer}
-                onClose={() => { setDetailDrawer(false); setDetailData(null); }} width={520}>
+                onClose={() => { setDetailDrawer(false); setDetailData(null); }} width={600}>
                 {detailData && (
-                    <div>
-                        <Card size="small" style={{ marginBottom: 16 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                                <Space>
-                                    <Tag color={statusInfo(detailData.status).color} style={{ fontSize: 14, padding: '4px 12px' }}>
-                                        {detailData.status_label || statusInfo(detailData.status).label}
-                                    </Tag>
-                                    <Tag color={TYPE_MAP[detailData.type]?.color || 'blue'}>
-                                        {TYPE_MAP[detailData.type]?.label || 'Penerbitan'}
-                                    </Tag>
-                                </Space>
-                                <Text type="secondary">{detailData.tracking_code}</Text>
-                            </div>
-                            <Progress percent={detailData.progress || 0} strokeColor={detailData.progress === 100 ? '#52c41a' : '#008B94'} />
+                    <div className="fade-in">
+                        <Card size="small" style={{ marginBottom: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                            <Row gutter={16}>
+                                <Col span={8}>
+                                    <img 
+                                        src={detailData.cover_url || (detailData.cover_path ? `${API_V1_BASE}/../storage/${detailData.cover_path}` : 'https://placehold.co/150x200?text=No+Cover')} 
+                                        alt="Cover" 
+                                        style={{ width: '100%', borderRadius: 8, boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} 
+                                    />
+                                </Col>
+                                <Col span={16}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                                        <Space direction="vertical" size={0}>
+                                            <Tag color={statusInfo(detailData.status).color} style={{ fontSize: 13, marginBottom: 4 }}>
+                                                {detailData.status_label || statusInfo(detailData.status).label}
+                                            </Tag>
+                                            <Tag color={TYPE_MAP[detailData.type]?.color || 'blue'}>
+                                                {TYPE_MAP[detailData.type]?.label || 'Penerbitan'}
+                                            </Tag>
+                                        </Space>
+                                        <Text type="secondary" copyable>{detailData.tracking_code}</Text>
+                                    </div>
+                                    <Title level={4} style={{ margin: '4px 0 0', fontWeight: 700 }}>{detailData.title}</Title>
+                                    <Text type="secondary" style={{ fontSize: 14 }}>Oleh: {detailData.author?.name || detailData.author_name || '-'}</Text>
+                                    <div style={{ marginTop: 16 }}>
+                                        <Text strong>Progress Naskah:</Text>
+                                        <Progress percent={detailData.progress || 0} strokeColor={detailData.progress === 100 ? '#52c41a' : '#008B94'} size="small" />
+                                    </div>
+                                </Col>
+                            </Row>
                         </Card>
 
-                        <Descriptions column={1} bordered size="small" style={{ marginBottom: 16 }}>
-                            <Descriptions.Item label="Judul">{detailData.title}</Descriptions.Item>
-                            <Descriptions.Item label="Penulis">{detailData.author?.name || '-'}</Descriptions.Item>
-                            <Descriptions.Item label="ISBN">{detailData.isbn || '-'}</Descriptions.Item>
-                            <Descriptions.Item label="Harga">{detailData.price ? `Rp ${Number(detailData.price).toLocaleString('id-ID')}` : '-'}</Descriptions.Item>
-                            <Descriptions.Item label="Stok">{detailData.stock ?? 0}</Descriptions.Item>
-                            <Descriptions.Item label="Sumber">{TYPE_MAP[detailData.type]?.label || 'Penerbitan'}</Descriptions.Item>
-                            {detailData.page_count && <Descriptions.Item label="Halaman">{detailData.page_count}</Descriptions.Item>}
-                            {detailData.size && <Descriptions.Item label="Ukuran">{detailData.size}</Descriptions.Item>}
-                        </Descriptions>
-
-                        {detailData.status_logs && detailData.status_logs.length > 0 && (
-                            <Card title="Riwayat Status" size="small">
-                                <Timeline items={detailData.status_logs.map((log) => ({
-                                    color: statusInfo(log.to_status).color,
-                                    children: (
-                                        <div>
-                                            <Text strong>{statusInfo(log.from_status).label || 'Baru'}</Text>
-                                            <Text> → </Text>
-                                            <Text strong>{statusInfo(log.to_status).label}</Text>
-                                            <br />
-                                            <Text type="secondary" style={{ fontSize: 11 }}>
-                                                {log.changed_by || 'System'} · {log.created_at ? dayjs(log.created_at).format('DD MMM YYYY HH:mm') : ''}
-                                            </Text>
-                                            {log.notes && <><br /><Text style={{ fontSize: 12 }}>{log.notes}</Text></>}
-                                        </div>
-                                    ),
-                                }))} />
-                            </Card>
-                        )}
+                        <Tabs defaultActiveKey="main" items={[
+                            {
+                                key: 'main',
+                                label: 'Informasi',
+                                children: (
+                                    <Descriptions column={1} bordered size="small" style={{ borderRadius: 8, overflow: 'hidden' }}>
+                                        <Descriptions.Item label="ISBN">{detailData.isbn || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label="Halaman">{detailData.page_count || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label="Ukuran">{detailData.size || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label="Tahun Terbit">{detailData.published_year || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label="Harga">{detailData.price ? `Rp ${Number(detailData.price).toLocaleString('id-ID')}` : '-'}</Descriptions.Item>
+                                        <Descriptions.Item label="Stok">{detailData.stock ?? 0}</Descriptions.Item>
+                                        <Descriptions.Item label="Format">{detailData.is_digital ? 'Digital (E-Book)' : 'Fisik'}</Descriptions.Item>
+                                    </Descriptions>
+                                )
+                            },
+                            {
+                                key: 'market',
+                                label: 'Toko Online',
+                                children: (
+                                    <div style={{ minHeight: 100 }}>
+                                        {(detailData as any).marketplace_links && (detailData as any).marketplace_links.length > 0 ? (
+                                            <Space direction="vertical" style={{ width: '100%' }}>
+                                                {(detailData as any).marketplace_links.map((link: any, idx: number) => (
+                                                    <a key={idx} href={link.product_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                                                        <Space>
+                                                            <LinkOutlined />
+                                                            <Text strong>{link.marketplace_name || 'Toko'}</Text>
+                                                            <Text type="secondary" style={{ fontSize: 12 }}>{link.product_url}</Text>
+                                                        </Space>
+                                                    </a>
+                                                ))}
+                                            </Space>
+                                        ) : (
+                                            <Alert message="Belum ada tautan marketplace" type="info" />
+                                        )}
+                                    </div>
+                                )
+                            },
+                            {
+                                key: 'logs',
+                                label: 'Riwayat',
+                                children: (
+                                    <div style={{ padding: '8px 0' }}>
+                                        {detailData.status_logs && detailData.status_logs.length > 0 ? (
+                                            <Timeline items={detailData.status_logs.map((log) => ({
+                                                color: statusInfo(log.to_status).color,
+                                                children: (
+                                                    <div style={{ paddingBottom: 8 }}>
+                                                        <Text strong>{statusInfo(log.to_status).label}</Text>
+                                                        <br />
+                                                        <Text type="secondary" style={{ fontSize: 11 }}>
+                                                            {log.changed_by || 'System'} · {log.created_at ? dayjs(log.created_at).format('DD MMM YYYY HH:mm') : ''}
+                                                        </Text>
+                                                        {log.notes && <><br /><Text style={{ fontSize: 12 }}>{log.notes}</Text></>}
+                                                    </div>
+                                                ),
+                                            }))} />
+                                        ) : <Text italic>Belum ada riwayat status</Text>}
+                                    </div>
+                                )
+                            }
+                        ]} />
                     </div>
                 )}
             </Drawer>
 
-            {/* Edit/Add Modal */}
-            <Modal
-                title={editingBook ? `Edit: ${editingBook.title}` : 'Tambah Buku Baru'}
+            <BookFormModal
                 open={editModalOpen}
-                onCancel={() => { setEditModalOpen(false); form.resetFields(); }}
-                onOk={handleSave}
-                okText="Simpan"
-                cancelText="Batal"
-                width={600}
-            >
-                <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-                    <Divider style={{ marginTop: 0 }}>Data Buku</Divider>
-                    <Form.Item name="title" label="Judul Buku" rules={[{ required: true, message: 'Judul wajib diisi' }]}>
-                        <Input placeholder="Contoh: Metodologi Penelitian Kualitatif" />
-                    </Form.Item>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <Form.Item name="isbn" label="ISBN">
-                            <Input placeholder="978-xxx-xxx-xxx" />
-                        </Form.Item>
-                        <Form.Item name="published_year" label="Tahun Terbit">
-                            <InputNumber style={{ width: '100%' }} placeholder="2026" />
-                        </Form.Item>
-                        <Form.Item name="price" label="Harga (Rp)">
-                            <InputNumber style={{ width: '100%' }} min={0} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')} placeholder="0" />
-                        </Form.Item>
-                        <Form.Item name="stock" label="Stok">
-                            <InputNumber style={{ width: '100%' }} min={0} placeholder="0" />
-                        </Form.Item>
-                        <Form.Item name="page_count" label="Jumlah Halaman">
-                            <InputNumber style={{ width: '100%' }} min={0} placeholder="0" />
-                        </Form.Item>
-                        <Form.Item name="size" label="Ukuran">
-                            <Input placeholder="Contoh: A5, B5, 15x23 cm" />
-                        </Form.Item>
-                    </div>
-                    <Form.Item name="description" label="Deskripsi / Sinopsis">
-                        <Input.TextArea rows={2} placeholder="Deskripsi singkat buku..." />
-                    </Form.Item>
-
-                    <Divider>Metadata & File Path (Khusus Admin)</Divider>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <Form.Item name="publisher" label="Penerbit">
-                            <Input placeholder="Penerbit Rizquna Elfath" />
-                        </Form.Item>
-                        <Form.Item name="publisher_city" label="Kota Penerbit">
-                            <Input placeholder="Cirebon" />
-                        </Form.Item>
-                    </div>
-                    {editingBook ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                            <Form.Item label="Upload Cover">
-                                <Upload
-                                    action={`${API_V1_BASE}/admin/books/${editingBook.id}/upload-cover`}
-                                    headers={{ Authorization: `Bearer ${localStorage.getItem('token')}` }}
-                                    accept="image/*"
-                                    showUploadList={true}
-                                    onChange={(info) => {
-                                        if (info.file.status === 'done') {
-                                            message.success(`${info.file.name} berhasil diunggah.`);
-                                            fetchData();
-                                        } else if (info.file.status === 'error') {
-                                            message.error(`${info.file.name} gagal diunggah.`);
-                                        }
-                                    }}
-                                >
-                                    <Button icon={<UploadOutlined />}>Pilih File Cover</Button>
-                                </Upload>
-                            </Form.Item>
-                            <Form.Item label="Upload PDF Full">
-                                <Upload
-                                    action={`${API_V1_BASE}/admin/books/${editingBook.id}/upload-pdf`}
-                                    headers={{ Authorization: `Bearer ${localStorage.getItem('token')}` }}
-                                    accept="application/pdf"
-                                    showUploadList={true}
-                                    onChange={(info) => {
-                                        if (info.file.status === 'done') {
-                                            message.success(`${info.file.name} berhasil diunggah.`);
-                                            fetchData();
-                                        } else if (info.file.status === 'error') {
-                                            message.error(`${info.file.name} gagal diunggah.`);
-                                        }
-                                    }}
-                                >
-                                    <Button icon={<UploadOutlined />}>Pilih File PDF</Button>
-                                </Upload>
-                            </Form.Item>
-                        </div>
-                    ) : (
-                        <Alert message="Upload file Cover dan PDF dapat dilakukan setelah buku disimpan (Mode Edit)." type="info" showIcon style={{ marginBottom: 24 }} />
-                    )}
-
-                    <Divider>Data Penulis</Divider>
-                    <Form.Item name="author_name" label="Nama Penulis" rules={[{ required: true, message: 'Nama penulis wajib diisi' }]}>
-                        <Input placeholder="Contoh: Dr. Ahmad Dahlan, M.Pd" />
-                    </Form.Item>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <Form.Item name="author_email" label="Email Penulis">
-                            <Input placeholder="penulis@email.com" />
-                        </Form.Item>
-                        <Form.Item name="author_phone" label="No. WA Penulis">
-                            <Input placeholder="08123456789" />
-                        </Form.Item>
-                    </div>
-                </Form>
-            </Modal>
+                editingBook={editingBook}
+                onCancel={() => setEditModalOpen(false)}
+                onSuccess={() => {
+                    setEditModalOpen(false);
+                    fetchData();
+                }}
+            />
         </div>
     );
 };

@@ -24,6 +24,7 @@ class Payment extends Model
         'status',
         'paid_at',
         'payment_reference',
+        'payment_proof_path',
         'created_by',
     ];
 

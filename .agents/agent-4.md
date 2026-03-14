@@ -140,3 +140,8 @@ SANCTUM_STATEFUL_DOMAINS=rizquna.id
 4. ✅ Buat scripts/backup.sh
 5. ✅ Buat .env.production template
 6. ✅ Buat CI/CD GitHub Actions
+7. ✅ Implementasi Advanced Catalog Search (Frontend & Backend)
+8. ✅ Implementasi Sistem Royalti Admin (Frontend & Backend)
+9. ✅ Buat QA Testing Checklist (tests/QA_CHECKLIST.md)
+10. ✅ Implementasi Undo Delete, Export CSV, & Infinite Scroll
+11. ✅ Implementasi Dark Mode & Global Error Handling

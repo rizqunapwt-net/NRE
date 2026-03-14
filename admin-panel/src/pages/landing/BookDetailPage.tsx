@@ -262,6 +262,7 @@ const BookDetailPage: React.FC = () => {
                                     <img 
                                         src={book.cover_url} 
                                         alt={book.title}
+                                        loading="eager"
                                         style={{ 
                                             width: '100%', 
                                             height: 'auto', 

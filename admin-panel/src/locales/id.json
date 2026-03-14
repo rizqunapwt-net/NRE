@@ -1,0 +1,71 @@
+{
+  "common": {
+    "all": "Semua",
+    "see_details": "Lihat Detail",
+    "register": "Daftar",
+    "login": "Masuk",
+    "back_to_home": "Kembali ke Beranda",
+    "loading": "Memuat...",
+    "error": "Kesalahan",
+    "save": "Simpan",
+    "cancel": "Batal"
+  },
+  "navbar": {
+    "home": "Beranda",
+    "books": "Buku",
+    "citation": "Sitasi",
+    "start_publishing": "MULAI TERBIT BUKU"
+  },
+  "hero": {
+    "badge": "IKAPI Jawa Tengah No. 199/JTE/2020",
+    "title": "Wujudkan {{highlight}} Anda Bersama Kami",
+    "title_highlight": "Karya Terbaik",
+    "subtitle": "CV. New Rizquna Elfath adalah penerbit dan percetakan profesional di Purwokerto. Kami siap membantu Anda dari naskah hingga buku terbit — ISBN resmi, HAKI terjamin, distribusi nasional.",
+    "cta_primary": "MULAI TERBIT BUKU →",
+    "cta_secondary": "MASUK",
+    "rating_label": "Rating Penulis",
+    "trusted_by": "Dipercaya ratusan penulis dan lembaga akademik",
+    "stat_authors": "Penulis Terdaftar",
+    "stat_books": "Buku Terbit"
+  },
+  "features": {
+    "label": "LAYANAN KAMI",
+    "title": "Solusi Penerbitan Lengkap",
+    "subtitle": "Dari naskah mentah hingga buku siap edar, kami tangani semuanya",
+    "item1_title": "Penerbitan Buku",
+    "item1_desc": "Layanan penerbitan profesional dengan ISBN resmi dari Perpusnas. Naskah Anda akan melewati proses editing, layout, dan desain cover oleh tim ahli kami.",
+    "item2_title": "Percetakan Berkualitas",
+    "item2_desc": "Fasilitas cetak modern untuk Print on Demand maupun cetak massal (offset). Hasil cetak tajam dengan bahan kertas pilihan dan binding kokoh.",
+    "item3_title": "ISBN & HAKI",
+    "item3_desc": "Pengurusan ISBN resmi Perpusnas dan pendaftaran Hak Kekayaan Intelektual (HAKI) untuk melindungi karya intelektual Anda secara hukum."
+  },
+  "about": {
+    "label": "TENTANG KAMI",
+    "title": "Partner Cetak & Terbit {{highlight}}",
+    "title_highlight": "Buku Berkualitas",
+    "subtitle": "CV. New Rizquna Elfath adalah penerbit resmi anggota IKAPI yang berlokasi di Purwokerto, Jawa Tengah. Sejak 2020, kami telah membantu ratusan penulis — dosen, peneliti, dan praktisi — menerbitkan karya terbaik mereka.",
+    "check1": "Anggota Resmi IKAPI Jawa Tengah",
+    "check2": "ISBN & HAKI Resmi Terjamin",
+    "check3": "Tim Editor & Desainer Profesional",
+    "check4": "Distribusi Nasional ke Seluruh Indonesia",
+    "cta": "DAFTAR SEKARANG →",
+    "exp_label": "Tahun Pengalaman"
+  },
+  "catalog": {
+    "label": "KATALOG TERBITAN",
+    "title": "Buku-Buku Terbitan Kami",
+    "subtitle": "Koleksi karya ilmiah dan akademik dari penulis terbaik Indonesia",
+    "filter_all": "Semua Buku",
+    "meta_pages": "Halaman",
+    "meta_readers": "Pembaca",
+    "price_free": "Gratis / Akses Terbuka",
+    "search_placeholder": "Cari judul, penulis, atau ISBN...",
+    "no_results": "Buku tidak ditemukan"
+  },
+  "footer": {
+    "address_title": "Kantor Pusat",
+    "address": "Jl. Sunan Kalijaga, Purwokerto, Jawa Tengah",
+    "links_title": "Tautan Cepat",
+    "contact_title": "Hubungi Kami"
+  }
+}
