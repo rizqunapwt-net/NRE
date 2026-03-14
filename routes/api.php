@@ -45,7 +45,7 @@ Route::prefix('v1')->group(function (): void {
         ->middleware('verify.webhook');
 
     // Authentication
-    Route::post('/auth/login', [UnifiedLoginController::class, 'apiLogin'])->middleware('throttle:10,1');
+    Route::post('/auth/login', [UnifiedLoginController::class, 'apiLogin'])->middleware('throttle:10,1')->name('login');
     Route::post('/auth/register', [UnifiedLoginController::class, 'register'])->middleware('throttle:10,1');
     Route::post('/auth/forgot-password', [UnifiedLoginController::class, 'forgotPassword'])->middleware('throttle:5,1');
     Route::post('/auth/reset-password', [UnifiedLoginController::class, 'resetPassword'])->middleware('throttle:5,1');

@@ -5,7 +5,7 @@
 # Quick health check untuk semua endpoint penting
 # ════════════════════════════════════════════════════════════════════════════
 
-set -e
+
 
 BASE="http://localhost:9000/api/v1"
 RED='\033[0;31m'
@@ -23,14 +23,14 @@ check_endpoint() {
     local expected_status=$3
     local name=$4
     
-    response=$(curl -s -o /dev/null -w "%{http_code}" -X "$method" "$BASE$endpoint")
+    response=$(curl -s -o /dev/null -w "%{http_code}" -X "$method" "$BASE$endpoint" -H "Accept: application/json")
     
     if [ "$response" == "$expected_status" ]; then
         echo -e "${GREEN}✅${NC} $name"
-        ((PASSED++))
+        ((PASSED = PASSED + 1))
     else
         echo -e "${RED}❌${NC} $name (Expected: $expected_status, Got: $response)"
-        ((FAILED++))
+        ((FAILED = FAILED + 1))
     fi
 }
 

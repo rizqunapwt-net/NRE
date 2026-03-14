@@ -192,8 +192,8 @@ class PublicSiteController extends Controller
      */
     public function authors(): JsonResponse
     {
-        $authors = Author::withCount(['books' => fn ($q) => $q->where('status', 'published')])
-            ->having('books_count', '>', 0)
+        $authors = Author::whereHas('books', fn ($q) => $q->where('status', 'published'))
+            ->withCount(['books' => fn ($q) => $q->where('status', 'published')])
             ->orderByDesc('books_count')
             ->limit(8)
             ->get(['id', 'name', 'email', 'photo_path']);
