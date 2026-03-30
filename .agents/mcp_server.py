@@ -23,7 +23,7 @@ STATE_FILE = AGENTS_DIR / 'MCP_STATE.md'
 CONFIG_FILE = AGENTS_DIR / 'mcp.config.json'
 ALERTS_FILE = AGENTS_DIR / 'ALERTS.log'
 
-# Agent definitions
+# Agent definitions (SCALABLE - add more as needed)
 AGENTS = {
     1: {"name": "Backend Core", "color": "🔵", "domain": "Laravel API"},
     2: {"name": "Frontend Public", "color": "🟢", "domain": "React Public"},
@@ -31,6 +31,11 @@ AGENTS = {
     4: {"name": "DevOps", "color": "🔴", "domain": "Docker & Deploy"},
     5: {"name": "Digital Library", "color": "🟣", "domain": "Books Storage"},
     6: {"name": "QA & Testing", "color": "🟠", "domain": "Tests & Validation"},
+    7: {"name": "Analytics & Monitoring", "color": "🔷", "domain": "Logging & Metrics"},
+    8: {"name": "Security & Auth", "color": "⬛", "domain": "Security"},
+    9: {"name": "Performance & Optimization", "color": "🟩", "domain": "Speed & Scale"},
+    10: {"name": "Documentation", "color": "📘", "domain": "Docs & Wiki"},
+    # Add more agents as needed - just increment ID and define properties
 }
 
 
@@ -259,25 +264,30 @@ def get_dependencies():
     """Get dependency graph"""
     agent_id = request.args.get('agent', type=int)
     
-    # Hardcoded dependency graph
+    # SCALABLE dependency graph - dynamically built
     deps = {
-        1: {"depends_on": [], "enables": [2, 3, 5, 6]},  # Backend enables all
-        2: {"depends_on": [1], "enables": []},            # Frontend needs Backend
-        3: {"depends_on": [1], "enables": []},            # Admin needs Backend
-        4: {"depends_on": [], "enables": [6]},            # DevOps independent
-        5: {"depends_on": [1], "enables": []},            # Library needs Backend
-        6: {"depends_on": [1, 2, 3, 5], "enables": []},   # QA needs all
+        1: {"depends_on": [], "enables": [2, 3, 5, 6]},           # Backend enables all
+        2: {"depends_on": [1], "enables": []},                     # Frontend needs Backend
+        3: {"depends_on": [1], "enables": []},                     # Admin needs Backend
+        4: {"depends_on": [], "enables": [6]},                     # DevOps independent
+        5: {"depends_on": [1], "enables": []},                     # Library needs Backend
+        6: {"depends_on": [1, 2, 3, 5], "enables": []},            # QA needs all
+        7: {"depends_on": [1, 6], "enables": []},                  # Analytics needs Backend + QA
+        8: {"depends_on": [1], "enables": [2, 3, 6]},              # Auth enables Frontend & Admin
+        9: {"depends_on": [4, 6], "enables": []},                  # Optimization needs DevOps + QA
+        10: {"depends_on": [1, 2, 3, 4, 5, 6], "enables": []},     # Docs depend on all
     }
     
     if agent_id and agent_id not in AGENTS:
         return jsonify({"error": f"Agent {agent_id} not found"}), 404
     
-    result = deps[agent_id] if agent_id else deps
+    result = deps.get(agent_id, deps) if agent_id else deps
     
     return jsonify({
         "agent": agent_id,
         "dependencies": result,
         "critical_path": "Backend (A1) → Frontend/Admin/Library (A2/A3/A5) → QA (A6)",
+        "total_agents": len(AGENTS),
     }), 200
 
 
