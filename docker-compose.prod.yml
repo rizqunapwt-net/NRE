@@ -10,13 +10,16 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
     networks:
       - backend
     deploy:
       resources:
         limits:
           memory: 1G
-          cpus: '0.50'
+          cpus: '0.75'
+        reservations:
+          memory: 256M
     logging:
       driver: "json-file"
       options:
@@ -33,7 +36,7 @@ services:
     image: redis:7-alpine
     container_name: nre_redis_prod
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis_data:/data
     networks:
@@ -62,6 +65,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_URL:-http://localhost:9001}
     volumes:
       - minio_data:/data
     networks:
@@ -71,6 +75,10 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   # ── Backend: PHP-FPM ──
   app:
@@ -96,6 +104,10 @@ services:
         limits:
           memory: 1G
           cpus: '1.0'
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
     security_opt:
       - no-new-privileges:true
     logging:
@@ -103,8 +115,13 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f php-fpm || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # ── Worker: Horizon / Queue ──
+  # ── Worker: Supervisor / Queue ──
   worker:
     build:
       context: .
@@ -122,10 +139,16 @@ services:
       - app_cache:/var/www/html/bootstrap/cache
     networks:
       - backend
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+      - /var/log/supervisor
     deploy:
       resources:
         limits:
           memory: 1G
+          cpus: '0.5'
 
   # ── Frontend: Admin Panel ──
   admin:
@@ -145,8 +168,9 @@ services:
       driver: "json-file"
       options:
         max-size: "5m"
+        max-file: "3"
 
-  # ── Web Server: Nginx Proxy ──
+  # ── Web Server: Nginx ──
   web:
     image: nginx:1.27-alpine
     container_name: nre_web_prod
@@ -158,9 +182,17 @@ services:
       - ./docker/nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
+      - app_storage:/var/www/html/storage:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
     depends_on:
-      - app
-      - admin
+      app:
+        condition: service_healthy
+      admin:
+        condition: service_started
     networks:
       - frontend
       - backend
@@ -186,5 +218,8 @@ volumes:
   redis_data:
   minio_data:
   app_storage:
+    driver: local
   app_cache:
+    driver: local
   nginx_logs:
+    driver: local

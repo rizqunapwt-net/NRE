@@ -165,6 +165,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
 
         // ── Publishing & Books ──
         Route::get('/books', [PublishingController::class, 'books']);
+        Route::get('/admin/books', [PublishingController::class, 'books']); // Alias for dashboard
         Route::get('/books/isbn-tracking', [PublishingController::class, 'isbnTracking']);
         Route::get('/books/{id}', [PublishingController::class, 'bookDetail']);
         Route::post('/books', [PublishingController::class, 'storeBook']);
@@ -226,6 +227,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
 
         // ── Authors (Legacy — keep for backward compat) ──
         Route::get('/authors', [PublishingController::class, 'authors']);
+        Route::get('/admin/authors', [AuthorCrudController::class, 'index']); // Align with frontend
         Route::get('/marketplaces', [PublishingController::class, 'marketplaces']);
         Route::post('/authors', [PublishingController::class, 'storeAuthor']);
 
@@ -283,6 +285,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
     Route::post('/royalties/calculate', [RoyaltyCalculationController::class, 'calculate'])->middleware('admin');
     Route::put('/royalties/{royaltyCalculation}/finalize', [RoyaltyCalculationController::class, 'finalize'])->middleware('admin');
     Route::post('/royalties/{royaltyCalculation}/invoice', [RoyaltyCalculationController::class, 'invoice'])->middleware('admin');
+    Route::post('/royalties/{royaltyCalculation}/pay', [RoyaltyCalculationController::class, 'pay'])->middleware('admin');
     Route::put('/payments/{payment}/mark-paid', [PaymentController::class, 'markPaid'])->middleware('admin');
 
     // ── Admin Dashboards ──

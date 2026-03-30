@@ -98,4 +98,21 @@ class RoyaltyCalculationController extends Controller
 
         return $this->success($payment, 201);
     }
+
+    public function pay(Request $request, RoyaltyCalculation $royaltyCalculation): JsonResponse
+    {
+        if (!$royaltyCalculation->payment) {
+            return $this->error('Invoice belum dibuat untuk royalti ini.', 400);
+        }
+
+        $payment = $this->paymentService->markPaid(
+            $royaltyCalculation->payment,
+            $request->user(),
+            $request->payment_reference,
+            $request->paid_at,
+            $request->file('payment_proof')
+        );
+
+        return $this->success($payment);
+    }
 }

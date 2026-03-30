@@ -57,9 +57,7 @@ const KontrakPage = React.lazy(() => import('./pages/nre/KontrakPage'));
 const PenjualanBukuPage = React.lazy(() => import('./pages/nre/PenjualanBukuPage'));
 const OrderCetakPage = React.lazy(() => import('./pages/nre/OrderCetakPage'));
 const RoyaltyCalculationPage = React.lazy(() => import('./pages/nre/RoyaltyCalculationPage'));
-const RoyaltyListPage = React.lazy(() => import('./pages/admin/royalties/RoyaltyListPage'));
-const RoyaltyDetailPage = React.lazy(() => import('./pages/admin/royalties/RoyaltyDetailPage'));
-const RoyaltyEditPage = React.lazy(() => import('./pages/admin/royalties/RoyaltyEditPage'));
+// RoyaltyListPage, RoyaltyDetailPage, RoyaltyEditPage removed as they are redundant or replaced
 
 // Website CMS
 const KelolaHero = React.lazy(() => import('./pages/admin/website/KelolaHero'));
@@ -194,10 +192,8 @@ const AppContent: React.FC = () => {
                           <Route path="/publishing/isbn" element={<ProsesISBNPage />} />
                           <Route path="/publishing/legal-deposit" element={<LegalDepositPage />} />
                           <Route path="/publishing/sales" element={<PenjualanBukuPage />} />
-                          <Route path="/publishing/royalties" element={<RoyaltyListPage />} />
-                          <Route path="/admin/royalties" element={<RoyaltyListPage />} />
-                          <Route path="/admin/royalties/:id" element={<RoyaltyDetailPage />} />
-                          <Route path="/admin/royalties/:id/edit" element={<RoyaltyEditPage />} />
+                          <Route path="/publishing/royalties" element={<RoyaltyCalculationPage />} />
+                          <Route path="/admin/royalties" element={<RoyaltyCalculationPage />} />
                           <Route path="/printing/manuscripts" element={<NaskahCetakPage />} />
                           <Route path="/printing/orders" element={<OrderCetakPage />} />
 

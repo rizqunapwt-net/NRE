@@ -54,17 +54,7 @@ function useCountUp(target: number, duration = 2000) {
   return { count, ref };
 }
 
-/* ── FILTER DATA ── */
-const CATEGORIES = ['Semua', 'Pendidikan', 'Islam', 'Akademik', 'Manajemen', 'Sejarah'];
-
-const STATIC_BOOKS = [
-  { id: 1, title: 'Kepemimpinan Pendidikan Berbasis Ekoteologi', category: 'Pendidikan', author: 'Dr. Ahmad Fauzi, M.Pd.', initials: 'AF', pages: 248, readers: 45, rating: 4.5, ratingCount: 12, price: 95000, image: '/assets/landing/blog_1.png' },
-  { id: 2, title: 'Pendidikan Islam Integratif di Era Digital', category: 'Islam', author: 'Prof. Siti Rahayu, M.Ag.', initials: 'SR', pages: 312, readers: 38, rating: 4, ratingCount: 8, price: 85000, image: '/assets/landing/blog_2.png' },
-  { id: 3, title: 'Transformasi Kurikulum Merdeka di Perguruan Tinggi', category: 'Akademik', author: 'Dr. Budi Santoso, M.Si.', initials: 'BS', pages: 280, readers: 52, rating: 5, ratingCount: 6, price: 90000, image: '/assets/landing/blog_3.png' },
-  { id: 4, title: 'Manajemen Pembiayaan di Madrasah Inklusif', category: 'Manajemen', author: 'Dr. Nur Hidayah, M.M.', initials: 'NH', pages: 196, readers: 28, rating: 4.5, ratingCount: 5, price: 80000, image: '/assets/landing/hero_library.png' },
-  { id: 5, title: 'Jejak Peradaban Islam di Banyumas', category: 'Sejarah', author: 'Dr. Ahmad Fauzi, M.Pd.', initials: 'AF', pages: 224, readers: 67, rating: 4, ratingCount: 9, price: 72000, image: '/assets/landing/blog_2.png' },
-  { id: 6, title: 'Metode Pengajaran Bahasa Indonesia Kontemporer', category: 'Pendidikan', author: 'Dr. Dewi Kartika, M.Hum.', initials: 'DK', pages: 268, readers: 34, rating: 5, ratingCount: 4, price: 95000, image: '/assets/landing/blog_3.png' },
-];
+// Unused static data removed
 
 const MARQUEE_ITEMS = [
   'PENERBIT TERPERCAYA', 'ISBN RESMI', 'HAKI TERJAMIN', 'DISTRIBUSI NASIONAL',
@@ -335,12 +325,12 @@ const LandingPage: React.FC = () => {
                 </div>
               ))
             ) : (
-              filteredBooks.map((book, i) => (
+              filteredBooks.map((book: any, i: number) => (
                 <div className={`book-card reveal reveal-delay-${(i % 3) + 1}`} key={book.id}>
                   <div className="book-card-image">
-                  <LazyImage src={book.image} alt={book.title} />
-                  <span className="book-card-category">{book.category}</span>
-                </div>
+                    <LazyImage src={book.image} alt={book.title} eager={i < 3} />
+                    <span className="book-card-category">{book.category}</span>
+                  </div>
                 <div className="book-card-body">
                   <div className="book-card-rating">
                     <span className="book-card-stars">{renderStars(book.rating)}</span>

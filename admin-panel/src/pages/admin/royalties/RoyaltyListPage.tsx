@@ -17,7 +17,7 @@ import {
   EyeOutlined,
   EditOutlined,
   CalculatorOutlined,
-  FileCsvOutlined,
+  FileExcelOutlined,
   CheckCircleOutlined,
   DollarOutlined,
   SearchOutlined,
@@ -210,7 +210,7 @@ const RoyaltyListPage: React.FC = () => {
           </div>
           <Space>
             <Button 
-              icon={<FileCsvOutlined />} 
+              icon={<FileExcelOutlined />} 
               onClick={handleExportCSV}
               disabled={calculations.length === 0}
             >
@@ -288,12 +288,12 @@ const RoyaltyListPage: React.FC = () => {
           </div>
         )}
 
-        <Table 
+        <Table<RoyaltyCalculation> 
           rowSelection={{
             selectedRowKeys,
             onChange: setSelectedRowKeys,
           }}
-          columns={columns} 
+          columns={columns as any} 
           dataSource={calculations} 
           rowKey="id" 
           loading={isLoading}

@@ -48,9 +48,9 @@ const DashboardPage: React.FC = () => {
       ]);
       
       setStats(statsRes.data.data);
-      setChartData(chartRes.data.data || []);
-      setRecentBooks(recentBooksRes.data.data || []);
-      setActiveAuthors(activeAuthorsRes.data.data || []);
+      setChartData(Array.isArray(chartRes.data.data) ? chartRes.data.data : []);
+      setRecentBooks(Array.isArray(recentBooksRes.data.data) ? recentBooksRes.data.data : []);
+      setActiveAuthors(Array.isArray(activeAuthorsRes.data.data) ? activeAuthorsRes.data.data : []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
