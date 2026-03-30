@@ -36,6 +36,14 @@ class PaymentWebhookController extends Controller
             'ip' => $request->ip(),
         ]);
 
+        if (!$transactionId) {
+            Log::warning('Payment webhook missing transaction ID', ['ip' => $request->ip()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Transaction ID tidak ditemukan dalam payload',
+            ], 400);
+        }
+
         // Idempotency: Cek apakah sudah diproses
         if ($gatewayId && $this->isWebhookProcessed($gatewayId)) {
             Log::info('Webhook already processed', [

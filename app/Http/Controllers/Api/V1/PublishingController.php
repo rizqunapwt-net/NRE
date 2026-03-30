@@ -55,7 +55,7 @@ class PublishingController extends Controller
             $query->whereDate('created_at', '<=', $endDate);
         }
 
-        $perPage = $request->query('per_page', 15);
+        $perPage = min((int) $request->query('per_page', 15), 100);
         $books = $query->withCount(['files', 'printOrders'])
             ->orderByDesc('created_at')
             ->paginate($perPage);

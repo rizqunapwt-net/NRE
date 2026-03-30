@@ -421,7 +421,7 @@ class Book extends Model
     public function scopeSearch(Builder $query, ?string $term): Builder
     {
         $term = trim((string) $term);
-        if (mb_strlen($term) < 2) {
+        if (mb_strlen($term) < 2 || mb_strlen($term) > 200) {
             return $query;
         }
 

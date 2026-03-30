@@ -157,16 +157,16 @@ const LandingPage: React.FC = () => {
         description={t('hero.subtitle')}
       />
       {/* ═══ 1. HERO ═══ */}
-      <section id="home" className="hero-section">
+      <section id="main-content" className="hero-section">
         {/* 3D Decorative Elements */}
-        <div className="deco-3d deco-ring" style={{ top: '10%', right: '15%' }} />
-        <div className="deco-3d deco-ring deco-ring--lg" style={{ bottom: '15%', left: '5%' }} />
-        <div className="deco-3d deco-sphere" style={{ top: '20%', left: '8%', width: '40px', height: '40px' }} />
-        <div className="deco-3d deco-sphere deco-sphere--orange" style={{ bottom: '25%', right: '8%', width: '35px', height: '35px' }} />
-        <div className="deco-3d deco-leaf" style={{ top: '15%', left: '20%' }}>
+        <div className="deco-3d deco-ring" style={{ top: '10%', right: '15%' }} aria-hidden="true" />
+        <div className="deco-3d deco-ring deco-ring--lg" style={{ bottom: '15%', left: '5%' }} aria-hidden="true" />
+        <div className="deco-3d deco-sphere" style={{ top: '20%', left: '8%', width: '40px', height: '40px' }} aria-hidden="true" />
+        <div className="deco-3d deco-sphere deco-sphere--orange" style={{ bottom: '25%', right: '8%', width: '35px', height: '35px' }} aria-hidden="true" />
+        <div className="deco-3d deco-leaf" style={{ top: '15%', left: '20%' }} aria-hidden="true">
           <svg viewBox="0 0 40 40"><path d="M20 2C10 8 2 20 8 34c4-8 12-14 22-16C28 10 24 4 20 2z" /></svg>
         </div>
-        <div className="deco-3d deco-dots" style={{ bottom: '20%', right: '20%' }}>
+        <div className="deco-3d deco-dots" style={{ bottom: '20%', right: '20%' }} aria-hidden="true">
           {Array.from({ length: 12 }).map((_, i) => <span key={i} />)}
         </div>
         <div className="container hero-content">
@@ -252,13 +252,13 @@ const LandingPage: React.FC = () => {
             </div>
             <div className="hero-stats">
               <div className="hero-stat-item">
-                <div className="hero-stat-icon">⭐</div>
+                <div className="hero-stat-icon" aria-hidden="true">⭐</div>
                 <div>
                   <div className="hero-stat-number">4.9</div>
                   <div className="hero-stat-label">Rating Penulis</div>
                 </div>
               </div>
-              <div className="hero-stat-divider" />
+              <div className="hero-stat-divider" aria-hidden="true" />
               <div className="hero-stat-text">
                 Dipercaya ratusan penulis dan<br />
                 <strong>lembaga akademik</strong>
@@ -267,16 +267,16 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="hero-image-container">
             <div className="hero-image-wrapper">
-              <img src="/assets/landing/hero_library.png" alt="Perpustakaan Rizquna" />
+              <img src="/assets/landing/hero_library.png" alt="Ilustrasi Perpustakaan Digital Rizquna" />
               <div className="hero-floating-badge hero-floating-badge--light animate-float" ref={authorsStat.ref}>
-                <div className="badge-icon">✍️</div>
+                <div className="badge-icon" aria-hidden="true">✍️</div>
                 <div>
                   <div className="badge-number">{authorsStat.count}+</div>
                   <div className="badge-label">Penulis Terdaftar</div>
                 </div>
               </div>
               <div className="hero-floating-badge hero-floating-badge--dark animate-float-delay" ref={booksStat.ref}>
-                <div className="badge-icon">📚</div>
+                <div className="badge-icon" aria-hidden="true">📚</div>
                 <div>
                   <div className="badge-number">{booksStat.count > 999 ? `${(booksStat.count / 1000).toFixed(1)}K` : booksStat.count}+</div>
                   <div className="badge-label">Buku Terbit</div>
@@ -288,7 +288,7 @@ const LandingPage: React.FC = () => {
       </section >
 
       {/* ═══ 2. MARQUEE ═══ */}
-      < section className="marquee-section" >
+      < section className="marquee-section" aria-hidden="true" >
         <div className="marquee-track animate-marquee">
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
             <span className="marquee-item" key={i}>
@@ -300,11 +300,11 @@ const LandingPage: React.FC = () => {
 
       {/* ═══ 3. CORE FEATURES ═══ */}
       < section className="features-section" style={{ position: 'relative', overflow: 'hidden' }} >
-        <div className="deco-3d deco-dots" style={{ top: '40px', left: '60px' }}>
+        <div className="deco-3d deco-dots" style={{ top: '40px', left: '60px' }} aria-hidden="true">
           {Array.from({ length: 12 }).map((_, i) => <span key={i} />)}
         </div>
-        <div className="deco-3d deco-ring" style={{ bottom: '30px', right: '80px' }} />
-        <div className="deco-3d deco-sphere deco-sphere--purple" style={{ top: '60px', right: '200px', width: '30px', height: '30px' }} />
+        <div className="deco-3d deco-ring" style={{ bottom: '30px', right: '80px' }} aria-hidden="true" />
+        <div className="deco-3d deco-sphere deco-sphere--purple" style={{ top: '60px', right: '200px', width: '30px', height: '30px' }} aria-hidden="true" />
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <span className="section-label reveal">LAYANAN KAMI</span>
           <h2 className="section-title reveal">Solusi Penerbitan Lengkap</h2>
@@ -316,7 +316,7 @@ const LandingPage: React.FC = () => {
               { icon: '📜', title: 'ISBN & HAKI', desc: 'Pengurusan ISBN resmi Perpusnas dan pendaftaran Hak Kekayaan Intelektual (HAKI) untuk melindungi karya intelektual Anda secara hukum.' },
             ].map((f, i) => (
               <div className={`feature-card reveal reveal-delay-${i + 1}`} key={i}>
-                <div className="feature-icon">{f.icon}</div>
+                <div className="feature-icon" aria-hidden="true">{f.icon}</div>
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
               </div>
@@ -327,15 +327,15 @@ const LandingPage: React.FC = () => {
 
       {/* ═══ 4. ABOUT US ═══ */}
       < section id="tentang" className="about-section" style={{ position: 'relative', overflow: 'hidden' }} >
-        <div className="deco-3d deco-sphere" style={{ top: '80px', right: '60px', width: '45px', height: '45px' }} />
-        <div className="deco-3d deco-ring deco-ring--lg" style={{ bottom: '50px', right: '200px' }} />
-        <div className="deco-3d deco-leaf" style={{ top: '200px', left: '40px' }}>
+        <div className="deco-3d deco-sphere" style={{ top: '80px', right: '60px', width: '45px', height: '45px' }} aria-hidden="true" />
+        <div className="deco-3d deco-ring deco-ring--lg" style={{ bottom: '50px', right: '200px' }} aria-hidden="true" />
+        <div className="deco-3d deco-leaf" style={{ top: '200px', left: '40px' }} aria-hidden="true">
           <svg viewBox="0 0 40 40"><path d="M20 2C10 8 2 20 8 34c4-8 12-14 22-16C28 10 24 4 20 2z" /></svg>
         </div>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div className="about-grid">
             <div className="about-image reveal">
-              <img src="/assets/landing/about_us.png" alt="Tentang Rizquna" />
+              <img src="/assets/landing/about_us.png" alt="Tim Redaksi Rizquna Elfath" />
               <div className="about-experience-badge animate-float">
                 <span className="exp-number">5+</span>
                 <span className="exp-label">Tahun Pengalaman</span>
@@ -351,10 +351,10 @@ const LandingPage: React.FC = () => {
                 CV. New Rizquna Elfath adalah penerbit resmi anggota IKAPI yang berlokasi di Purwokerto, Jawa Tengah. Sejak 2020, kami telah membantu ratusan penulis — dosen, peneliti, dan praktisi — menerbitkan karya terbaik mereka.
               </p>
               <ul className="about-checklist reveal">
-                <li><span className="about-check">✓</span> Anggota Resmi IKAPI Jawa Tengah</li>
-                <li><span className="about-check">✓</span> ISBN & HAKI Resmi Terjamin</li>
-                <li><span className="about-check">✓</span> Tim Editor & Desainer Profesional</li>
-                <li><span className="about-check">✓</span> Distribusi Nasional ke Seluruh Indonesia</li>
+                <li><span className="about-check" aria-hidden="true">✓</span> Anggota Resmi IKAPI Jawa Tengah</li>
+                <li><span className="about-check" aria-hidden="true">✓</span> ISBN & HAKI Resmi Terjamin</li>
+                <li><span className="about-check" aria-hidden="true">✓</span> Tim Editor & Desainer Profesional</li>
+                <li><span className="about-check" aria-hidden="true">✓</span> Distribusi Nasional ke Seluruh Indonesia</li>
               </ul>
               <Link to="/register" className="btn btn-primary reveal">DAFTAR SEKARANG →</Link>
             </div>
@@ -368,10 +368,12 @@ const LandingPage: React.FC = () => {
           <span className="section-label reveal">KATALOG TERBITAN</span>
           <h2 className="section-title reveal">Buku-Buku Terbitan Kami</h2>
           <p className="section-subtitle reveal">Koleksi karya ilmiah dan akademik dari penulis terbaik Indonesia</p>
-          <div className="filter-tabs reveal">
+          <div className="filter-tabs reveal" role="tablist">
             {categoryOptions.map(c => (
               <button
                 key={c}
+                role="tab"
+                aria-selected={activeFilter === c}
                 className={`filter-tab ${activeFilter === c ? 'active' : ''}`}
                 onClick={() => setActiveFilter(c)}
               >{c === 'Semua' ? 'Semua Buku' : c}</button>
@@ -393,17 +395,18 @@ const LandingPage: React.FC = () => {
               filteredBooks.map((book: any, i: number) => (
                 <div className={`book-card reveal reveal-delay-${(i % 3) + 1}`} key={book.id}>
                   <div className="book-card-image">
-                    <LazyImage src={book.image} alt={book.title} eager={i < 3} />
+                    <LazyImage src={book.image} alt={`Cover buku ${book.title}`} eager={i < 3} />
                     <span className="book-card-category">{book.category}</span>
                   </div>
                 <div className="book-card-body">
                   <div className="book-card-rating">
-                    <span className="book-card-stars">{renderStars(book.rating)}</span>
-                    <span>({book.rating}/{book.ratingCount} Rating)</span>
+                    <span className="book-card-stars" aria-hidden="true">{renderStars(book.rating)}</span>
+                    <span className="sr-only">Rating {book.rating} dari 5</span>
+                    <span>({book.ratingCount} Rating)</span>
                   </div>
                   <h3>{book.title}</h3>
                   <div className="book-card-author">
-                    <span className="book-card-avatar">{book.initials}</span>
+                    <span className="book-card-avatar" aria-hidden="true">{book.author?.charAt(0) || 'A'}</span>
                     <span className="book-card-author-name">{book.author}</span>
                   </div>
                   <div className="book-card-meta">
@@ -412,7 +415,7 @@ const LandingPage: React.FC = () => {
                   </div>
                   <div className="book-card-footer">
                     <span className="book-card-price">Rp {book.price.toLocaleString('id-ID')}</span>
-                    <Link to="/katalog" className="book-card-link">Lihat Detail →</Link>
+                    <Link to={`/buku/${book.slug || book.id}`} className="book-card-link" aria-label={`Lihat detail buku ${book.title}`}>Lihat Detail →</Link>
                   </div>
                 </div>
               </div>
@@ -444,7 +447,7 @@ const LandingPage: React.FC = () => {
                   { icon: '🚚', label: 'Distribusi ke Toko Buku & Marketplace Nasional' },
                 ].map((f, i) => (
                   <li className="why-feature-item" key={i}>
-                    <span className="why-feature-icon">{f.icon}</span>
+                    <span className="why-feature-icon" aria-hidden="true">{f.icon}</span>
                     <span>{f.label}</span>
                   </li>
                 ))}
@@ -452,9 +455,9 @@ const LandingPage: React.FC = () => {
               <Link to="/register" className="btn btn-primary reveal">MULAI TERBITKAN BUKU →</Link>
             </div>
             <div className="why-image reveal">
-              <img src="/assets/landing/why_choose.png" alt="Mengapa Memilih Rizquna" />
+              <img src="/assets/landing/why_choose.png" alt="Proses Cetak Berkualitas" />
               <div className="why-experience-badge animate-float">
-                <div className="star-icon">⭐</div>
+                <div className="star-icon" aria-hidden="true">⭐</div>
                 <span className="exp-number">5+</span>
                 <span className="exp-label">Tahun Pengalaman</span>
               </div>
@@ -474,14 +477,14 @@ const LandingPage: React.FC = () => {
               <div className={`instructor-card reveal reveal-delay-${i + 1}`} key={i}>
                 <div className="instructor-avatar">
                   <img src={inst.image} alt={inst.name} />
-                  <span className="instructor-rating">{inst.rating}</span>
+                  <span className="instructor-rating" aria-label={`Rating ${inst.rating}`}>{inst.rating}</span>
                 </div>
                 <h4>{inst.name}</h4>
                 <p className="instructor-role">{inst.role}</p>
                 <div className="instructor-socials">
-                  <a href="#" aria-label="Facebook">f</a>
-                  <a href="#" aria-label="Twitter">𝕏</a>
-                  <a href="#" aria-label="LinkedIn">in</a>
+                  <a href="#" aria-label={`Facebook ${inst.name}`}>f</a>
+                  <a href="#" aria-label={`Twitter ${inst.name}`}>𝕏</a>
+                  <a href="#" aria-label={`LinkedIn ${inst.name}`}>in</a>
                 </div>
               </div>
             ))}
@@ -498,7 +501,7 @@ const LandingPage: React.FC = () => {
           <div className="testimonials-grid">
             {TESTIMONIALS.map((t, i) => (
               <div className={`testimonial-card reveal reveal-delay-${i + 1}`} key={i}>
-                <div className="testimonial-quote">❝</div>
+                <div className="testimonial-quote" aria-hidden="true">❝</div>
                 <h4>{t.title}</h4>
                 <p>{t.text}</p>
                 <div className="testimonial-author">
@@ -523,7 +526,8 @@ const LandingPage: React.FC = () => {
               <span>🚀 Bergabung dengan ratusan penulis lainnya</span>
             </div>
             <div className="cta-banner-rating">
-              <span className="stars">★★★★★</span>
+              <span className="stars" aria-hidden="true">★★★★★</span>
+              <span className="sr-only">Rating 5 dari 5</span>
               <span>350+ Penulis Puas — Rating 4.9</span>
             </div>
           </div>
@@ -539,7 +543,7 @@ const LandingPage: React.FC = () => {
           <p className="section-subtitle reveal">Penerbitan dan Percetakan Buku</p>
           <div className="blog-grid">
             {BLOG_POSTS.map((post, i) => (
-              <div className={`blog-card reveal reveal-delay-${i + 1}`} key={post.id}>
+              <article className={`blog-card reveal reveal-delay-${i + 1}`} key={post.id}>
                 <div className="blog-card-image">
                   <img src={post.image} alt={post.title} />
                   <span className="blog-card-tag">{post.category}</span>
@@ -547,13 +551,13 @@ const LandingPage: React.FC = () => {
                 </div>
                 <div className="blog-card-body">
                   <div className="blog-card-author">
-                    <span className="blog-card-author-avatar">A</span>
+                    <span className="blog-card-author-avatar" aria-hidden="true">A</span>
                     <span>Oleh <strong>{post.author}</strong></span>
                   </div>
                   <h3>{post.title}</h3>
-                  <span className="blog-card-link">Lanjutkan Membaca →</span>
+                  <Link to={`/blog/${post.id}`} className="blog-card-link" aria-label={`Baca selengkapnya: ${post.title}`}>Lanjutkan Membaca →</Link>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
@@ -565,7 +569,7 @@ const LandingPage: React.FC = () => {
           <span className="section-label reveal">MITRA KAMI</span>
           <h2 className="section-title reveal">Mitra Terpercaya Kami</h2>
         </div>
-        <div className="partners-track-wrapper">
+        <div className="partners-track-wrapper" aria-hidden="true">
           <div className="partners-track animate-marquee">
             {[...PARTNERS, ...PARTNERS, ...PARTNERS, ...PARTNERS].map((p, i) => (
               <span className="partner-item" key={i}>{p}</span>

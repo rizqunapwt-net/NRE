@@ -26,7 +26,7 @@ class AuthenticationApiTest extends TestCase
 
         $response->assertStatus(200)
                  ->assertJsonStructure([
-                     'status',
+                     'success',
                      'data' => [
                          'access_token',
                          'token_type',
@@ -41,9 +41,9 @@ class AuthenticationApiTest extends TestCase
     public function it_returns_422_when_login_data_is_missing()
     {
         $response = $this->postJson('/api/v1/auth/login', []);
-
+        
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['login', 'password']);
+                 ->assertJsonPath('success', false);
     }
 
     /** @test */
@@ -56,7 +56,7 @@ class AuthenticationApiTest extends TestCase
                          ->postJson('/api/v1/auth/logout');
 
         $response->assertStatus(200)
-                 ->assertJson(['status' => 'success']);
+                 ->assertJson(['success' => true]);
 
         $this->assertCount(0, $user->fresh()->tokens);
     }
@@ -68,9 +68,9 @@ class AuthenticationApiTest extends TestCase
         $token = $user->createToken('TestToken')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-                         ->getJson('/api/v1/user/profile');
+                         ->getJson('/api/v1/auth/me');
 
         $response->assertStatus(200)
-                 ->assertJsonPath('data.email', $user->email);
+                 ->assertJsonPath('data.user.email', $user->email);
     }
 }

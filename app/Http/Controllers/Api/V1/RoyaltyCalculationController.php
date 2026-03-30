@@ -27,7 +27,7 @@ class RoyaltyCalculationController extends Controller
         $calculations = RoyaltyCalculation::with(['author', 'items.book'])
             ->when($request->period_month, fn($q) => $q->where('period_month', $request->period_month))
             ->latest()
-            ->paginate($request->per_page ?? 15);
+            ->paginate(min($request->integer('per_page', 15), 100));
 
         return $this->success($calculations);
     }
@@ -101,6 +101,12 @@ class RoyaltyCalculationController extends Controller
 
     public function pay(Request $request, RoyaltyCalculation $royaltyCalculation): JsonResponse
     {
+        $request->validate([
+            'payment_reference' => 'required|string|max:255',
+            'paid_at' => 'required|date|before_or_equal:today',
+            'payment_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
         if (!$royaltyCalculation->payment) {
             return $this->error('Invoice belum dibuat untuk royalti ini.', 400);
         }

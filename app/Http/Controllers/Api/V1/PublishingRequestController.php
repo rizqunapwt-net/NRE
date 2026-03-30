@@ -9,6 +9,7 @@ use App\Models\Book;
 use App\Models\PublishingRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PublishingRequestController extends Controller
 {
@@ -39,7 +40,7 @@ class PublishingRequestController extends Controller
             });
         }
 
-        $perPage = $request->input('per_page', 15);
+        $perPage = min($request->integer('per_page', 15), 100);
         $data = $query->paginate($perPage);
 
         return response()->json([
@@ -98,7 +99,7 @@ class PublishingRequestController extends Controller
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $validated = $request->validate([
-            'status' => 'required|string',
+            'status' => ['required', 'string', Rule::in(array_column(PublishingRequestStatus::cases(), 'value'))],
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -135,8 +136,8 @@ class PublishingRequestController extends Controller
     public function addNotes(Request $request, int $id): JsonResponse
     {
         $validated = $request->validate([
-            'editor_notes' => 'nullable|string',
-            'admin_notes' => 'nullable|string',
+            'editor_notes' => 'nullable|string|max:5000',
+            'admin_notes' => 'nullable|string|max:5000',
         ]);
 
         $pr = PublishingRequest::findOrFail($id);

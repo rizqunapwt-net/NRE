@@ -10,19 +10,14 @@ test.describe('Registration and Auth Flow', () => {
     const testEmail = `testuser_${uniqueId}@example.com`;
     const testName = `Test User ${uniqueId}`;
 
-    await page.getByPlaceholder(/Nama Lengkap|Full Name/).fill(testName);
+    await page.getByPlaceholder(/Nama sesuai identitas|Nama Lengkap/).fill(testName);
     await page.getByPlaceholder(/anda@email.com/).fill(testEmail);
+    await page.getByPlaceholder(/08123456789/).fill('08123456789');
     await page.getByPlaceholder('••••••••').nth(0).fill('password123');
     await page.getByPlaceholder('••••••••').nth(1).fill('password123');
     
-    // Fill phone if visible
-    const phoneInput = page.getByPlaceholder(/Nomor HP|Phone/);
-    if (await phoneInput.isVisible()) {
-        await phoneInput.fill('08123456789');
-    }
-
     // Click register
-    await page.click('button:has-text("Daftar Akun")');
+    await page.click('button:has-text("Buat Akun")');
 
     // Should redirect to dashboard or login with success message
     await expect(page).toHaveURL(/.*dashboard|.*login/);

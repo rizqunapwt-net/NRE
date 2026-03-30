@@ -15,7 +15,7 @@
       - img [ref=e16]
     - generic [ref=e18]:
       - generic [ref=e19]: Login Gagal
-      - generic [ref=e20]: Request failed with status code 500
+      - generic [ref=e20]: Request failed with status code 401
     - button "close" [ref=e21] [cursor=pointer]:
       - img "close" [ref=e22]:
         - img [ref=e23]
@@ -38,7 +38,7 @@
           - img [ref=e53]
         - textbox "Kata Sandi Lupa?" [ref=e55]:
           - /placeholder: ••••••••
-          - text: password
+          - text: wrongpassword
         - img "eye-invisible" [ref=e57] [cursor=pointer]:
           - img [ref=e58]
     - generic [ref=e62] [cursor=pointer]:

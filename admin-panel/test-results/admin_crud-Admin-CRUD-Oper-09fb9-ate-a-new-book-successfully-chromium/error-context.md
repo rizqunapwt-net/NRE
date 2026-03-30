@@ -1,0 +1,69 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Rizquna
+          - generic [ref=e8]: Publishing
+        - menu [ref=e9]:
+          - menuitem "dashboard Dashboard" [ref=e10] [cursor=pointer]:
+            - img "dashboard" [ref=e11]:
+              - img [ref=e12]
+            - generic [ref=e14]: Dashboard
+          - menuitem "book Buku" [ref=e15] [cursor=pointer]:
+            - img "book" [ref=e16]:
+              - img [ref=e17]
+            - generic [ref=e19]: Buku
+          - menuitem "file-text Naskah" [ref=e20] [cursor=pointer]:
+            - img "file-text" [ref=e21]:
+              - img [ref=e22]
+            - generic [ref=e24]: Naskah
+          - menuitem "team Penulis" [ref=e25] [cursor=pointer]:
+            - img "team" [ref=e26]:
+              - img [ref=e27]
+            - generic [ref=e29]: Penulis
+          - menuitem "shopping Penjualan" [ref=e30] [cursor=pointer]:
+            - img "shopping" [ref=e31]:
+              - img [ref=e32]
+            - generic [ref=e34]: Penjualan
+          - menuitem "dollar Keuangan / Royalti" [ref=e35] [cursor=pointer]:
+            - img "dollar" [ref=e36]:
+              - img [ref=e37]
+            - generic [ref=e39]: Keuangan / Royalti
+          - menuitem "setting Pengaturan" [ref=e40] [cursor=pointer]:
+            - img "setting" [ref=e41]:
+              - img [ref=e42]
+            - generic [ref=e44]: Pengaturan
+    - generic [ref=e45]:
+      - banner [ref=e46]:
+        - button "menu-fold" [ref=e47] [cursor=pointer]:
+          - img "menu-fold" [ref=e49]:
+            - img [ref=e50]
+        - generic [ref=e52]:
+          - button "bulb" [ref=e53] [cursor=pointer]:
+            - img "bulb" [ref=e55]:
+              - img [ref=e56]
+          - generic [ref=e58]:
+            - img "bell" [ref=e59] [cursor=pointer]:
+              - img [ref=e60]
+            - superscript [ref=e62]:
+              - generic [ref=e64]: "3"
+          - generic [ref=e65] [cursor=pointer]:
+            - img "user" [ref=e67]:
+              - img [ref=e68]
+            - generic [ref=e70]: Super Admin NRE
+      - main [ref=e71]:
+        - generic [ref=e74]:
+          - img "rocket" [ref=e76]:
+            - img [ref=e77]
+          - generic [ref=e79]: 404 - Tersesat?
+          - generic [ref=e81]:
+            - generic [ref=e82]: Halaman yang Anda cari tidak ditemukan atau sedang dalam pengembangan.
+            - generic [ref=e83]: Jangan khawatir, data Anda tetap aman di orbit.
+          - button "Kembali ke Beranda" [ref=e85] [cursor=pointer]:
+            - generic [ref=e86]: Kembali ke Beranda
+  - generic [ref=e87]: Edukasi
+```

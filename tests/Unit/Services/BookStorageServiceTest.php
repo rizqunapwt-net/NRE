@@ -18,21 +18,22 @@ class BookStorageServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['books.disk' => 'books']);
         $this->service = new BookStorageService();
-        Storage::fake('private');
+        Storage::fake('books');
         Storage::fake('public');
     }
 
     /** @test */
     public function it_can_store_book_cover()
     {
-        $book = Book::factory()->create();
+        $book = Book::factory()->create(['is_published' => false]);
         $file = UploadedFile::fake()->image('cover.jpg');
 
-        $path = $this->service->storeCover($book, $file);
+        $path = $this->service->uploadCover($book, $file);
 
         $this->assertNotNull($path);
-        Storage::disk('private')->assertExists($path);
+        Storage::disk('books')->assertExists($path);
         $this->assertEquals($path, $book->fresh()->cover_path);
     }
 
@@ -40,27 +41,33 @@ class BookStorageServiceTest extends TestCase
     public function it_can_store_book_pdf()
     {
         $book = Book::factory()->create();
-        $file = UploadedFile::fake()->create('book.pdf', 1024, 'application/pdf');
+        $pdfPath = public_path('docs/api-reference.pdf');
+        if (file_exists($pdfPath)) {
+            $file = new UploadedFile($pdfPath, 'api-reference.pdf', 'application/pdf', null, true);
+        } else {
+            $file = UploadedFile::fake()->create('book.pdf', 1024, 'application/pdf');
+        }
 
-        $path = $this->service->storePdf($book, $file);
+        $path = $this->service->uploadFullPdf($book, $file);
 
         $this->assertNotNull($path);
-        Storage::disk('private')->assertExists($path);
+        Storage::disk('books')->assertExists($path);
         $this->assertEquals($path, $book->fresh()->pdf_full_path);
     }
 
     /** @test */
     public function it_deletes_old_file_when_uploading_new_one()
     {
-        $book = Book::factory()->create();
+        $book = Book::factory()->create(['is_published' => false]);
         $oldFile = UploadedFile::fake()->image('old.jpg');
-        $oldPath = $this->service->storeCover($book, $oldFile);
+        $oldPath = $this->service->uploadCover($book, $oldFile);
         
-        Storage::disk('private')->assertExists($oldPath);
+        Storage::disk('books')->assertExists($oldPath);
 
+        sleep(1); // Ensure different timestamp
         $newFile = UploadedFile::fake()->image('new.jpg');
-        $this->service->storeCover($book, $newFile);
+        $this->service->uploadCover($book->fresh(), $newFile);
 
-        Storage::disk('private')->assertMissing($oldPath);
+        Storage::disk('books')->assertMissing($oldPath);
     }
 }

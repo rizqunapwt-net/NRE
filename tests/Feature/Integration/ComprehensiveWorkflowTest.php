@@ -12,6 +12,8 @@ use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ComprehensiveWorkflowTest extends TestCase
@@ -135,5 +137,87 @@ class ComprehensiveWorkflowTest extends TestCase
             }
         }
         $this->assertTrue($found, 'FAQ not found in public list');
+    }
+
+    /**
+     * Workflow: Admin creates book -> uploads files -> publishes -> user search & read
+     */
+    public function test_full_book_upload_and_access_workflow(): void
+    {
+        Storage::fake('books');
+        Storage::fake('public');
+
+        // 1. Setup Admin, Author & Category
+        /** @var User $admin */
+        $admin = User::factory()->create();
+        $admin->assignRole('Admin');
+        $author = Author::factory()->create();
+        $category = Category::factory()->create(['name' => 'Full Workflow', 'slug' => 'full-workflow']);
+
+        // 2. Admin creates book
+        $response = $this->actingAs($admin)->postJson('/api/v1/books', [
+            'title' => 'Full Workflow Book',
+            'author_id' => $author->id,
+            'category_id' => $category->id,
+            'status' => 'draft',
+            'is_digital' => true,
+        ]);
+        $response->assertStatus(201);
+        $bookId = $response->json('data.id');
+        $book = Book::find($bookId);
+
+        // 3. Admin uploads cover
+        $coverFile = UploadedFile::fake()->image('cover.jpg');
+        $this->actingAs($admin)->postJson("/api/v1/admin/books/{$bookId}/upload-cover", [
+            'cover' => $coverFile,
+        ])->assertStatus(200);
+
+        // 4. Admin uploads PDF
+        $pdfPath = public_path('docs/api-reference.pdf');
+        if (file_exists($pdfPath)) {
+            $pdfFile = new UploadedFile($pdfPath, 'api-reference.pdf', 'application/pdf', null, true);
+        } else {
+            $pdfFile = UploadedFile::fake()->create('book.pdf', 100, 'application/pdf');
+        }
+        
+        $uploadPdfResponse = $this->actingAs($admin)->postJson("/api/v1/admin/books/{$bookId}/upload-pdf", [
+            'pdf' => $pdfFile,
+        ]);
+        
+        if ($uploadPdfResponse->status() !== 200) {
+            fwrite(STDERR, print_r($uploadPdfResponse->json(), true));
+        }
+        
+        $uploadPdfResponse->assertStatus(200);
+
+        // 5. Admin publishes
+        $this->actingAs($admin)->patchJson("/api/v1/books/{$bookId}", [
+            'status' => 'published',
+            'is_published' => true,
+        ])->assertStatus(200);
+
+        // 6. User searches and views detail
+        Cache::flush();
+        $catalogResponse = $this->getJson('/api/v1/public/catalog?search=Full+Workflow');
+        $catalogResponse->assertStatus(200);
+        $this->assertCount(1, $catalogResponse->json('data'));
+
+        // 7. User with access reads PDF (Mocking access)
+        /** @var User $user */
+        $user = User::factory()->create();
+        // Grant access manually or via purchase flow
+        $book->load('author');
+        \App\Models\BookAccess::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'access_level' => 'full',
+            'is_active' => true,
+            'granted_by' => 'admin_manual',
+            'granted_at' => now(),
+        ]);
+
+        $readResponse = $this->actingAs($user)->get("/api/v1/books/{$bookId}/read");
+        $readResponse->assertStatus(200);
+        $this->assertEquals('application/pdf', $readResponse->headers->get('Content-Type'));
     }
 }

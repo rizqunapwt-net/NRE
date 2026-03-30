@@ -4,9 +4,7 @@ import {
   BookOutlined,
   UserOutlined,
   DollarOutlined,
-  CheckCircleOutlined,
   ClockCircleOutlined,
-  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import api from '../../api';
 import './ActivityTimeline.css';

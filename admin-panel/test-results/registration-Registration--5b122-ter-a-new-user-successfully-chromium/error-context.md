@@ -18,6 +18,7 @@
           - img [ref=e25]
         - textbox "Nama Lengkap" [ref=e27]:
           - /placeholder: Nama sesuai identitas
+          - text: Test User 9904
     - generic [ref=e29]:
       - generic [ref=e32]: Alamat Email
       - generic [ref=e36]:
@@ -25,6 +26,7 @@
           - img [ref=e39]
         - textbox "Alamat Email" [ref=e41]:
           - /placeholder: anda@email.com
+          - text: testuser_9904@example.com
     - generic [ref=e43]:
       - generic [ref=e46]: Nomor Telepon
       - generic [ref=e50]:
@@ -32,6 +34,7 @@
           - img [ref=e53]
         - textbox "Nomor Telepon" [ref=e55]:
           - /placeholder: "08123456789"
+          - text: "08123456789"
     - generic [ref=e56]:
       - generic [ref=e58]:
         - generic [ref=e61]: Kata Sandi
@@ -40,6 +43,7 @@
             - img [ref=e68]
           - textbox "Kata Sandi" [ref=e70]:
             - /placeholder: ••••••••
+            - text: password123
           - img "eye-invisible" [ref=e72] [cursor=pointer]:
             - img [ref=e73]
       - generic [ref=e77]:
@@ -47,8 +51,9 @@
         - generic [ref=e84]:
           - img "lock" [ref=e86]:
             - img [ref=e87]
-          - textbox "Konfirmasi" [ref=e89]:
+          - textbox "Konfirmasi" [active] [ref=e89]:
             - /placeholder: ••••••••
+            - text: password123
           - img "eye-invisible" [ref=e91] [cursor=pointer]:
             - img [ref=e92]
     - generic [ref=e100] [cursor=pointer]:

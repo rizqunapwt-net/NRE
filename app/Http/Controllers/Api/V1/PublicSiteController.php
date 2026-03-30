@@ -10,11 +10,13 @@ use App\Models\Category;
 use App\Models\Faq;
 use App\Models\SiteContent;
 use App\Models\Testimonial;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PublicSiteController extends Controller
 {
+    use ApiResponse;
     /**
      * GET /api/v1/public/site-content
      * Returns all active site content grouped by section.
@@ -64,7 +66,9 @@ class PublicSiteController extends Controller
      */
     public function catalog(Request $request): JsonResponse
     {
-        $cacheKey = 'catalog_' . md5(json_encode($request->all()));
+        $params = $request->all();
+        ksort($params);
+        $cacheKey = 'catalog_' . md5(json_encode($params));
 
         $response = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($request) {
             $query = Book::with(['author', 'preview', 'category'])
@@ -72,7 +76,7 @@ class PublicSiteController extends Controller
 
             // Full-text Search
             if ($request->has('search')) {
-                $search = $request->search;
+                $search = mb_substr(trim($request->search), 0, 200);
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
                         ->orWhere('isbn', 'like', "%{$search}%")
@@ -148,7 +152,7 @@ class PublicSiteController extends Controller
                     break;
             }
 
-            $books = $query->paginate($request->input('per_page', 12));
+            $books = $query->paginate(min($request->integer('per_page', 12), 48));
 
             // Suggestions for "Did you mean?" if results are empty
             $suggestion = null;
@@ -163,17 +167,19 @@ class PublicSiteController extends Controller
                 }
             }
 
-            // Transform each book to include cover_url
             $books->getCollection()->transform(function ($book) {
                 return $this->transformBook($book);
             });
 
-            $res = $books->toArray();
-            $res['suggestion'] = $suggestion;
-            return $res;
+            return [
+                'books' => $books,
+                'suggestion' => $suggestion,
+            ];
         });
 
-        return response()->json($response);
+        return $this->success($response['books'], 200, [
+            'suggestion' => $response['suggestion']
+        ]);
     }
 
     /**
@@ -313,14 +319,14 @@ class PublicSiteController extends Controller
             ->orderBy('published_at', 'desc');
 
         if ($request->has('search')) {
-            $search = $request->search;
+            $search = mb_substr(trim($request->search), 0, 200);
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
-        $posts = $query->paginate($request->input('per_page', 9));
+        $posts = $query->paginate(min($request->integer('per_page', 9), 30));
 
         return response()->json($posts);
     }

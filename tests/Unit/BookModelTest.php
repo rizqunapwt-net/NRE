@@ -92,7 +92,7 @@ class BookModelTest extends TestCase
 
         $book->delete();
 
-        $this->assertDatabaseMissing('books', ['id' => $bookId]);
+        $this->assertSoftDeleted('books', ['id' => $bookId]);
     }
 
     public function test_book_has_required_fields(): void

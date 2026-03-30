@@ -34,6 +34,11 @@ class BookStorageService
     {
         $this->validateCoverUpload($file);
 
+        // Delete old cover if exists
+        if ($book->cover_path) {
+            Storage::disk($this->disk)->delete($book->cover_path);
+        }
+
         $extension = $file->getClientOriginalExtension();
         $filename  = "{$book->id}_" . time() . ".{$extension}";
         $path      = "covers/original/{$filename}";

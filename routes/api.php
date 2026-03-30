@@ -55,8 +55,8 @@ Route::prefix('v1')->group(function (): void {
 
     // Author Registration (Complete Profile)
     Route::post('/authors/register', [AuthorRegisterController::class, 'register'])->middleware('throttle:5,1');
-    Route::get('/authors/check-username', [AuthorRegisterController::class, 'checkUsername']);
-    Route::get('/authors/check-email', [AuthorRegisterController::class, 'checkEmail']);
+    Route::get('/authors/check-username', [AuthorRegisterController::class, 'checkUsername'])->middleware('throttle:10,1');
+    Route::get('/authors/check-email', [AuthorRegisterController::class, 'checkEmail'])->middleware('throttle:10,1');
 
     // Google OAuth (Requires 'web' middleware for session state/CSRF)
     Route::middleware(['web', 'throttle:auth'])->group(function () {
@@ -65,10 +65,10 @@ Route::prefix('v1')->group(function (): void {
     });
 
     // Public Tracking
-    Route::get('/tracking', [\App\Http\Controllers\Api\V1\PublicTrackingController::class, 'track']);
+    Route::get('/tracking', [\App\Http\Controllers\Api\V1\PublicTrackingController::class, 'track'])->middleware('throttle:30,1');
 
     // Public Site Content (Landing Page)
-    Route::prefix('public')->group(function () {
+    Route::prefix('public')->middleware('throttle:60,1')->group(function () {
         Route::get('/site-content', [PublicSiteController::class, 'siteContent']);
         Route::get('/faqs', [PublicSiteController::class, 'faqs']);
         Route::get('/testimonials', [PublicSiteController::class, 'testimonials']);

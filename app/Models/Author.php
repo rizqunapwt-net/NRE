@@ -45,13 +45,9 @@ class Author extends Model
         'language',
     ];
 
-    protected $appends = [
-        'published_books_count',
-        'active_contracts_count',
-        'total_royalties',
-        'paid_royalties',
-        'pending_royalties',
-    ];
+    // NOTE: Computed attributes (published_books_count, active_contracts_count, etc.)
+    // are available via accessor methods but NOT auto-appended to prevent N+1 queries
+    // on collection loads. Use ->append([...]) explicitly when needed on single models.
 
     protected function casts(): array
     {

@@ -67,6 +67,8 @@ class AuthorCrudController extends Controller
             ->withCount(['books', 'contracts', 'publishingRequests'])
             ->findOrFail($id);
 
+        $author->append(['published_books_count', 'active_contracts_count', 'total_royalties', 'paid_royalties', 'pending_royalties']);
+
         return response()->json([
             'success' => true,
             'data' => $author,

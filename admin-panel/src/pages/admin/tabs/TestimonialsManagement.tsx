@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Button, Space, Modal, Form, Input, InputNumber, Switch, message, Rate, Upload, Image,
+  Card, Button, Modal, Form, Input, InputNumber, Switch, message, Rate,
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, StarOutlined, UploadOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
