@@ -1,0 +1,118 @@
+### NRE MCP Server API Requests
+# Copy-paste ready HTTP requests for testing MCP server
+
+@baseUrl = http://localhost:8888
+
+### ===== HEALTH & STATUS =====
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Get All Agents
+GET {{baseUrl}}/api/agents
+
+### Get State Summary
+GET {{baseUrl}}/api/state-summary
+
+### ===== TASKS =====
+
+### Get Task Status for Agent 1
+GET {{baseUrl}}/api/task-status?agent=1
+
+### Get Task Progress (Overall)
+GET {{baseUrl}}/api/task-progress
+
+### Agent Claims Task
+POST {{baseUrl}}/api/claim-task
+Content-Type: application/json
+
+{
+  "agent": 1,
+  "task": "Fix catalog API slug/ID handling"
+}
+
+### Agent Complete Task
+POST {{baseUrl}}/api/task-done
+Content-Type: application/json
+
+{
+  "agent": 1,
+  "task": "Fix catalog API slug/ID handling",
+  "notes": "Done, tested with curl, ready for A2 to consume"
+}
+
+### ===== DEPENDENCIES =====
+
+### Get Full Dependency Graph
+GET {{baseUrl}}/api/dependencies
+
+### Get Dependencies for Agent 1
+GET {{baseUrl}}/api/dependencies?agent=1
+
+### Get Dependencies for Agent 2
+GET {{baseUrl}}/api/dependencies?agent=2
+
+### Get Dependencies for Agent 6
+GET {{baseUrl}}/api/dependencies?agent=6
+
+### ===== BLOCKERS =====
+
+### Get All Blockers
+GET {{baseUrl}}/api/blockers
+
+### Get Critical Blockers Only
+GET {{baseUrl}}/api/blockers?severity=critical
+
+### Report Blocker
+POST {{baseUrl}}/api/blockers
+Content-Type: application/json
+
+{
+  "agent": 2,
+  "title": "Frontend blocked waiting for API",
+  "description": "Need GET /api/v1/public/catalog endpoint from Agent 1",
+  "blocked_by": 1
+}
+
+### ===== COMMUNICATION =====
+
+### Broadcast Message
+POST {{baseUrl}}/api/broadcast
+Content-Type: application/json
+
+{
+  "from": 1,
+  "to": "all",
+  "message": "Backend API ready for consumption. Endpoint: GET /api/v1/public/catalog"
+}
+
+### Get Communication History
+GET {{baseUrl}}/api/comms
+
+### Get Last 20 Communications
+GET {{baseUrl}}/api/comms?limit=20
+
+### ===== STATE =====
+
+### Get Full MCP State
+GET {{baseUrl}}/api/state
+
+### Get State Summary
+GET {{baseUrl}}/api/state-summary
+
+### ===== BATCH OPERATIONS =====
+
+### Check System Health (All Tests)
+GET {{baseUrl}}/health
+
+###
+GET {{baseUrl}}/api/agents
+
+###
+GET {{baseUrl}}/api/task-progress
+
+###
+GET {{baseUrl}}/api/state-summary
+
+###
+GET {{baseUrl}}/api/blockers
