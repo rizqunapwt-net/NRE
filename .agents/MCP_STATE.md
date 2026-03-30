@@ -72,6 +72,16 @@
 | E2E browser tests | ❌ TODO | Playwright tests |
 | WordPress import validation | ❌ TODO | Post-import checks |
 
+### 🔷 Agent 7 — Analytics & Monitoring
+| Task | Status | Dependencies | Notes |
+|------|--------|--------------|-------|
+| Setup Sentry error tracking | ❌ TODO | A1 (API ready) | Auto-capture errors |
+| Create Prometheus + Grafana stack | ❌ TODO | A4 (Docker) | Real-time metrics |
+| Setup dashboard & visualizations | ❌ TODO | Task #2 | 4 dashboards |
+| Setup log aggregation (ELK stack) | ❌ TODO | A4 (Docker) | Centralized logging |
+| Setup alert rules & notifications | ❌ TODO | Task #2, #3 | 10+ alert rules |
+| Performance monitoring & APM | ❌ TODO | Task #1 | Telescope/New Relic |
+
 ## Shared Knowledge (Gotchas)
 
 > [!WARNING]

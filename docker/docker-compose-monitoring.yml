@@ -1,0 +1,111 @@
+# Docker Compose snippet for Agent 7 (Analytics & Monitoring)
+# Add these services to docker-compose.yml
+
+# PROMETHEUS - Metrics collection and storage
+prometheus:
+  image: prom/prometheus:latest
+  container_name: nre-prometheus
+  restart: unless-stopped
+  ports:
+    - "9090:9090"
+  volumes:
+    - ./docker/prometheus:/etc/prometheus
+    - prometheus-data:/prometheus
+  command:
+    - '--config.file=/etc/prometheus/prometheus.yml'
+    - '--storage.tsdb.path=/prometheus'
+    - '--storage.tsdb.retention.time=30d'
+  networks:
+    - nre-network
+  healthcheck:
+    test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+  environment:
+    TZ: Asia/Jakarta
+
+# GRAFANA - Metrics visualization and dashboards
+grafana:
+  image: grafana/grafana:latest
+  container_name: nre-grafana
+  restart: unless-stopped
+  ports:
+    - "3000:3000"
+  environment:
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    - GF_USERS_ALLOW_SIGN_UP=false
+    - TZ=Asia/Jakarta
+  volumes:
+    - grafana-data:/var/lib/grafana
+    - ./docker/grafana/provisioning:/etc/grafana/provisioning
+  depends_on:
+    - prometheus
+  networks:
+    - nre-network
+  healthcheck:
+    test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+
+# ELASTICSEARCH - Log aggregation (optional, for ELK stack)
+elasticsearch:
+  image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+  container_name: nre-elasticsearch
+  restart: unless-stopped
+  environment:
+    - discovery.type=single-node
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    - xpack.security.enabled=false
+    - TZ=Asia/Jakarta
+  ports:
+    - "9200:9200"
+  volumes:
+    - elasticsearch-data:/usr/share/elasticsearch/data
+  networks:
+    - nre-network
+  healthcheck:
+    test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+  deploy:
+    resources:
+      limits:
+        memory: 1G
+      reservations:
+        memory: 512M
+
+# KIBANA - Log visualization (optional, for ELK stack)
+kibana:
+  image: docker.elastic.co/kibana/kibana:8.0.0
+  container_name: nre-kibana
+  restart: unless-stopped
+  ports:
+    - "5601:5601"
+  environment:
+    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    - TZ=Asia/Jakarta
+    - KIBANA_DEFAULTAPPID=discover
+  depends_on:
+    - elasticsearch
+  networks:
+    - nre-network
+  healthcheck:
+    test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  elasticsearch-data:
+
+networks:
+  nre-network:
+    driver: bridge

@@ -1,0 +1,59 @@
+# Prometheus Configuration - Created by Agent 7
+# See: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+
+global:
+  scrape_interval: 15s        # Default scrape interval
+  evaluation_interval: 15s    # How often to evaluate alerts
+  external_labels:
+    monitor: 'nre-monitor'
+    environment: 'development'
+
+# Alertmanager (if using)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - 'alertmanager:9093'
+
+# Load alert rules
+rule_files:
+  - '/etc/prometheus/alerts.yml'
+
+scrape_configs:
+  
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+  
+  # Laravel application metrics
+  - job_name: 'laravel'
+    static_configs:
+      - targets: ['localhost:9000']  # API server
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    honor_labels: true
+  
+  # PostgreSQL (if exporter running)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['localhost:9187']
+    scrape_interval: 30s
+  
+  # Redis (if exporter running)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:9121']
+    scrape_interval: 30s
+  
+  # Nginx (if exporter running)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['localhost:9113']
+    scrape_interval: 30s
+  
+  # Node metrics (host system)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 30s

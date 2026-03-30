@@ -1,0 +1,207 @@
+# Alert Rules for Prometheus - Created by Agent 7
+# Managed by Agent 7 Analytics & Monitoring
+
+groups:
+  
+  - name: api_health
+    interval: 30s
+    rules:
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m]))
+           /
+           sum(rate(http_requests_total[5m]))) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High error rate ({{ $value | humanizePercentage }})"
+          description: "API error rate > 5% for 5 minutes"
+          runbook: "https://wiki.internal/runbooks/high-error-rate"
+
+      # Response time high (P95)
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High P95 response time ({{ $value }}s)"
+          description: "P95 API response time > 1 second for 10 minutes"
+
+      # Response time critical (P99)
+      - alert: CriticalResponseTime
+        expr: |
+          histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "CRITICAL: P99 response time ({{ $value }}s)"
+          description: "P99 API response time > 5 seconds"
+
+  - name: database_health
+    interval: 30s
+    rules:
+
+      # Slow queries
+      - alert: SlowQueries
+        expr: |
+          rate(mysql_global_status_slow_queries[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Slow queries detected"
+          description: "More than 0.1 slow queries per second"
+
+      # High connection count
+      - alert: HighDatabaseConnections
+        expr: |
+          mysql_global_status_threads_connected > 20
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High database connections ({{ $value }})"
+          description: "Database connections > 20"
+
+      # Replication lag
+      - alert: DatabaseReplicationLag
+        expr: |
+          mysql_slave_status_seconds_behind_master > 30
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Database replication lag ({{ $value }}s)"
+          description: "Replica is {{ $value | humanizeDuration }} behind master"
+
+  - name: system_health
+    interval: 30s
+    rules:
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: |
+          (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High CPU usage ({{ $value }}%)"
+          description: "CPU usage > 80% for 10 minutes on {{ $labels.instance }}"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High memory usage ({{ $value }}%)"
+          description: "Memory usage > 85% on {{ $labels.instance }}"
+
+      # Low disk space
+      - alert: LowDiskSpace
+        expr: |
+          (node_filesystem_avail_bytes{fstype!~"tmpfs"} / node_filesystem_size_bytes) < 0.10
+        for: 10m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: "Low disk space ({{ $value | humanizePercentage }} free)"
+          description: "Less than 10% disk space free on {{ $labels.device }}"
+
+      # High disk I/O
+      - alert: HighDiskIOWait
+        expr: |
+          rate(node_cpu_seconds_total{mode="iowait"}[5m]) * 100 > 30
+        for: 10m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High disk I/O wait ({{ $value }}%)"
+          description: "Disk I/O wait > 30% on {{ $labels.instance }}"
+
+  - name: application_health
+    interval: 30s
+    rules:
+
+      # Application down
+      - alert: ApplicationDown
+        expr: |
+          up{job="laravel"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Application down"
+          description: "Laravel application is not responding"
+
+      # Queue backed up
+      - alert: QueueBackedUp
+        expr: |
+          laravel_queue_jobs_pending > 1000
+        for: 15m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Queue backed up ({{ $value }} jobs pending)"
+          description: "More than 1000 pending jobs in queue"
+
+      # Cache miss rate high
+      - alert: HighCacheMissRate
+        expr: |
+          rate(redis_keyspace_misses_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) > 0.3
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High cache miss rate ({{ $value | humanizePercentage }})"
+          description: "Cache miss rate > 30%"
+
+  - name: business_metrics
+    interval: 30s
+    rules:
+
+      # No recent book uploads
+      - alert: NoRecentBookUploads
+        expr: |
+          (time() - laravel_books_last_upload_timestamp) > 86400
+        for: 1h
+        labels:
+          severity: info
+          team: business
+        annotations:
+          summary: "No book uploads in the last 24 hours"
+          description: "Check if upload system is working"
+
+      # Low transaction volume
+      - alert: LowTransactionVolume
+        expr: |
+          rate(laravel_transactions_total[1h]) < 0.01
+        for: 2h
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: "Low transaction volume"
+          description: "Less than 1 transaction per 100 seconds"
