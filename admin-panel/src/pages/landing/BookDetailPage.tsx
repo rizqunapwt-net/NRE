@@ -449,6 +449,7 @@ const BookDetailPage: React.FC = () => {
                                         fetchCitations();
                                     }}
                                     className="hover-glow"
+                                    aria-label="Tampilkan sitasi akademik"
                                     style={{
                                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                                         padding: '16px 24px', background: '#ffffff',
@@ -460,6 +461,75 @@ const BookDetailPage: React.FC = () => {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>
                                     Sitasi Akademik
                                 </button>
+                            </div>
+
+                            {/* ── Social Share ── */}
+                            <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bagikan:</span>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    {[
+                                        { 
+                                            name: 'Facebook', 
+                                            icon: <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />, 
+                                            color: '#1877F2',
+                                            url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`
+                                        },
+                                        { 
+                                            name: 'Twitter', 
+                                            icon: <path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M13.232 10.768l6.768 -6.768" />, 
+                                            color: '#000000',
+                                            url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(book.title)}`
+                                        },
+                                        { 
+                                            name: 'WhatsApp', 
+                                            icon: <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-11.7 8.38 8.38 0 0 1 3.7.9L21 3l-1.5 6.5L21 11.5z" />, 
+                                            color: '#25D366',
+                                            url: `https://api.whatsapp.com/send?text=${encodeURIComponent(book.title + ' ' + window.location.href)}`
+                                        }
+                                    ].map(social => (
+                                        <a
+                                            key={social.name}
+                                            href={social.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label={`Bagikan ke ${social.name}`}
+                                            style={{
+                                                width: 36, height: 36, borderRadius: '50%',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                background: '#f1f5f9', color: '#64748b',
+                                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                textDecoration: 'none'
+                                            }}
+                                            onMouseOver={e => { e.currentTarget.style.background = social.color; e.currentTarget.style.color = '#fff'; }}
+                                            onMouseOut={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
+                                        >
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                {social.icon}
+                                            </svg>
+                                        </a>
+                                    ))}
+                                    <button
+                                        onClick={() => handleCopy('link', window.location.href)}
+                                        aria-label="Salin tautan"
+                                        style={{
+                                            width: 36, height: 36, borderRadius: '50%',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            background: copiedFormat === 'link' ? '#008B94' : '#f1f5f9',
+                                            color: copiedFormat === 'link' ? '#fff' : '#64748b',
+                                            border: 0, cursor: 'pointer',
+                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                                        }}
+                                    >
+                                        {copiedFormat === 'link' ? (
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+                                        ) : (
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Marketplace Links */}

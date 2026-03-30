@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rizquna-erp
+  labels:
+    name: rizquna-erp
+    environment: production

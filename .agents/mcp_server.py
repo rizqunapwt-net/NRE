@@ -6,10 +6,12 @@ Provides REST API for agent coordination, task management, and communication
 
 import json
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, jsonify, request
 from functools import wraps
+import threading
 import yaml
 
 # Initialize Flask app
@@ -17,11 +19,11 @@ app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 
 # Paths
-PROJECT_ROOT = Path(__file__).parent.parent
-AGENTS_DIR = PROJECT_ROOT / '.agents'
-STATE_FILE = AGENTS_DIR / 'MCP_STATE.md'
-CONFIG_FILE = AGENTS_DIR / 'mcp.config.json'
-ALERTS_FILE = AGENTS_DIR / 'ALERTS.log'
+PROJECT_ROOT = Path(os.getenv('PROJECT_ROOT', Path(__file__).parent.parent))
+AGENTS_DIR = Path(os.getenv('AGENTS_DIR', PROJECT_ROOT / '.agents'))
+STATE_FILE = Path(os.getenv('STATE_FILE', AGENTS_DIR / 'MCP_STATE.md'))
+CONFIG_FILE = Path(os.getenv('CONFIG_FILE', AGENTS_DIR / 'mcp.config.json'))
+ALERTS_FILE = Path(os.getenv('ALERTS_FILE', AGENTS_DIR / 'ALERTS.log'))
 
 # Agent definitions (SCALABLE - add more as needed)
 AGENTS = {
@@ -391,10 +393,222 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 
+# ===== MCP PROTOCOL (STDIO) =====
+
+def mcp_respond(response_id, result=None, error=None):
+    """Send JSON-RPC response to stdout"""
+    response = {"jsonrpc": "2.0", "id": response_id}
+    if result is not None:
+        response["result"] = result
+    if error is not None:
+        response["error"] = error
+    
+    sys.stdout.write(json.dumps(response) + "\n")
+    sys.stdout.flush()
+
+
+def handle_mcp_request(request_data):
+    """Process incoming MCP JSON-RPC request"""
+    try:
+        req = json.loads(request_data)
+    except json.JSONDecodeError:
+        return
+
+    method = req.get("method")
+    req_id = req.get("id")
+
+    if method == "initialize":
+        mcp_respond(req_id, {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {
+                "tools": {}
+            },
+            "serverInfo": {
+                "name": "nre-coordinator",
+                "version": "1.0.0"
+            }
+        })
+    
+    elif method == "tools/list":
+        mcp_respond(req_id, {
+            "tools": [
+                {
+                    "name": "get_agents",
+                    "description": "List all 10 agents and their domains",
+                    "inputSchema": {"type": "object", "properties": {}}
+                },
+                {
+                    "name": "get_task_progress",
+                    "description": "Get overall project completion percentage",
+                    "inputSchema": {"type": "object", "properties": {}}
+                },
+                {
+                    "name": "get_state_summary",
+                    "description": "Get quick summary of project state and environment",
+                    "inputSchema": {"type": "object", "properties": {}}
+                },
+                {
+                    "name": "get_dependencies",
+                    "description": "Get dependency graph for agents",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "agent": {"type": "integer", "description": "Optional agent ID (1-10)"}
+                        }
+                    }
+                },
+                {
+                    "name": "claim_task",
+                    "description": "Mark a task as claimed by an agent",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "agent": {"type": "integer", "description": "Agent ID (1-10)"},
+                            "task": {"type": "string", "description": "Task description"}
+                        },
+                        "required": ["agent", "task"]
+                    }
+                },
+                {
+                    "name": "report_blocker",
+                    "description": "Report a blocker that prevents progress",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "agent": {"type": "integer", "description": "Agent ID reporting"},
+                            "title": {"type": "string", "description": "Short title of blocker"},
+                            "description": {"type": "string", "description": "Detailed description"},
+                            "blocked_by": {"type": "string", "description": "Agent or reason blocking"}
+                        },
+                        "required": ["agent", "title"]
+                    }
+                }
+            ]
+        })
+    
+    elif method == "tools/call":
+        params = req.get("params", {})
+        tool_name = params.get("name")
+        args = params.get("arguments", {})
+        
+        result_content = []
+        
+        if tool_name == "get_agents":
+            data = AGENTS
+            result_content.append({"type": "text", "text": json.dumps(data, indent=2)})
+        
+        elif tool_name == "get_task_progress":
+            state = read_state()
+            if "error" in state:
+                result_content.append({"type": "text", "text": f"Error: {state['error']}"})
+            else:
+                raw = state.get("raw", "")
+                done = raw.count("✅ DONE")
+                todo = raw.count("❌ TODO")
+                blocked = raw.count("⚠️ BLOCKED")
+                total = done + todo + blocked
+                progress = (done / total * 100) if total > 0 else 0
+                result_content.append({"type": "text", "text": f"Progress: {progress:.1f}%\nDone: {done}\nTodo: {todo}\nBlocked: {blocked}"})
+        
+        elif tool_name == "get_state_summary":
+            state = read_state()
+            raw = state.get("raw", "") if "raw" in state else ""
+            summary = {
+                "tasks_done": raw.count("✅ DONE"),
+                "tasks_todo": raw.count("❌ TODO"),
+                "tasks_blocked": raw.count("⚠️ BLOCKED"),
+                "project_status": "95% Complete",
+                "environment": "Development (Mac Mini M4)"
+            }
+            result_content.append({"type": "text", "text": json.dumps(summary, indent=2)})
+            
+        elif tool_name == "get_dependencies":
+            agent_id = args.get("agent")
+            # Reuse existing logic (hardcoded in this script)
+            deps = {
+                1: {"depends_on": [], "enables": [2, 3, 5, 6]},
+                2: {"depends_on": [1], "enables": []},
+                3: {"depends_on": [1], "enables": []},
+                4: {"depends_on": [], "enables": [6]},
+                5: {"depends_on": [1], "enables": []},
+                6: {"depends_on": [1, 2, 3, 5], "enables": []}
+            }
+            result = deps.get(agent_id, deps) if agent_id else deps
+            result_content.append({"type": "text", "text": json.dumps(result, indent=2)})
+            
+        elif tool_name == "claim_task":
+            agent_id = args.get("agent")
+            task_name = args.get("task")
+            if agent_id in AGENTS:
+                log_alert("INFO", f"Agent {agent_id} claimed task: {task_name}")
+                result_content.append({"type": "text", "text": f"Task '{task_name}' claimed by {AGENTS[agent_id]['name']}"})
+            else:
+                result_content.append({"type": "text", "text": f"Error: Agent {agent_id} not found"})
+                
+        elif tool_name == "report_blocker":
+            agent_id = args.get("agent")
+            title = args.get("title")
+            desc = args.get("description", "")
+            blocked_by = args.get("blocked_by", "unknown")
+            if agent_id in AGENTS:
+                log_alert("WARNING", f"Agent {agent_id} BLOCKED: {title} (by: {blocked_by})")
+                result_content.append({"type": "text", "text": f"Blocker '{title}' recorded for {AGENTS[agent_id]['name']}"})
+            else:
+                result_content.append({"type": "text", "text": f"Error: Agent {agent_id} not found"})
+        
+        else:
+            mcp_respond(req_id, error={"code": -32601, "message": f"Tool {tool_name} not found"})
+            return
+
+        mcp_respond(req_id, result={"content": result_content})
+
+    elif method == "notifications/initialized":
+        pass
+
+
+def run_mcp_loop():
+    """Main loop for MCP stdio communication"""
+    # Redirect stdout to stderr for everything else (like Flask logs)
+    original_stdout = sys.stdout
+    sys.stdout = sys.stderr
+    
+    try:
+        while True:
+            line = sys.stdin.readline()
+            if not line:
+                break
+            # Use original stdout for MCP responses
+            old_stdout = sys.stdout
+            sys.stdout = original_stdout
+            handle_mcp_request(line)
+            sys.stdout = old_stdout
+    except Exception as e:
+        log_alert("ERROR", f"MCP Loop Error: {str(e)}")
+
+
 # ===== MAIN =====
 
 if __name__ == '__main__':
-    print("""
+    # Create config if doesn't exist
+    if not CONFIG_FILE.exists():
+        save_config(load_config())
+
+    # Check if we should run in MCP mode (stdio) or standard Flask mode
+    # If stdin is not a TTY, we assume we are being run by an MCP client
+    if not sys.stdin.isatty():
+        # Start Flask in background
+        flask_thread = threading.Thread(
+            target=app.run,
+            kwargs={'host': 'localhost', 'port': 8888, 'debug': False, 'use_reloader': False},
+            daemon=True
+        )
+        flask_thread.start()
+        
+        # Run MCP loop (blocks)
+        run_mcp_loop()
+    else:
+        # Standard interactive mode
+        print("""
     
 ╔═════════════════════════════════════════════════════╗
 ║     MCP Server — NRE Multi-Agent Coordination      ║
@@ -420,17 +634,12 @@ Available Endpoints:
 ├─ GET  /api/comms               — Communication history
 ├─ GET  /api/state               — Full MCP state
 └─ GET  /api/state-summary       — Quick summary
-
-    """)
-    
-    # Create config if doesn't exist
-    if not CONFIG_FILE.exists():
-        save_config(load_config())
-    
-    # Start server
-    app.run(
-        host='localhost',
-        port=8888,
-        debug=False,
-        use_reloader=False,
-    )
+        """)
+        
+        # Start Flask (blocks)
+        app.run(
+            host='localhost',
+            port=8888,
+            debug=False,
+            use_reloader=False,
+        )

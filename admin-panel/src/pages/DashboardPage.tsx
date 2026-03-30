@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import api from '../api';
 import { DashboardStatsSkeleton, TableSkeleton } from '../components/SkeletonLoaders';
+import { QuickActions, ActivityTimeline, PerformanceAlerts } from '../components/admin';
 import './DashboardPage.css';
 
 const { Title, Text } = Typography;
@@ -31,22 +32,28 @@ const DashboardPage: React.FC = () => {
   const [chartData, setChartData] = useState<any[]>([]);
   const [recentBooks, setRecentBooks] = useState<any[]>([]);
   const [activeAuthors, setActiveAuthors] = useState<any[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     fetchDashboardData();
+    // Auto-refresh every 60 seconds for real-time feel
+    const interval = setInterval(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchDashboardData = async () => {
     try {
       // Small delay for skeleton visibility
-      // setLoading(true); 
+      // setLoading(true);
       const [statsRes, chartRes, recentBooksRes, activeAuthorsRes] = await Promise.all([
         api.get('/admin/dashboard-stats'),
         api.get('/dashboard/books'),
         api.get('/admin/books?per_page=5'),
         api.get('/admin/authors?per_page=5'),
       ]);
-      
+
       setStats(statsRes.data.data);
       setChartData(Array.isArray(chartRes.data.data) ? chartRes.data.data : []);
       setRecentBooks(Array.isArray(recentBooksRes.data.data) ? recentBooksRes.data.data : []);
@@ -250,9 +257,9 @@ const DashboardPage: React.FC = () => {
               columns={[
                 { title: 'Nama', dataIndex: 'name', key: 'name', render: (val, record) => record.nama || val },
                 { title: 'Buku', dataIndex: 'books_count', key: 'books_count' },
-                { 
-                  title: 'Royalti', 
-                  dataIndex: 'total_royalties_amount', 
+                {
+                  title: 'Royalti',
+                  dataIndex: 'total_royalties_amount',
                   key: 'revenue',
                   render: (amount) => `Rp ${(amount || 0).toLocaleString('id-ID')}`
                 },
@@ -263,6 +270,15 @@ const DashboardPage: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Quick Actions - New Component */}
+      <QuickActions />
+
+      {/* Performance Alerts - New Component */}
+      <PerformanceAlerts key={`perf-${refreshKey}`} />
+
+      {/* Activity Timeline - New Component */}
+      <ActivityTimeline key={`activity-${refreshKey}`} />
     </div>
   );
 };

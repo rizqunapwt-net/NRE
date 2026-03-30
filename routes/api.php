@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Percetakan\OrderController as PercetakanOrderContro
 use App\Http\Controllers\Api\Percetakan\ProductionJobController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\AdminDashboardController;
+use App\Http\Controllers\Api\V1\AdminActivityController;
 use App\Http\Controllers\Api\V1\AuthorAccountController;
 use App\Http\Controllers\Api\V1\AuthorCrudController;
 use App\Http\Controllers\Api\V1\AuthorPortalApiController;
@@ -37,6 +38,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function (): void {
     // Health Check Endpoints (for Docker/K8s)
     Route::get('/health', [HealthController::class, 'health']);
+    Route::get('/health/detailed', [HealthController::class, 'detailed']);
     Route::get('/ready', [HealthController::class, 'ready']);
     Route::get('/live', [HealthController::class, 'live']);
 
@@ -112,6 +114,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
     // Phase 3-6: Digital Library — User Library & Purchases
     // ══════════════════════════════════════════════════════════════════════
     Route::prefix('user')->group(function () {
+        Route::get('/stats', [\App\Http\Controllers\Api\V1\UserLibraryController::class, 'stats']);
         Route::get('/library', [\App\Http\Controllers\Api\V1\UserLibraryController::class, 'index']);
         Route::get('/purchases', [\App\Http\Controllers\Api\V1\UserLibraryController::class, 'purchases']);
         
@@ -136,6 +139,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
 
         // ── Admin Dashboard & Stats ──
         Route::get('/admin/dashboard-stats', [AdminDashboardController::class, 'bookStats']);
+        
+        // ── Admin Activities & Performance ──
+        Route::get('/admin/activities', [AdminActivityController::class, 'index']);
+        Route::get('/admin/performance/metrics', [AdminActivityController::class, 'metrics']);
         
         // ── User Management (Admin Only) ──
         Route::get('/admin/users', [\App\Http\Controllers\Api\V1\UserManagementController::class, 'index']);

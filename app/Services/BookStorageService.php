@@ -8,8 +8,14 @@ use App\Jobs\ParsePdfJob;
 use App\Models\Book;
 use App\Models\BookFile;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use setasign\Fpdi\Fpdi;
 use App\Jobs\SyncBookToGoogleWorkspace;
 
 class BookStorageService
@@ -26,6 +32,8 @@ class BookStorageService
      */
     public function uploadCover(Book $book, UploadedFile $file): string
     {
+        $this->validateCoverUpload($file);
+
         $extension = $file->getClientOriginalExtension();
         $filename  = "{$book->id}_" . time() . ".{$extension}";
         $path      = "covers/original/{$filename}";
@@ -52,6 +60,11 @@ class BookStorageService
      */
     public function uploadFullPdf(Book $book, UploadedFile $file): string
     {
+        $pageCount = $this->validatePdfUpload($file);
+        $realPath = $file->getRealPath();
+        $checksum = is_string($realPath) && $realPath !== ''
+            ? (hash_file('sha256', $realPath) ?: null)
+            : null;
         $slug     = Str::slug($book->title);
         $filename = "{$book->id}_{$slug}.pdf";
         $path     = "pdfs/full/{$filename}";
@@ -70,11 +83,16 @@ class BookStorageService
             'file_path'     => $path,
             'original_name' => $file->getClientOriginalName(),
             'file_size'     => $file->getSize(),
-            'mime_type'     => 'application/pdf',
+            'mime_type'     => $file->getMimeType() ?: 'application/pdf',
             'uploaded_by'   => auth()->id(),
         ]);
 
-        $book->update(['pdf_full_path' => $path]);
+        $book->update([
+            'pdf_full_path' => $path,
+            'file_checksum' => $checksum,
+            'total_pdf_pages' => $pageCount > 0 ? $pageCount : $book->total_pdf_pages,
+            'page_count' => $book->page_count ?: ($pageCount > 0 ? $pageCount : $book->page_count),
+        ]);
 
         $previewPages = (int) config('books.preview_pages', 10);
 
@@ -207,11 +225,8 @@ class BookStorageService
      */
     public function getPreviewPdfUrl(Book $book): ?string
     {
-        if (! $book->pdf_preview_path) {
-            return null;
-        }
-
-        if ($book->preview && ! $book->preview->allow_preview) {
+        $status = $this->inspectPreviewAvailability($book);
+        if ($status['status'] !== 'ready' || ! $status['path']) {
             return null;
         }
 
@@ -224,7 +239,7 @@ class BookStorageService
 
         $ttl = config('books.preview_url_ttl', 3600);
 
-        return $this->getSignedUrl($book->pdf_preview_path, $ttl);
+        return $this->getSignedUrl($status['path'], $ttl);
     }
 
     /**
@@ -252,21 +267,15 @@ class BookStorageService
     }
 
     /**
-     * Generate Google Drive download URL untuk cover.
-     * Fallback jika file tidak ada di S3.
+     * Ambil URL cover eksternal yang benar-benar menunjuk ke file buku.
      */
     public function getCoverUrlFromDrive(Book $book, string $size = 'medium'): ?string
     {
-        if ($book->google_drive_cover_url) {
+        if (is_string($book->google_drive_cover_url) && filter_var($book->google_drive_cover_url, FILTER_VALIDATE_URL)) {
             return $book->google_drive_cover_url;
         }
 
-        $folderId = config('services.google.drive.covers_folder_id');
-        if (!$folderId) {
-            return null;
-        }
-
-        return "https://drive.google.com/drive/folders/{$folderId}";
+        return null;
     }
 
     /**
@@ -284,28 +293,7 @@ class BookStorageService
 
     public function resolveCoverStorage(?string $path): ?array
     {
-        if (! $path || filter_var($path, FILTER_VALIDATE_URL)) {
-            return null;
-        }
-
-        foreach ([$this->disk, 'public'] as $disk) {
-            try {
-                if (Storage::disk($disk)->exists($path)) {
-                    return [
-                        'disk' => $disk,
-                        'path' => $path,
-                    ];
-                }
-            } catch (\Throwable $exception) {
-                \Illuminate\Support\Facades\Log::warning('Cover storage lookup failed', [
-                    'disk' => $disk,
-                    'path' => $path,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
-        }
-
-        return null;
+        return $this->resolveStorageLocation($path, 'Cover');
     }
 
     public function coverExists(?string $path): bool
@@ -319,6 +307,49 @@ class BookStorageService
         }
 
         return $this->resolveCoverStorage($path) !== null;
+    }
+
+    public function resolvePreviewStorage(?string $path): ?array
+    {
+        return $this->resolveStorageLocation($path, 'Preview');
+    }
+
+    public function inspectPreviewAvailability(Book $book): array
+    {
+        if ($book->preview && ! $book->preview->allow_preview) {
+            return [
+                'status' => 'disabled',
+                'path' => null,
+            ];
+        }
+
+        $previewPath = $this->resolvePreviewPath($book);
+        if ($previewPath) {
+            $location = $this->resolvePreviewStorage($previewPath);
+            if ($location) {
+                if ($book->pdf_preview_path !== $previewPath) {
+                    $book->forceFill(['pdf_preview_path' => $previewPath])->save();
+                }
+
+                return [
+                    'status' => 'ready',
+                    'path' => $previewPath,
+                    'disk' => $location['disk'],
+                ];
+            }
+        }
+
+        if ($this->queuePreviewRegeneration($book)) {
+            return [
+                'status' => 'queued',
+                'path' => null,
+            ];
+        }
+
+        return [
+            'status' => 'missing',
+            'path' => null,
+        ];
     }
 
     public function cleanupMissingCoverPaths(bool $dryRun = false): array
@@ -375,5 +406,131 @@ class BookStorageService
         }
 
         return config('filesystems.disks.' . $this->disk . '.driver', 's3') === 'local';
+    }
+
+    private function resolveStorageLocation(?string $path, string $label): ?array
+    {
+        if (! $path || filter_var($path, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        foreach ([$this->disk, 'public'] as $disk) {
+            try {
+                if (Storage::disk($disk)->exists($path)) {
+                    return [
+                        'disk' => $disk,
+                        'path' => $path,
+                    ];
+                }
+            } catch (\Throwable $exception) {
+                Log::warning("{$label} storage lookup failed", [
+                    'disk' => $disk,
+                    'path' => $path,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        return null;
+    }
+
+    private function resolvePreviewPath(Book $book): ?string
+    {
+        $candidates = [
+            $book->pdf_preview_path,
+            $book->preview?->preview_pdf_path,
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_string($path) && trim($path) !== '') {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    private function queuePreviewRegeneration(Book $book): bool
+    {
+        if (! $book->pdf_full_path || ! $this->resolveStorageLocation($book->pdf_full_path, 'PDF')) {
+            return false;
+        }
+
+        $cooldown = (int) config('books.preview_regeneration_cooldown', 300);
+        $cacheKey = "books:preview:regeneration:{$book->id}";
+        if (! Cache::add($cacheKey, now()->toIso8601String(), now()->addSeconds($cooldown))) {
+            return false;
+        }
+
+        $previewPages = (int) ($book->preview?->preview_pages ?? config('books.preview_pages', 10));
+
+        if (config('queue.default') === 'sync') {
+            GeneratePreviewPdf::dispatchAfterResponse($book->fresh(), $book->pdf_full_path, $previewPages);
+        } else {
+            GeneratePreviewPdf::dispatch($book->fresh(), $book->pdf_full_path, $previewPages);
+        }
+
+        return true;
+    }
+
+    private function validateCoverUpload(UploadedFile $file): void
+    {
+        $mimeType = strtolower((string) ($file->getMimeType() ?: ''));
+        $realPath = $file->getRealPath();
+        $allowed = array_map('strtolower', config('books.allowed_cover_types', []));
+
+        if (
+            ! is_string($realPath)
+            || $realPath === ''
+            || $mimeType === ''
+            || (! str_starts_with($mimeType, 'image/') && ($allowed !== [] && ! in_array($mimeType, $allowed, true)))
+        ) {
+            throw ValidationException::withMessages([
+                'cover' => ['Format cover tidak didukung. Gunakan JPG, PNG, atau WEBP yang valid.'],
+            ]);
+        }
+
+        try {
+            $manager = new ImageManager(new Driver());
+            $manager->read($realPath);
+        } catch (\Throwable) {
+            throw ValidationException::withMessages([
+                'cover' => ['File cover tidak dapat dibaca. Pastikan gambar tidak rusak.'],
+            ]);
+        }
+    }
+
+    private function validatePdfUpload(UploadedFile $file): int
+    {
+        $mimeType = strtolower((string) ($file->getMimeType() ?: ''));
+        $realPath = $file->getRealPath();
+        $allowed = array_map('strtolower', config('books.allowed_pdf_types', []));
+
+        if (! is_string($realPath) || $realPath === '') {
+            throw ValidationException::withMessages([
+                'pdf' => ['PDF tidak dapat dibaca dari file upload saat ini.'],
+            ]);
+        }
+
+        if ($mimeType !== '' && ! str_contains($mimeType, 'pdf') && $allowed !== [] && ! in_array($mimeType, $allowed, true)) {
+            throw ValidationException::withMessages([
+                'pdf' => ['File yang diunggah bukan PDF yang valid.'],
+            ]);
+        }
+
+        try {
+            $fpdi = new Fpdi();
+            $pageCount = (int) $fpdi->setSourceFile($realPath);
+
+            if ($pageCount < 1) {
+                throw new \RuntimeException('PDF tidak memiliki halaman yang dapat diproses.');
+            }
+
+            return $pageCount;
+        } catch (\Throwable) {
+            throw ValidationException::withMessages([
+                'pdf' => ['PDF tidak dapat dibaca atau terdeteksi rusak.'],
+            ]);
+        }
     }
 }

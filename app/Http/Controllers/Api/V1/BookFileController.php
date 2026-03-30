@@ -27,7 +27,7 @@ class BookFileController extends Controller
     public function cover(Book $book, Request $request): JsonResponse
     {
         $size = $request->get('size', 'medium');
-        $url  = $this->storageService->getCoverUrl($book, $size);
+        $url  = $this->storageService->getCoverUrlWithFallback($book, $size);
 
         if (! $url) {
             return response()->json([
@@ -52,11 +52,23 @@ class BookFileController extends Controller
      */
     public function preview(Book $book): JsonResponse
     {
+        $status = $this->storageService->inspectPreviewAvailability($book);
         $url = $this->storageService->getPreviewPdfUrl($book);
         $previewPages = min(
             10,
             (int) ($book->preview?->preview_pages ?? config('books.preview_pages', 10))
         );
+
+        if ($status['status'] === 'queued') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Preview sedang diregenerasi. Coba beberapa saat lagi.',
+                'data' => [
+                    'status' => 'processing',
+                    'preview_pages' => $previewPages,
+                ],
+            ], 202);
+        }
 
         if (! $url) {
             return response()->json([
@@ -140,40 +152,41 @@ class BookFileController extends Controller
      */
     public function previewStream(Book $book): StreamedResponse|JsonResponse|Response
     {
-        $path = $book->pdf_preview_path;
-        if (! $path) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Preview tidak tersedia',
-            ], 404);
-        }
+        $status = $this->storageService->inspectPreviewAvailability($book);
 
-        if ($book->preview && ! $book->preview->allow_preview) {
+        if ($status['status'] === 'disabled') {
             return response()->json([
                 'success' => false,
                 'message' => 'Preview dinonaktifkan untuk buku ini',
             ], 403);
         }
 
-        // Cek keberadaan file di disk 'books'
-        if (! Storage::disk('books')->exists($path)) {
-            // Fallback: Cek folder fisik lokal
-            $localPath = storage_path('app/private/books/' . $path);
-            if (! file_exists($localPath)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'File preview tidak ditemukan di server.',
-                ], 404);
-            }
-            
-            return response()->file($localPath, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
+        if ($status['status'] === 'queued') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Preview sedang diregenerasi. Coba beberapa saat lagi.',
+                'data' => [
+                    'status' => 'processing',
+                ],
+            ], 202);
         }
 
-        return Storage::disk('books')->response($path, 'preview.pdf', [
+        if (! $status['path']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Preview tidak tersedia',
+            ], 404);
+        }
+
+        $location = $this->storageService->resolvePreviewStorage($status['path']);
+        if (! $location) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File preview tidak ditemukan di server.',
+            ], 404);
+        }
+
+        return Storage::disk($location['disk'])->response($location['path'], 'preview.pdf', [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline',
             'Cache-Control'       => 'public, max-age=3600',
@@ -187,6 +200,11 @@ class BookFileController extends Controller
     public function coverImage(Book $book): StreamedResponse|JsonResponse|RedirectResponse|Response
     {
         if (! $book->cover_path) {
+            $fallback = $this->fallbackCoverRedirect($book);
+            if ($fallback) {
+                return $fallback;
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Cover tidak tersedia',
@@ -199,6 +217,11 @@ class BookFileController extends Controller
 
         $location = $this->storageService->resolveCoverStorage($book->cover_path);
         if (! $location) {
+            $fallback = $this->fallbackCoverRedirect($book);
+            if ($fallback) {
+                return $fallback;
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'File cover tidak ditemukan',
@@ -258,5 +281,16 @@ class BookFileController extends Controller
             'message' => 'PDF berhasil diupload. Preview sedang di-generate.',
             'data'    => ['pdf_path' => $path],
         ]);
+    }
+
+    private function fallbackCoverRedirect(Book $book): ?RedirectResponse
+    {
+        $fallbackUrl = $book->google_drive_cover_url;
+
+        if (! is_string($fallbackUrl) || ! filter_var($fallbackUrl, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        return redirect()->away($fallbackUrl);
     }
 }

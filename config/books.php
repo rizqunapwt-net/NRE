@@ -20,6 +20,7 @@ return [
     // Maintenance
     'cleanup_chunk_size' => env('BOOKS_CLEANUP_CHUNK_SIZE', 200),
     'cover_download_timeout' => env('BOOKS_COVER_DOWNLOAD_TIMEOUT', 30),
+    'preview_regeneration_cooldown' => env('BOOKS_PREVIEW_REGEN_COOLDOWN', 300),
 
     // Allowed MIME types
     'allowed_cover_types' => ['image/jpeg', 'image/png', 'image/webp'],

@@ -1,0 +1,446 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - link "Rizquna" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "Rizquna" [ref=e7]
+      - generic [ref=e8]:
+        - link "Home" [ref=e9] [cursor=pointer]:
+          - /url: /
+        - link "Books" [ref=e10] [cursor=pointer]:
+          - /url: /buku
+        - link "Citation" [ref=e11] [cursor=pointer]:
+          - /url: /sitasi
+      - generic [ref=e13]:
+        - button "ID" [ref=e14] [cursor=pointer]
+        - button "EN" [ref=e15] [cursor=pointer]
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - generic:
+        - img
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]: IKAPI Jawa Tengah No. 199/JTE/2020
+          - heading "Wujudkan Karya Terbaik Anda Bersama Kami" [level=1] [ref=e22]
+          - paragraph [ref=e23]:
+            - strong [ref=e24]: CV. New Rizquna Elfath
+            - text: adalah penerbit dan percetakan profesional di Purwokerto. Kami siap membantu Anda dari naskah hingga buku terbit — ISBN resmi, HAKI terjamin, distribusi nasional.
+          - generic [ref=e26]:
+            - img [ref=e28]
+            - textbox "Cari buku" [ref=e31]:
+              - /placeholder: Cari judul buku, penulis, atau ISBN...
+            - button "CARI" [ref=e32] [cursor=pointer]
+          - generic [ref=e33]:
+            - link "MULAI TERBIT BUKU →" [ref=e34] [cursor=pointer]:
+              - /url: /register
+            - link "MASUK" [ref=e35] [cursor=pointer]:
+              - /url: /login
+          - generic [ref=e36]:
+            - generic [ref=e37]:
+              - generic [ref=e38]: ⭐
+              - generic [ref=e39]:
+                - generic [ref=e40]: "4.9"
+                - generic [ref=e41]: Rating Penulis
+            - generic [ref=e43]:
+              - text: Dipercaya ratusan penulis dan
+              - strong [ref=e44]: lembaga akademik
+        - generic [ref=e46]:
+          - img "Perpustakaan Rizquna" [ref=e47]
+          - generic [ref=e48]:
+            - generic [ref=e49]: ✍️
+            - generic [ref=e50]:
+              - generic [ref=e51]: 350+
+              - generic [ref=e52]: Penulis Terdaftar
+          - generic [ref=e53]:
+            - generic [ref=e54]: 📚
+            - generic [ref=e55]:
+              - generic [ref=e56]: 2.4K+
+              - generic [ref=e57]: Buku Terbit
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e61]: ★
+        - text: PENERBIT TERPERCAYA
+      - generic [ref=e62]:
+        - generic [ref=e63]: ★
+        - text: ISBN RESMI
+      - generic [ref=e64]:
+        - generic [ref=e65]: ★
+        - text: HAKI TERJAMIN
+      - generic [ref=e66]:
+        - generic [ref=e67]: ★
+        - text: DISTRIBUSI NASIONAL
+      - generic [ref=e68]:
+        - generic [ref=e69]: ★
+        - text: CETAK BERKUALITAS
+      - generic [ref=e70]:
+        - generic [ref=e71]: ★
+        - text: ANGGOTA IKAPI
+      - generic [ref=e72]:
+        - generic [ref=e73]: ★
+        - text: EDITOR PROFESIONAL
+      - generic [ref=e74]:
+        - generic [ref=e75]: ★
+        - text: TERBIT CEPAT
+      - generic [ref=e76]:
+        - generic [ref=e77]: ★
+        - text: PENERBIT TERPERCAYA
+      - generic [ref=e78]:
+        - generic [ref=e79]: ★
+        - text: ISBN RESMI
+      - generic [ref=e80]:
+        - generic [ref=e81]: ★
+        - text: HAKI TERJAMIN
+      - generic [ref=e82]:
+        - generic [ref=e83]: ★
+        - text: DISTRIBUSI NASIONAL
+      - generic [ref=e84]:
+        - generic [ref=e85]: ★
+        - text: CETAK BERKUALITAS
+      - generic [ref=e86]:
+        - generic [ref=e87]: ★
+        - text: ANGGOTA IKAPI
+      - generic [ref=e88]:
+        - generic [ref=e89]: ★
+        - text: EDITOR PROFESIONAL
+      - generic [ref=e90]:
+        - generic [ref=e91]: ★
+        - text: TERBIT CEPAT
+    - generic [ref=e93]:
+      - generic [ref=e94]: LAYANAN KAMI
+      - heading "Solusi Penerbitan Lengkap" [level=2] [ref=e95]
+      - paragraph [ref=e96]: Dari naskah mentah hingga buku siap edar, kami tangani semuanya
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - generic [ref=e99]: 📖
+          - heading "Penerbitan Buku" [level=3] [ref=e100]
+          - paragraph [ref=e101]: Layanan penerbitan profesional dengan ISBN resmi dari Perpusnas. Naskah Anda akan melewati proses editing, layout, dan desain cover oleh tim ahli kami.
+        - generic [ref=e102]:
+          - generic [ref=e103]: 🖨️
+          - heading "Percetakan Berkualitas" [level=3] [ref=e104]
+          - paragraph [ref=e105]: Fasilitas cetak modern untuk Print on Demand maupun cetak massal (offset). Hasil cetak tajam dengan bahan kertas pilihan dan binding kokoh.
+        - generic [ref=e106]:
+          - generic [ref=e107]: 📜
+          - heading "ISBN & HAKI" [level=3] [ref=e108]
+          - paragraph [ref=e109]: Pengurusan ISBN resmi Perpusnas dan pendaftaran Hak Kekayaan Intelektual (HAKI) untuk melindungi karya intelektual Anda secara hukum.
+    - generic [ref=e110]:
+      - generic:
+        - img
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - img "Tentang Rizquna" [ref=e114]
+          - generic [ref=e115]:
+            - generic [ref=e116]: 5+
+            - text: Tahun Pengalaman
+        - generic [ref=e117]:
+          - generic [ref=e118]: TENTANG KAMI
+          - heading "Partner Cetak & Terbit Buku Berkualitas" [level=2] [ref=e119]
+          - paragraph [ref=e120]: CV. New Rizquna Elfath adalah penerbit resmi anggota IKAPI yang berlokasi di Purwokerto, Jawa Tengah. Sejak 2020, kami telah membantu ratusan penulis — dosen, peneliti, dan praktisi — menerbitkan karya terbaik mereka.
+          - list [ref=e121]:
+            - listitem [ref=e122]:
+              - generic [ref=e123]: ✓
+              - text: Anggota Resmi IKAPI Jawa Tengah
+            - listitem [ref=e124]:
+              - generic [ref=e125]: ✓
+              - text: ISBN & HAKI Resmi Terjamin
+            - listitem [ref=e126]:
+              - generic [ref=e127]: ✓
+              - text: Tim Editor & Desainer Profesional
+            - listitem [ref=e128]:
+              - generic [ref=e129]: ✓
+              - text: Distribusi Nasional ke Seluruh Indonesia
+          - link "DAFTAR SEKARANG →" [ref=e130] [cursor=pointer]:
+            - /url: /register
+    - generic [ref=e132]:
+      - generic [ref=e133]: KATALOG TERBITAN
+      - heading "Buku-Buku Terbitan Kami" [level=2] [ref=e134]
+      - paragraph [ref=e135]: Koleksi karya ilmiah dan akademik dari penulis terbaik Indonesia
+      - button "Semua Buku" [ref=e137] [cursor=pointer]
+    - generic [ref=e140]:
+      - generic [ref=e141]:
+        - generic [ref=e142]: KEUNGGULAN KAMI
+        - heading "Mengapa Penulis Memilih Rizquna Publishing?" [level=2] [ref=e143]
+        - paragraph [ref=e144]: Kami memahami kebutuhan penulis akademik. Dengan proses yang transparan, harga kompetitif, dan hasil berkualitas tinggi, kami menjadi mitra terpercaya para dosen dan peneliti.
+        - list [ref=e145]:
+          - listitem [ref=e146]:
+            - generic [ref=e147]: ⚡
+            - generic [ref=e148]: Proses Terbit Cepat — 2-3 Minggu
+          - listitem [ref=e149]:
+            - generic [ref=e150]: 📊
+            - generic [ref=e151]: Dashboard Tracking Naskah Real-time
+          - listitem [ref=e152]:
+            - generic [ref=e153]: ✏️
+            - generic [ref=e154]: Editing & Proofreading oleh Editor Berpengalaman
+          - listitem [ref=e155]:
+            - generic [ref=e156]: 🎨
+            - generic [ref=e157]: Desain Cover & Layout Profesional
+          - listitem [ref=e158]:
+            - generic [ref=e159]: 🚚
+            - generic [ref=e160]: Distribusi ke Toko Buku & Marketplace Nasional
+        - link "MULAI TERBITKAN BUKU →" [ref=e161] [cursor=pointer]:
+          - /url: /register
+      - generic [ref=e162]:
+        - img "Mengapa Memilih Rizquna" [ref=e163]
+        - generic [ref=e164]:
+          - generic [ref=e165]: ⭐
+          - generic [ref=e166]: 5+
+          - text: Tahun Pengalaman
+    - generic [ref=e168]:
+      - generic [ref=e169]: TIM KAMI
+      - heading "Profesional di Balik Karya Anda" [level=2] [ref=e170]
+      - paragraph [ref=e171]: Tim berpengalaman yang siap memastikan buku Anda terbit dengan sempurna
+      - generic [ref=e172]:
+        - generic [ref=e173]:
+          - generic [ref=e174]:
+            - img "Ahmad Fauzi" [ref=e175]
+            - generic [ref=e176]: "4.9"
+          - heading "Ahmad Fauzi" [level=4] [ref=e177]
+          - paragraph [ref=e178]: Direktur Penerbitan
+          - generic [ref=e179]:
+            - link "Facebook" [ref=e180] [cursor=pointer]:
+              - /url: "#"
+              - text: f
+            - link "Twitter" [ref=e181] [cursor=pointer]:
+              - /url: "#"
+              - text: 𝕏
+            - link "LinkedIn" [ref=e182] [cursor=pointer]:
+              - /url: "#"
+              - text: in
+        - generic [ref=e183]:
+          - generic [ref=e184]:
+            - img "Siti Rahayu" [ref=e185]
+            - generic [ref=e186]: "4.8"
+          - heading "Siti Rahayu" [level=4] [ref=e187]
+          - paragraph [ref=e188]: Editor Senior
+          - generic [ref=e189]:
+            - link "Facebook" [ref=e190] [cursor=pointer]:
+              - /url: "#"
+              - text: f
+            - link "Twitter" [ref=e191] [cursor=pointer]:
+              - /url: "#"
+              - text: 𝕏
+            - link "LinkedIn" [ref=e192] [cursor=pointer]:
+              - /url: "#"
+              - text: in
+        - generic [ref=e193]:
+          - generic [ref=e194]:
+            - img "Budi Santoso" [ref=e195]
+            - generic [ref=e196]: "4.7"
+          - heading "Budi Santoso" [level=4] [ref=e197]
+          - paragraph [ref=e198]: Kepala Percetakan
+          - generic [ref=e199]:
+            - link "Facebook" [ref=e200] [cursor=pointer]:
+              - /url: "#"
+              - text: f
+            - link "Twitter" [ref=e201] [cursor=pointer]:
+              - /url: "#"
+              - text: 𝕏
+            - link "LinkedIn" [ref=e202] [cursor=pointer]:
+              - /url: "#"
+              - text: in
+        - generic [ref=e203]:
+          - generic [ref=e204]:
+            - img "Nur Hidayah" [ref=e205]
+            - generic [ref=e206]: "4.8"
+          - heading "Nur Hidayah" [level=4] [ref=e207]
+          - paragraph [ref=e208]: Manajer Distribusi
+          - generic [ref=e209]:
+            - link "Facebook" [ref=e210] [cursor=pointer]:
+              - /url: "#"
+              - text: f
+            - link "Twitter" [ref=e211] [cursor=pointer]:
+              - /url: "#"
+              - text: 𝕏
+            - link "LinkedIn" [ref=e212] [cursor=pointer]:
+              - /url: "#"
+              - text: in
+    - generic [ref=e214]:
+      - generic [ref=e215]: TESTIMONI
+      - heading "Apa Kata Para Penulis" [level=2] [ref=e216]
+      - paragraph [ref=e217]: yang Sudah Menerbitkan Buku Bersama Kami
+      - generic [ref=e218]:
+        - generic [ref=e219]:
+          - generic [ref=e220]: ❝
+          - heading "Proses Cepat & Profesional!" [level=4] [ref=e221]
+          - paragraph [ref=e222]: Saya sangat terkesan dengan kecepatan dan profesionalisme Rizquna. Dari pengiriman naskah hingga buku terbit hanya memakan waktu 3 minggu. ISBN resmi dan hasil cetak sangat berkualitas.
+          - generic [ref=e223]:
+            - img "Dr. H. Supriyanto, M.Pd." [ref=e224]
+            - generic [ref=e225]:
+              - strong [ref=e226]: Dr. H. Supriyanto, M.Pd.
+              - text: Dosen UMP — Penulis 3 Buku
+        - generic [ref=e227]:
+          - generic [ref=e228]: ❝
+          - heading "Partner Penerbitan Terpercaya!" [level=4] [ref=e229]
+          - paragraph [ref=e230]: Sebagai akademisi yang harus rutin menerbitkan buku, Rizquna adalah partner terbaik. Tim editor sangat teliti, layout rapi, dan proses pengurusan HAKI sangat terbantu oleh tim mereka.
+          - generic [ref=e231]:
+            - img "Prof. Dr. Ratna Dewi, M.Si." [ref=e232]
+            - generic [ref=e233]:
+              - strong [ref=e234]: Prof. Dr. Ratna Dewi, M.Si.
+              - text: Guru Besar UNSOED
+        - generic [ref=e235]:
+          - generic [ref=e236]: ❝
+          - heading "Hasil Cetak Memuaskan!" [level=4] [ref=e237]
+          - paragraph [ref=e238]: Kualitas cetakan buku dari Rizquna sangat baik — kertas tebal, warna cover tajam, dan binding kuat. Distribusi juga tersebar luas ke toko buku dan marketplace nasional.
+          - generic [ref=e239]:
+            - img "Ir. Bambang Widodo, M.T." [ref=e240]
+            - generic [ref=e241]:
+              - strong [ref=e242]: Ir. Bambang Widodo, M.T.
+              - text: Peneliti BRIN
+    - generic [ref=e244]:
+      - generic [ref=e245]:
+        - heading "Siap Menerbitkan Buku? Daftar Sekarang!" [level=2] [ref=e246]:
+          - text: Siap Menerbitkan Buku?
+          - text: Daftar Sekarang!
+        - generic [ref=e248]: 🚀 Bergabung dengan ratusan penulis lainnya
+        - generic [ref=e249]:
+          - generic [ref=e250]: ★★★★★
+          - generic [ref=e251]: 350+ Penulis Puas — Rating 4.9
+      - link "DAFTAR GRATIS →" [ref=e252] [cursor=pointer]:
+        - /url: /register
+    - generic [ref=e254]:
+      - generic [ref=e255]: ARTIKEL & PANDUAN
+      - heading "Tips & Insight Dunia" [level=2] [ref=e256]
+      - paragraph [ref=e257]: Penerbitan dan Percetakan Buku
+      - generic [ref=e258]:
+        - generic [ref=e259]:
+          - generic [ref=e260]:
+            - img "Panduan Lengkap Menulis Buku Ajar untuk Dosen" [ref=e261]
+            - generic [ref=e262]: Penerbitan
+            - generic [ref=e263]: 28 Feb
+          - generic [ref=e264]:
+            - generic [ref=e265]:
+              - generic [ref=e266]: A
+              - generic [ref=e267]:
+                - text: Oleh
+                - strong [ref=e268]: Rizquna
+            - heading "Panduan Lengkap Menulis Buku Ajar untuk Dosen" [level=3] [ref=e269]
+            - generic [ref=e270]: Lanjutkan Membaca →
+        - generic [ref=e271]:
+          - generic [ref=e272]:
+            - img "Cara Mendapatkan ISBN dan HAKI untuk Buku Anda" [ref=e273]
+            - generic [ref=e274]: Panduan
+            - generic [ref=e275]: 15 Feb
+          - generic [ref=e276]:
+            - generic [ref=e277]:
+              - generic [ref=e278]: A
+              - generic [ref=e279]:
+                - text: Oleh
+                - strong [ref=e280]: Rizquna
+            - heading "Cara Mendapatkan ISBN dan HAKI untuk Buku Anda" [level=3] [ref=e281]
+            - generic [ref=e282]: Lanjutkan Membaca →
+        - generic [ref=e283]:
+          - generic [ref=e284]:
+            - 'img "Print on Demand vs Cetak Offset: Mana yang Tepat?" [ref=e285]'
+            - generic [ref=e286]: Percetakan
+            - generic [ref=e287]: 02 Feb
+          - generic [ref=e288]:
+            - generic [ref=e289]:
+              - generic [ref=e290]: A
+              - generic [ref=e291]:
+                - text: Oleh
+                - strong [ref=e292]: Rizquna
+            - 'heading "Print on Demand vs Cetak Offset: Mana yang Tepat?" [level=3] [ref=e293]'
+            - generic [ref=e294]: Lanjutkan Membaca →
+    - generic [ref=e295]:
+      - generic [ref=e296]:
+        - generic [ref=e297]: MITRA KAMI
+        - heading "Mitra Terpercaya Kami" [level=2] [ref=e298]
+      - generic [ref=e300]:
+        - generic [ref=e301]: IKAPI
+        - generic [ref=e302]: Perpusnas
+        - generic [ref=e303]: Google Scholar
+        - generic [ref=e304]: Crossref
+        - generic [ref=e305]: DOI
+        - generic [ref=e306]: Gramedia
+        - generic [ref=e307]: IKAPI
+        - generic [ref=e308]: Perpusnas
+        - generic [ref=e309]: Google Scholar
+        - generic [ref=e310]: Crossref
+        - generic [ref=e311]: DOI
+        - generic [ref=e312]: Gramedia
+        - generic [ref=e313]: IKAPI
+        - generic [ref=e314]: Perpusnas
+        - generic [ref=e315]: Google Scholar
+        - generic [ref=e316]: Crossref
+        - generic [ref=e317]: DOI
+        - generic [ref=e318]: Gramedia
+        - generic [ref=e319]: IKAPI
+        - generic [ref=e320]: Perpusnas
+        - generic [ref=e321]: Google Scholar
+        - generic [ref=e322]: Crossref
+        - generic [ref=e323]: DOI
+        - generic [ref=e324]: Gramedia
+  - contentinfo [ref=e325]:
+    - generic [ref=e326]:
+      - generic [ref=e327]:
+        - generic [ref=e328]:
+          - img "Rizquna Elfath" [ref=e330]
+          - paragraph [ref=e331]: Penerbit & percetakan profesional anggota IKAPI. Melayani penerbitan buku, cetak on demand, ISBN resmi, dan distribusi nasional.
+          - generic [ref=e332]: 📜 IKAPI No. 199/JTE/2020
+        - generic [ref=e333]:
+          - heading "Info Kontak" [level=4] [ref=e334]
+          - list [ref=e335]:
+            - listitem [ref=e336]:
+              - generic [ref=e337]: 📍
+              - generic [ref=e338]:
+                - text: Jl. KS. Tubun Gang Camar,
+                - text: Purwokerto, Jawa Tengah
+            - listitem [ref=e339]:
+              - generic [ref=e340]: 📱
+              - link "081294856272" [ref=e341] [cursor=pointer]:
+                - /url: tel:081294856272
+            - listitem [ref=e342]:
+              - generic [ref=e343]: ✉️
+              - link "info@rizquna.id" [ref=e344] [cursor=pointer]:
+                - /url: mailto:info@rizquna.id
+            - listitem [ref=e345]:
+              - generic [ref=e346]: 🕐
+              - generic [ref=e347]: "Hari Kerja: 09.00 – 18.00"
+        - generic [ref=e348]:
+          - heading "Tautan Cepat" [level=4] [ref=e349]
+          - list [ref=e350]:
+            - listitem [ref=e351]:
+              - link "Penerbitan Buku" [ref=e352] [cursor=pointer]:
+                - /url: https://wa.me/6281294856272
+            - listitem [ref=e353]:
+              - link "Percetakan Profesional" [ref=e354] [cursor=pointer]:
+                - /url: https://wa.me/6281294856272
+            - listitem [ref=e355]:
+              - link "Buku" [ref=e356] [cursor=pointer]:
+                - /url: /buku
+            - listitem [ref=e357]:
+              - link "Konsultasi Menulis" [ref=e358] [cursor=pointer]:
+                - /url: https://wa.me/6281294856272
+            - listitem [ref=e359]:
+              - link "Jasa Pengurusan HAKI" [ref=e360] [cursor=pointer]:
+                - /url: https://wa.me/6281294856272
+        - generic [ref=e361]:
+          - heading "Buletin" [level=4] [ref=e362]
+          - paragraph [ref=e363]: Dapatkan info layanan terbaru, promo percetakan, dan tips menulis langsung ke email Anda.
+          - generic [ref=e364]:
+            - textbox "Email Anda" [ref=e365]
+            - button "Kirim" [ref=e366] [cursor=pointer]: ➤
+          - generic [ref=e367]:
+            - link "Instagram" [ref=e368] [cursor=pointer]:
+              - /url: https://instagram.com/penerbitrizquna
+              - text: 📷
+            - link "Facebook" [ref=e369] [cursor=pointer]:
+              - /url: https://facebook.com/penerbitrizquna
+              - text: 📘
+            - link "WhatsApp" [ref=e370] [cursor=pointer]:
+              - /url: https://wa.me/6281294856272
+              - text: 💬
+            - link "TikTok" [ref=e371] [cursor=pointer]:
+              - /url: https://tiktok.com/@penerbitrizquna
+              - text: 🎵
+      - generic [ref=e372]:
+        - generic [ref=e373]: © 2026 CV. New Rizquna Elfath. Hak cipta dilindungi.
+        - generic [ref=e374]:
+          - link "Kebijakan Privasi" [ref=e375] [cursor=pointer]:
+            - /url: "#"
+          - text: ·
+          - link "Syarat & Ketentuan" [ref=e376] [cursor=pointer]:
+            - /url: "#"
+```

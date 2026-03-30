@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "nre-coordinator": {
+      "command": "/usr/bin/python3",
+      "args": [
+        "/Users/macm4/Documents/Projek/NRE/.agents/mcp_server.py"
+      ],
+      "cwd": "/Users/macm4/Documents/Projek/NRE",
+      "env": {
+        "PROJECT_ROOT": "/Users/macm4/Documents/Projek/NRE",
+        "AGENTS_DIR": "/Users/macm4/Documents/Projek/NRE/.agents",
+        "STATE_FILE": "/Users/macm4/Documents/Projek/NRE/.agents/MCP_STATE.md",
+        "CONFIG_FILE": "/Users/macm4/Documents/Projek/NRE/.agents/mcp.config.json",
+        "ALERTS_FILE": "/Users/macm4/Documents/Projek/NRE/.agents/ALERTS.log",
+        "FLASK_ENV": "production",
+        "FLASK_DEBUG": "0"
+      },
+      "disabled": false
+    }
+  }
+}

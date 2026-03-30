@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\GeneratePreviewPdf;
 use App\Models\Book;
 use App\Models\BookPreview;
 use App\Models\User;
@@ -78,6 +79,50 @@ class BookStorageTest extends TestCase
         $response->assertJsonPath('data.preview_pages', 10);
     }
 
+    public function test_preview_endpoint_returns_404_when_preview_path_exists_but_file_is_missing(): void
+    {
+        $book = Book::factory()->create([
+            'pdf_preview_path' => 'pdfs/preview/missing-preview.pdf',
+        ]);
+        BookPreview::create([
+            'book_id' => $book->id,
+            'preview_pdf_path' => 'pdfs/preview/missing-preview.pdf',
+            'preview_pages' => 5,
+            'allow_preview' => true,
+        ]);
+
+        $response = $this->getJson("/api/v1/public/books/{$book->id}/preview");
+
+        $response->assertStatus(404);
+        $response->assertJsonPath('success', false);
+    }
+
+    public function test_preview_endpoint_queues_regeneration_when_preview_is_missing_but_full_pdf_exists(): void
+    {
+        Queue::fake();
+        config(['queue.default' => 'database']);
+
+        $book = Book::factory()->create([
+            'pdf_full_path' => 'pdfs/full/source.pdf',
+            'pdf_preview_path' => 'pdfs/preview/missing-preview.pdf',
+        ]);
+        BookPreview::create([
+            'book_id' => $book->id,
+            'preview_pdf_path' => 'pdfs/preview/missing-preview.pdf',
+            'preview_pages' => 7,
+            'allow_preview' => true,
+        ]);
+
+        Storage::disk('books')->put('pdfs/full/source.pdf', 'dummy source pdf');
+
+        $response = $this->getJson("/api/v1/public/books/{$book->id}/preview");
+
+        $response->assertStatus(202);
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('data.status', 'processing');
+        Queue::assertPushed(GeneratePreviewPdf::class);
+    }
+
     public function test_cover_endpoint_returns_404_when_no_cover(): void
     {
         $book = Book::factory()->create(['cover_path' => null]);
@@ -85,6 +130,20 @@ class BookStorageTest extends TestCase
         $response = $this->getJson("/api/v1/public/books/{$book->id}/cover");
 
         $response->assertStatus(404);
+    }
+
+    public function test_cover_endpoint_uses_external_fallback_when_local_cover_is_missing(): void
+    {
+        $book = Book::factory()->create([
+            'cover_path' => 'covers/missing-cover.jpg',
+            'google_drive_cover_url' => 'https://example.com/cover.jpg',
+        ]);
+
+        $response = $this->getJson("/api/v1/public/books/{$book->id}/cover");
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('data.url', 'https://example.com/cover.jpg');
     }
 
     public function test_read_endpoint_requires_authentication(): void

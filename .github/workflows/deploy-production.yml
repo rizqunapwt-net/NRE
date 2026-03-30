@@ -1,0 +1,211 @@
+name: Production Deployment with Approval
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - staging
+          - production
+      
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build and push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/php/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/rizquna-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/rizquna-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+      
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./admin-panel
+          file: ./admin-panel/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/rizquna-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/rizquna-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+      
+      - name: Run security scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'image'
+          image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/rizquna-backend:${{ github.sha }}'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+  
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'staging' || github.event.inputs.environment == 'production'
+    environment:
+      name: staging
+      url: https://staging.rizquna.id
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to Staging via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /var/www/rizquna-staging
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d
+            docker exec nre_app_prod php artisan migrate --force
+            docker exec nre_app_prod php artisan config:cache
+            docker exec nre_app_prod php artisan route:cache
+      
+      - name: Run smoke tests
+        run: |
+          sleep 30  # Wait for services to be ready
+          curl -f https://staging.rizquna.id/health || exit 1
+          curl -f https://staging.rizquna.id/health/ready || exit 1
+      
+      - name: Notify staging deployment
+        if: success()
+        run: echo "Staging deployment successful!"
+  
+  deploy-production:
+    name: Deploy to Production
+    needs: [build, deploy-staging]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://rizquna.id
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create deployment backup
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /var/www/rizquna
+            ./scripts/backup_db.sh --docker
+      
+      - name: Deploy to Production via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /var/www/rizquna
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d --no-deps --build
+            
+            # Run migrations
+            docker exec nre_app_prod php artisan migrate --force
+            
+            # Clear and cache
+            docker exec nre_app_prod php artisan config:cache
+            docker exec nre_app_prod php artisan route:cache
+            docker exec nre_app_prod php artisan view:cache
+            docker exec nre_app_prod php artisan event:cache
+            
+            # Restart queue workers
+            docker exec nre_worker_prod supervisorctl restart all
+      
+      - name: Health check
+        run: |
+          sleep 30  # Wait for services to be ready
+          curl -f https://rizquna.id/health || exit 1
+          curl -f https://rizquna.id/health/ready || exit 1
+      
+      - name: Notify success
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "✅ Production deployment successful!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Rizquna ERP Production Deployment*\n✅ Deployment completed successfully!\n\n*Commit:* ${{ github.sha }}\n*URL:* https://rizquna.id"
+                  }
+                }
+              ]
+            }
+      
+      - name: Notify failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "❌ Production deployment failed!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Rizquna ERP Production Deployment*\n❌ Deployment failed!\n\n*Commit:* ${{ github.sha }}\n*Check logs:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                }
+              ]
+            }
+      
+      - name: Rollback on failure
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /var/www/rizquna
+            docker-compose -f docker-compose.prod.yml down
+            # Restore from backup if needed
+            echo "Manual rollback required - check backup files"

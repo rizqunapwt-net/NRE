@@ -1,0 +1,61 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e5]:
+  - link "arrow-left Kembali ke Beranda" [ref=e7] [cursor=pointer]:
+    - /url: /
+    - img "arrow-left" [ref=e8]:
+      - img [ref=e9]
+    - text: Kembali ke Beranda
+  - generic [ref=e11]:
+    - heading "Masuk ke Akun" [level=2] [ref=e12]
+    - text: Selamat datang kembali! Silakan masukkan detail Anda.
+  - alert [ref=e13]:
+    - img "close-circle" [ref=e15]:
+      - img [ref=e16]
+    - generic [ref=e18]:
+      - generic [ref=e19]: Login Gagal
+      - generic [ref=e20]: Request failed with status code 500
+    - button "close" [ref=e21] [cursor=pointer]:
+      - img "close" [ref=e22]:
+        - img [ref=e23]
+  - generic [ref=e25]:
+    - generic [ref=e27]:
+      - generic [ref=e30]: Alamat Email
+      - generic [ref=e34]:
+        - img "mail" [ref=e36]:
+          - img [ref=e37]
+        - textbox "Alamat Email" [ref=e39]:
+          - /placeholder: anda@email.com
+          - text: admin@rizquna.com
+    - generic [ref=e41]:
+      - generic [ref=e44]:
+        - generic [ref=e45]: Kata Sandi
+        - link "Lupa?" [ref=e46] [cursor=pointer]:
+          - /url: /lupa-password
+      - generic [ref=e50]:
+        - img "lock" [ref=e52]:
+          - img [ref=e53]
+        - textbox "Kata Sandi Lupa?" [ref=e55]:
+          - /placeholder: ••••••••
+          - text: password
+        - img "eye-invisible" [ref=e57] [cursor=pointer]:
+          - img [ref=e58]
+    - generic [ref=e62] [cursor=pointer]:
+      - checkbox "Ingat saya untuk 30 hari" [checked] [ref=e64]
+      - generic [ref=e65]: Ingat saya untuk 30 hari
+    - button "Masuk Sekarang" [active] [ref=e71] [cursor=pointer]:
+      - generic [ref=e72]: Masuk Sekarang
+  - separator [ref=e73]:
+    - generic [ref=e75]: Atau masuk dengan
+  - button "Google Account" [ref=e77] [cursor=pointer]:
+    - img [ref=e79]
+    - generic [ref=e84]: Google Account
+  - generic [ref=e85]:
+    - text: Belum memiliki akun?
+    - generic [ref=e86]:
+      - link "Daftar Akun Umum" [ref=e87] [cursor=pointer]:
+        - /url: /register
+      - link "Daftar sebagai Penulis" [ref=e88] [cursor=pointer]:
+        - /url: /author-register
+```

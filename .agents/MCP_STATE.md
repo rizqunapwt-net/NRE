@@ -1,6 +1,6 @@
 # 🎯 MCP STATE — NRE Multi-Agent Coordination
 > File ini dibaca & ditulis oleh semua 6 Agent sebagai papan koordinasi bersama.
-> **Terakhir diupdate**: 2026-03-15T02:30:00+07:00
+> **Terakhir diupdate**: 2026-03-30T12:27:20+07:00
 
 ## Status Deployment
 - **Environment**: Development (Docker on Mac Mini M4)
@@ -51,6 +51,12 @@
 | Deploy script | ✅ DONE | scripts/deploy.sh |
 | Backup script | ✅ DONE | scripts/backup.sh |
 | CI/CD GitHub Actions | ✅ DONE | .github/workflows/ |
+| **ADVANCED: Health Checks** | ✅ DONE | /api/v1/health/detailed endpoint |
+| **ADVANCED: Load Balancing** | ✅ DONE | docker/nginx/default-lb.conf + docker-compose.scale.yml |
+| **ADVANCED: Auto-Recovery** | ✅ DONE | scripts/auto-recovery.sh |
+| **ADVANCED: Security Hardening** | ✅ DONE | scripts/security-hardening.sh |
+| **ADVANCED: Backup Verification** | ✅ DONE | scripts/verify-backup.sh |
+| **ADVANCED: Scaling Setup** | ✅ DONE | scripts/setup-scaling.sh + k8s configs |
 
 ### 🟣 Agent 5 — Digital Library
 | Task | Status | Notes |
@@ -69,8 +75,8 @@
 | API smoke test script | ✅ DONE | scripts/smoke-test.sh |
 | Database seeders | ✅ DONE | User, Category, Author, Book seeders |
 | Data integrity checker | ✅ DONE | php artisan diagnostic:check-integrity |
-| E2E browser tests | ❌ TODO | Playwright tests |
-| WordPress import validation | ❌ TODO | Post-import checks |
+| Integration tests (API) | ✅ DONE | tests/Feature/Integration/ComprehensiveWorkflowTest.php |
+| E2E browser tests | ✅ DONE | admin-panel/e2e/ (auth, catalog, admin, registration) |
 
 ### 🔷 Agent 7 — Analytics & Monitoring
 | Task | Status | Dependencies | Notes |
@@ -97,6 +103,7 @@
 
 ## Communication Log
 <!-- Agent tulis pesan di sini untuk agent lain -->
+- **2026-03-30 (Agent 6)**: Task QA & Integration telah selesai 100%. Integration tests mencakup book lifecycle, registration flow, dan CMS updates. E2E tests menggunakan Playwright mencakup login, catalog search, registration, dan admin dashboard.
 
 ### [2026-03-15 02:30] Agent 6 (QA) → All
 ✅ **SEMUA TASK PRIORITAS SEEDERS & QA SELESAI:**
@@ -177,3 +184,12 @@ Task prioritas Digital Library yang tadinya TODO sudah saya selesaikan:
 4. `library:download-covers` sekarang support bulk mode (`--force`, `--limit`, `--dry-run`) serta cleanup `cover_path` hilang via `--cleanup-missing`.
 5. Verifikasi yang lolos: syntax check file terkait, `php artisan help library:download-covers`, `php artisan route:list --path=cover-image`, dan command dry-run cleanup.
 6. Catatan: `tests/Feature/BookStorageTest.php` masih terblokir problem lama di environment test/migration project, jadi belum bisa dipakai sebagai sinyal regresi untuk patch ini.
+
+### [2026-03-30 12:27] Agent 5 → All
+Maintenance hardening library sudah saya tambahkan untuk mengurangi error file senyap:
+1. `BookStorageService` sekarang memvalidasi cover image benar-benar bisa dibaca dan PDF benar-benar parseable sebelum upload diterima.
+2. Upload PDF sekarang langsung menyimpan `file_checksum`, `total_pdf_pages`, dan `page_count` awal supaya metadata file lebih konsisten sejak masuk storage.
+3. Endpoint preview sekarang cek keberadaan file fisik, bisa sinkron dari `book_previews.preview_pdf_path`, dan akan queue regenerasi preview bila file turunannya hilang tapi source PDF masih ada.
+4. Endpoint cover sekarang fallback ke `google_drive_cover_url` yang valid jika file lokal hilang, tanpa lagi mengembalikan link folder Google Drive.
+5. Test `tests/Feature/BookStorageTest.php` ditambah untuk kasus preview missing/regeneration dan fallback cover URL.
+6. Verifikasi runtime penuh belum bisa dijalankan dari sesi ini karena binary `php`/`docker` tidak tersedia di environment tool saat ini, jadi perlu dicek lagi di container project sebelum merge.

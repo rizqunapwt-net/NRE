@@ -181,6 +181,71 @@ const LandingPage: React.FC = () => {
             <p className="hero-subtitle">
               <strong>CV. New Rizquna Elfath</strong> adalah penerbit dan percetakan profesional di Purwokerto. Kami siap membantu Anda dari naskah hingga buku terbit — ISBN resmi, HAKI terjamin, distribusi nasional.
             </p>
+            
+            <div className="hero-search-wrapper" style={{ margin: '32px 0 40px', maxWidth: '580px' }}>
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const search = formData.get('search');
+                  if (search) {
+                    window.location.href = `/katalog?search=${encodeURIComponent(search.toString())}`;
+                  }
+                }}
+                style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
+              >
+                <div style={{ position: 'absolute', left: '20px', zIndex: 2, color: '#94a3b8' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                <input 
+                  type="text" 
+                  name="search"
+                  placeholder="Cari judul buku, penulis, atau ISBN..." 
+                  aria-label="Cari buku"
+                  style={{
+                    width: '100%',
+                    padding: '18px 24px 18px 56px',
+                    borderRadius: '16px',
+                    border: '2px solid rgba(226, 232, 240, 0.8)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)',
+                    transition: 'all 0.3s ease',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#008B94';
+                    e.currentTarget.style.boxShadow = '0 15px 35px -5px rgba(0, 139, 148, 0.15)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(226, 232, 240, 0.8)';
+                    e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.05)';
+                  }}
+                />
+                <button 
+                  type="submit"
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    background: '#008B94',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 20px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = '#007A82'}
+                  onMouseOut={(e) => e.currentTarget.style.background = '#008B94'}
+                >
+                  CARI
+                </button>
+              </form>
+            </div>
+
             <div className="hero-cta">
               <Link to="/register" className="btn btn-primary btn-lg">MULAI TERBIT BUKU →</Link>
               <Link to="/login" className="btn btn-outline btn-lg">MASUK</Link>
