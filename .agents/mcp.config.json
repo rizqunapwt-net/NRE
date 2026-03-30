@@ -1,0 +1,178 @@
+{
+  "version": "1.0",
+  "name": "NRE Multi-Agent Coordination Framework",
+  "description": "MCP implementation for Rizquna ERP development",
+  "server": {
+    "host": "localhost",
+    "port": 8888,
+    "debug": false,
+    "timeout": 30
+  },
+  "agents": {
+    "1": {
+      "id": 1,
+      "name": "Backend Core",
+      "color": "🔵",
+      "domain": "Laravel API",
+      "status": "active",
+      "completion": "7/7",
+      "owner": "Backend Team",
+      "responsibilities": [
+        "app/Http/",
+        "app/Models/",
+        "app/Services/",
+        "routes/api.php",
+        "database/migrations/",
+        "tests/Feature/Api/"
+      ]
+    },
+    "2": {
+      "id": 2,
+      "name": "Frontend Public",
+      "color": "🟢",
+      "domain": "React Landing & Catalog",
+      "status": "active",
+      "completion": "7/7",
+      "owner": "Frontend Team",
+      "responsibilities": [
+        "admin-panel/src/pages/landing/",
+        "admin-panel/src/pages/catalog/",
+        "admin-panel/src/components/",
+        "admin-panel/src/hooks/",
+        "admin-panel/src/pages/public/"
+      ]
+    },
+    "3": {
+      "id": 3,
+      "name": "Admin Panel",
+      "color": "🟡",
+      "domain": "Admin Dashboard & CRUD",
+      "status": "active",
+      "completion": "5/5",
+      "owner": "Admin Team",
+      "responsibilities": [
+        "admin-panel/src/pages/admin/",
+        "admin-panel/src/pages/author/",
+        "admin-panel/src/pages/DashboardPage.tsx",
+        "admin-panel/src/pages/nre/"
+      ]
+    },
+    "4": {
+      "id": 4,
+      "name": "DevOps",
+      "color": "🔴",
+      "domain": "Infrastructure & Deployment",
+      "status": "active",
+      "completion": "6/6",
+      "owner": "DevOps Team",
+      "responsibilities": [
+        "docker/",
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "scripts/",
+        ".github/workflows/",
+        ".env files",
+        "nginx/ configs"
+      ]
+    },
+    "5": {
+      "id": 5,
+      "name": "Digital Library",
+      "color": "🟣",
+      "domain": "Books Storage & Serving",
+      "status": "active",
+      "completion": "7/7",
+      "owner": "Library Team",
+      "responsibilities": [
+        "app/Services/BookStorageService.php",
+        "app/Services/BookAccessService.php",
+        "storage/app/private/",
+        "storage/app/public/",
+        "routes/library.php"
+      ]
+    },
+    "6": {
+      "id": 6,
+      "name": "QA & Testing",
+      "color": "🟠",
+      "domain": "Tests & Validation",
+      "status": "active",
+      "completion": "3/5",
+      "owner": "QA Team",
+      "responsibilities": [
+        "tests/",
+        "admin-panel/e2e/",
+        "admin-panel/__tests__/",
+        "scripts/smoke-test.sh",
+        "database/seeders/"
+      ]
+    }
+  },
+  "dependencies": {
+    "critical_path": "Backend (A1) → Frontend/Admin/Library (A2/A3/A5) → QA (A6)",
+    "graph": {
+      "1": {
+        "depends_on": [],
+        "enables": [2, 3, 5, 6]
+      },
+      "2": {
+        "depends_on": [1],
+        "enables": []
+      },
+      "3": {
+        "depends_on": [1],
+        "enables": []
+      },
+      "4": {
+        "depends_on": [],
+        "enables": [6]
+      },
+      "5": {
+        "depends_on": [1],
+        "enables": []
+      },
+      "6": {
+        "depends_on": [1, 2, 3, 5],
+        "enables": []
+      }
+    }
+  },
+  "communication": {
+    "primary_channel": ".agents/MCP_STATE.md",
+    "secondary_channel": ".agents/ALERTS.log",
+    "mcp_api": "http://localhost:8888",
+    "polling_interval": 300,
+    "alert_on": ["blockers", "failures", "breaking_changes"]
+  },
+  "git": {
+    "repository": "https://github.com/rizqunapwt-net/NRE.git",
+    "main_branch": "main",
+    "develop_branch": "develop",
+    "commit_format": "<agent>(<domain>): <description>",
+    "pull_request_template": ".github/PULL_REQUEST_TEMPLATE.md"
+  },
+  "testing": {
+    "unit_tests": "php artisan test",
+    "e2e_tests": "npm run test:e2e",
+    "smoke_tests": "bash scripts/smoke-test.sh",
+    "coverage_threshold": 70
+  },
+  "deployment": {
+    "dev": {
+      "docker_compose": "docker-compose.yml",
+      "api_url": "http://localhost:9000",
+      "frontend_url": "http://localhost:4000"
+    },
+    "production": {
+      "docker_compose": "docker-compose.prod.yml",
+      "deployment_script": "scripts/deploy.sh",
+      "backup_script": "scripts/backup.sh"
+    }
+  },
+  "notifications": {
+    "slack": false,
+    "email": false,
+    "file_logging": true,
+    "log_file": ".agents/ALERTS.log"
+  }
+}
